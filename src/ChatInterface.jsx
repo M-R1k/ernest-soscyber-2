@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Sparkles } from 'lucide-react'
+import ErnestThinkingIndicator from './components/ErnestThinkingIndicator'
 
 // Configuration de l'API N8N
 const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook/soscyber2'
@@ -93,16 +94,16 @@ export default function ChatInterface() {
   }
   
   // Configuration des couleurs pour le mode haut contraste
-  const colorScheme = highContrast ? {
+const colorScheme = highContrast ? {
     primary: 'bg-blue-900 text-white',
     secondary: 'bg-yellow-400 text-black',
     background: 'bg-white text-black',
     border: 'border-2 border-black'
   } : {
     primary: 'bg-blue-600 text-white',
-    secondary: 'bg-gray-100 text-gray-900',
-    background: 'bg-white text-gray-900',
-    border: 'border border-gray-300'
+    secondary: 'bg-white text-gray-900',
+    background: 'bg-sky-50 text-gray-900',
+    border: 'border border-blue-200'
   }
 
   // Auto-scroll vers le bas des messages
@@ -674,22 +675,11 @@ export default function ChatInterface() {
             </div>
           ))}
           
-          {/* Indicateur de réflexion */}
-          {isThinking && (
-            <div className="flex justify-start">
-              <div className={`p-4 rounded-2xl bg-gray-800 text-white ${colorScheme.border}`}>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 flex-shrink-0 text-white" />
-                  <span>Ernest réfléchit</span>
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce opacity-70"></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce opacity-70" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce opacity-70" style={{animationDelay: '0.2s'}}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <ErnestThinkingIndicator
+            isThinking={isThinking}
+            tone={highContrast ? 'light' : 'dark'}
+            borderClassName={colorScheme.border}
+          />
           
           <div ref={messagesEndRef} />
         </div>

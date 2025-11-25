@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ErnestThinkingIndicator from './components/ErnestThinkingIndicator'
 
 const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook-test/ernest/voice'
 const N8N_WEBHOOK = import.meta.env.VITE_N8N_WEBHOOK || DEFAULT_N8N_WEBHOOK
@@ -408,17 +409,13 @@ export default function ErnestVoiceChat() {
             </li>
           ))}
           {isThinking && (
-            <li className="flex justify-start">
-              <div className="max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ring-1 ring-inset bg-gray-100 text-gray-900 ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700">
-                <div className="flex items-center gap-2">
-                  <span>Ernest réfléchit</span>
-                  <div className="flex gap-1">
-                    <div className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="h-2 w-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                  </div>
-                </div>
-              </div>
+            <li>
+              <ErnestThinkingIndicator
+                isThinking={isThinking}
+                tone="light"
+                className="justify-start"
+                borderClassName="ring-1 ring-inset ring-gray-200 dark:ring-gray-700"
+              />
             </li>
           )}
           <div ref={bottomRef} />

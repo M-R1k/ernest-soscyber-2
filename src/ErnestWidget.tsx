@@ -5,6 +5,7 @@ import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage,
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
 import logoErnest from './assets/logo-ernest.png';
+import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
 type VoiceModeOverlayProps = {
@@ -944,15 +945,15 @@ function Bubble({
   );
 }
 
-function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choice[]; onSelect: (value: string) => void }) {
+function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choice[]; onSelect: (value: string, label?: string) => void }) {
   return (
-    <div role="group" aria-label={`Choix étape ${step}`} className="flex flex-wrap gap-3 md:gap-4">
+    <div role="group" aria-label={`Choix étape ${step}`} className="flex flex-wrap gap-2 md:gap-3">
       {choices.map((c) => (
         <button
           key={c.value}
           type="button"
-          onClick={() => onSelect(c.value)}
-          className="inline-flex min-h-[48px] md:min-h-[52px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-medium ring-1 ring-inset ring-gray-300 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+          onClick={() => onSelect(c.value, c.label)}
+          className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
           aria-label={c.label}
         >
           {c.label}
@@ -960,8 +961,8 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
       ))}
       <button
         type="button"
-        onClick={() => onSelect("fallback")}
-        className="inline-flex min-h-[48px] md:min-h-[52px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-medium ring-1 ring-inset ring-gray-300 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+        onClick={() => onSelect("fallback", "Je n'y arrive pas")}
+        className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
         aria-label="Je n'y arrive pas"
       >
         Je n'y arrive pas
@@ -992,11 +993,11 @@ function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () =>
         <button
           type="button"
           onClick={onReset}
-          className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-gray-100 text-gray-700 shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+          className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-red-50 text-red-600 ring-1 ring-red-200 shadow-sm transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300"
           aria-label="Effacer la conversation"
           title="Effacer la conversation"
         >
-          <TrashIcon className="h-4 w-4 md:h-5 md:w-5" />
+          <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />
         </button>
         <button
           type="button"
@@ -1231,7 +1232,7 @@ function Composer({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`relative grid h-10 w-10 md:h-12 md:w-12 flex-shrink-0 place-items-center rounded-full bg-gray-600 text-white shadow-md transition hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
+          className={`relative grid h-10 w-10 md:h-12 md:w-12 flex-shrink-0 place-items-center rounded-full bg-gray-100 text-gray-900 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
             attachedFiles.length > 0 ? 'ring-2 ring-blue-300' : ''
           }`}
           aria-label="Joindre des fichiers"
@@ -1251,7 +1252,7 @@ function Composer({
         <button
           type="button"
           onClick={onVoice}
-          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-blue-600 text-white shadow-md transition hover:bg-blue-700 disabled:opacity-50"
+          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-blue-100 text-blue-800 ring-1 ring-blue-200 shadow-md transition hover:bg-blue-200 disabled:opacity-50"
           aria-label="Mode Voix"
         >
           <SendWavesIcon className="h-6 w-6 md:h-9 md:w-9" />
@@ -1260,7 +1261,7 @@ function Composer({
           type="button"
           onClick={onSend}
           disabled={!value.trim() && attachedFiles.length === 0}
-          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-green-600 text-white shadow-md transition hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-green-100 text-green-800 ring-1 ring-green-200 shadow-md transition hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Envoyer"
         >
           <svg className="h-6 w-6 md:h-9 md:w-9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -1308,6 +1309,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const subIntentRef = useRef<Exclude<SubIntent, null> | null>(null);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
+  const [showHelperTips, setShowHelperTips] = useState(true);
 
   // Mapping texte libre → intent/subIntent (heuristique simple)
   function mapTextToMeta(text: string): { intent: Intent; subIntent?: Exclude<SubIntent, null> } | null {
@@ -1343,6 +1345,12 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, stepIndex, screen]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setShowHelperTips(false);
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (composerText.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1489,14 +1497,16 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
     const effectiveStep = stepIndex > 0 ? stepIndex : 1;
 
+    // Fermer immédiatement l'overlay pour fluidité
+    setVoiceMode(false);
+    setVoiceTranscription("");
+    setFinalTranscription("");
+    
     // Envoyer le texte via sendAction (workflow n8n)
     emitTelemetry({ type: "voice_text_sent", intent: effectiveIntent || undefined, subIntent: effectiveSub || undefined, step: stepIndex });
     await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: effectiveStep, text: textToSend });
 
     // Nettoyer après l'envoi
-    setVoiceMode(false);
-    setVoiceTranscription("");
-    setFinalTranscription("");
     setVoiceStatus("Prêt");
   }, [finalTranscription, stepIndex, sendAction]);
 
@@ -1755,12 +1765,12 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     setScreen("chat");
   }
 
-  async function handleChoiceSelect(value: string) {
+async function handleChoiceSelect(value: string, providedLabel?: string) {
     const stepDef = currentSteps?.[stepIndex];
     if (!intent || !stepDef) return;
     const step = stepIndex + 1;
-    const choice = stepDef.choices.find((c) => c.value === value);
-    const chatInput = choice?.label || value;
+  const choice = stepDef.choices.find((c) => c.value === value);
+  const chatInput = providedLabel || choice?.label || value;
     let outIntent: Intent = intent;
     let outSub: Exclude<SubIntent, null> | undefined = subIntent || undefined;
     if (value === "fallback") {
@@ -2275,18 +2285,26 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }
 
   return (
-    <section ref={containerRef} className="flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="flex h-screen w-full flex-col bg-sky-50 text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}
         onReset={() => {
           reset();
+          setScreen("home");
           setIntent(null);
           setSubIntent(null);
           setStepIndex(0);
           setShowBannerUrl(null);
           setAttachedFiles([]);
           setComposerText("");
+          setMessageFiles({});
+          pendingFilesRef.current = null;
+          setVoiceMode(false);
+          setVoiceTranscription("");
+          setFinalTranscription("");
+          setVoiceStatus("Prêt");
+          setShowHelperTips(true);
           emitTelemetry({ type: "reset" });
         }}
       />
@@ -2300,11 +2318,74 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
       {/* Conversation area - toujours visible */}
       <div className="flex flex-1 flex-col gap-3 md:gap-5 px-3 md:px-6 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
           {/* Message central d'accueil */}
-          {conversation.length === 0 && (
+          {showHelperTips && conversation.length === 0 && (
             <div className="flex w-full flex-1 items-center justify-center pt-8 md:pt-12">
-              <p className="w-full max-w-screen-sm md:max-w-screen-md text-center text-gray-900 text-[15px] md:text-[18px] font-normal">
-                Sélectionnez un sujet et commençons.
-              </p>
+              <div className="w-full max-w-screen-sm md:max-w-screen-md space-y-4 text-gray-900 text-[15px] md:text-[18px] font-medium">
+                {[
+                  {
+                    key: "attach",
+                    icon: (
+                      <svg
+                        className="h-6 w-6 md:h-7 md:w-7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                      </svg>
+                    ),
+                    text: "Joindre un fichier pour ajouter une photo ou un document.",
+                    bgClass: "bg-gray-100 ring-gray-200",
+                    iconBg: "bg-gray-200 text-gray-700",
+                  },
+                  {
+                    key: "voice",
+                    icon: <SendWavesIcon className="h-6 w-6 md:h-7 md:w-7" />,
+                    text: "Mode voix pour parler à Ernest au lieu d'écrire.",
+                    bgClass: "bg-blue-50 ring-blue-100",
+                    iconBg: "bg-blue-100 text-blue-700",
+                  },
+                  {
+                    key: "send",
+                    icon: (
+                      <svg
+                        className="h-5 w-5 md:h-6 md:w-6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        viewBox="0 0 24 24"
+                      >
+                        <line x1="22" y1="2" x2="11" y2="13" />
+                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                      </svg>
+                    ),
+                    text: "Envoyer pour transmettre instantanément votre demande.",
+                    bgClass: "bg-green-50 ring-green-100",
+                    iconBg: "bg-green-100 text-green-700",
+                  },
+                  {
+                    key: "trash",
+                    icon: <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />,
+                    text: "Effacer pour relancer une nouvelle conversation propre.",
+                    bgClass: "bg-red-50 ring-red-100",
+                    iconBg: "bg-red-100 text-red-700",
+                  },
+                ].map((item) => (
+                  <div key={item.key} className={`flex items-center gap-4 rounded-xl px-4 py-3 ring-1 ring-inset ${item.bgClass}`}>
+                    <div className={`grid h-10 w-10 place-items-center rounded-full ${item.iconBg}`}>
+                      {item.icon}
+                    </div>
+                    <span className="text-left leading-relaxed">{item.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
           {/* Safety banner */}
@@ -2361,16 +2442,12 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
                 </Bubble>
               );
             })}
-            {loading && (
-              <div className="mr-auto inline-flex items-center gap-2 md:gap-3 rounded-2xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-gray-900 text-[16px] md:text-[18px] ring-1 ring-inset ring-gray-200">
-                <span>Ernest réfléchit</span>
-                <span className="inline-flex gap-1 md:gap-1.5">
-                  <span className="h-2 w-2 md:h-2.5 md:w-2.5 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "0ms" }} />
-                  <span className="h-2 w-2 md:h-2.5 md:w-2.5 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "150ms" }} />
-                  <span className="h-2 w-2 md:h-2.5 md:w-2.5 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: "300ms" }} />
-                </span>
-              </div>
-            )}
+            <ErnestThinkingIndicator
+              isThinking={loading}
+              tone="light"
+              className="mr-auto w-full max-w-md"
+              borderClassName="ring-1 ring-inset ring-gray-200"
+            />
             {error && (
               <div className="mr-auto rounded-2xl bg-red-50 px-4 md:px-5 py-3 md:py-3.5 text-red-800 text-[16px] md:text-[18px] ring-1 ring-inset ring-red-200">
                 {error} <button onClick={clearError} className="ml-2 underline">OK</button>
@@ -2400,13 +2477,13 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
         )}
         {screen === "sos" && (
           <div className="mx-auto mb-2 md:mb-3 w-full max-w-screen-sm md:max-w-screen-md">
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
               {SOS_OPTIONS.map((o) => (
                 <button
                   key={o.key}
                   type="button"
                   onClick={() => handleSelectSubIntent(o.key)}
-                  className="inline-flex min-h-[44px] md:min-h-[52px] items-center justify-center rounded-2xl bg-white px-3 md:px-4 py-2 md:py-2.5 text-[16px] md:text-[17px] text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+                  className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl bg-white px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
                 >
                   {o.label}
                 </button>

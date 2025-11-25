@@ -4,6 +4,7 @@ import useErnest from "./hooks/useErnest";
 import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage, SosSubIntent } from "./types";
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
+import logoErnest from './assets/logo-ernest.png';
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
 type VoiceModeOverlayProps = {
@@ -980,7 +981,13 @@ function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () =>
       >
         <span aria-hidden className="text-base md:text-xl">←</span>
       </button>
-      <div className="absolute left-1/2 -translate-x-1/2 text-[20px] md:text-[22px] font-semibold text-gray-900">Ernest</div>
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
+        <img 
+          src={logoErnest} 
+          alt="Ernest" 
+          className="h-6 md:h-8 w-auto"
+        />
+      </div>
       <div className="flex items-center gap-2 md:gap-3">
         <button
           type="button"

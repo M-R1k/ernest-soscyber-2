@@ -813,6 +813,7 @@ function Bubble({
   showAvatar = false,
   profileImage,
   userName,
+  className = "",
 }: {
   role: "user" | "assistant";
   children: React.ReactNode;
@@ -820,6 +821,7 @@ function Bubble({
   showAvatar?: boolean;
   profileImage?: string;
   userName?: string;
+  className?: string;
 }) {
   const isUser = role === "user";
 
@@ -829,7 +831,7 @@ function Bubble({
         isUser
           ? "bg-white text-gray-900 shadow-lg"
           : "bg-gray-100 text-gray-900 ring-1 ring-inset ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700"
-      }`}
+      } ${className}`}
       aria-live={isUser ? undefined : "polite"}
     >
       {isUser ? (
@@ -1185,7 +1187,7 @@ function Composer({
     <div className="w-full px-3 md:px-6 py-2.5 md:py-4">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
-        <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
+        <div className="mx-auto mb-2 w-full max-w-[1800px]">
           <div className="flex flex-wrap gap-2 md:gap-3">
             {attachedFiles.map((file, index) => (
               <AttachedFileItem
@@ -1200,7 +1202,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
+      <div className="mx-auto flex w-full max-w-[1800px] items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -2285,112 +2287,129 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="flex h-screen w-full flex-col bg-sky-50 text-[16px] md:text-[19px] overflow-hidden">
-      <TopBar
-        onBack={handleBack}
-        onMenu={() => { /* menu plus tard */ }}
-        onReset={() => {
-          reset();
-          setScreen("home");
-          setIntent(null);
-          setSubIntent(null);
-          setStepIndex(0);
-          setShowBannerUrl(null);
-          setAttachedFiles([]);
-          setComposerText("");
-          setMessageFiles({});
-          pendingFilesRef.current = null;
-          setVoiceMode(false);
-          setVoiceTranscription("");
-          setFinalTranscription("");
-          setVoiceStatus("Prêt");
-          setShowHelperTips(true);
-          emitTelemetry({ type: "reset" });
-        }}
-      />
+    <section
+      ref={containerRef}
+      className="relative flex min-h-screen w-full justify-center bg-gradient-to-br from-sky-50 via-white to-sky-100 px-3 sm:px-6 lg:px-10 text-[16px] md:text-[19px] overflow-hidden"
+    >
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-32 -left-20 h-72 w-72 rounded-full bg-sky-200 blur-3xl opacity-60" />
+        <div className="absolute top-24 right-0 h-80 w-80 rounded-full bg-blue-100 blur-[120px] opacity-60" />
+        <div className="absolute bottom-[-80px] left-1/3 h-72 w-72 rounded-full bg-cyan-100 blur-[120px] opacity-60" />
+      </div>
+      <div className="flex w-full max-w-[1800px] flex-1 flex-col rounded-3xl bg-white shadow-2xl ring-1 ring-slate-100 overflow-hidden">
+        <TopBar
+          onBack={handleBack}
+          onMenu={() => { /* menu plus tard */ }}
+          onReset={() => {
+            reset();
+            setScreen("home");
+            setIntent(null);
+            setSubIntent(null);
+            setStepIndex(0);
+            setShowBannerUrl(null);
+            setAttachedFiles([]);
+            setComposerText("");
+            setMessageFiles({});
+            pendingFilesRef.current = null;
+            setVoiceMode(false);
+            setVoiceTranscription("");
+            setFinalTranscription("");
+            setVoiceStatus("Prêt");
+            setShowHelperTips(true);
+            emitTelemetry({ type: "reset" });
+          }}
+        />
 
-      {/* Home screen top section supprimée pour placer les boutons en bas */}
-      {false && screen === "home" && <div />}
+        {/* Home screen top section supprimée pour placer les boutons en bas */}
+        {false && screen === "home" && <div />}
 
-      {/* SOS submenu top section supprimée pour placer les boutons en bas */}
-      {false && screen === "sos" && <div />}
+        {/* SOS submenu top section supprimée pour placer les boutons en bas */}
+        {false && screen === "sos" && <div />}
 
-      {/* Conversation area - toujours visible */}
-      <div className="flex flex-1 flex-col gap-3 md:gap-5 px-3 md:px-6 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
+        {/* Conversation area - toujours visible */}
+        <div className="flex-1 overflow-hidden bg-slate-50">
+          <div className="flex h-full flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 overflow-y-auto min-h-0 pb-10 items-center">
           {/* Message central d'accueil */}
           {showHelperTips && conversation.length === 0 && (
             <div className="flex w-full flex-1 items-center justify-center pt-8 md:pt-12">
-              <div className="w-full max-w-screen-sm md:max-w-screen-md space-y-4 text-gray-900 text-[15px] md:text-[18px] font-medium">
-                {[
-                  {
-                    key: "attach",
-                    icon: (
-                      <svg
-                        className="h-6 w-6 md:h-7 md:w-7"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                      </svg>
-                    ),
-                    text: "Joindre un fichier pour ajouter une photo ou un document.",
-                    bgClass: "bg-gray-100 ring-gray-200",
-                    iconBg: "bg-gray-200 text-gray-700",
-                  },
-                  {
-                    key: "voice",
-                    icon: <SendWavesIcon className="h-6 w-6 md:h-7 md:w-7" />,
-                    text: "Mode voix pour parler à Ernest au lieu d'écrire.",
-                    bgClass: "bg-blue-50 ring-blue-100",
-                    iconBg: "bg-blue-100 text-blue-700",
-                  },
-                  {
-                    key: "send",
-                    icon: (
-                      <svg
-                        className="h-5 w-5 md:h-6 md:w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                    ),
-                    text: "Envoyer pour transmettre instantanément votre demande.",
-                    bgClass: "bg-green-50 ring-green-100",
-                    iconBg: "bg-green-100 text-green-700",
-                  },
-                  {
-                    key: "trash",
-                    icon: <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />,
-                    text: "Effacer pour relancer une nouvelle conversation propre.",
-                    bgClass: "bg-red-50 ring-red-100",
-                    iconBg: "bg-red-100 text-red-700",
-                  },
-                ].map((item) => (
-                  <div key={item.key} className={`flex items-center gap-4 rounded-xl px-4 py-3 ring-1 ring-inset ${item.bgClass}`}>
-                    <div className={`grid h-10 w-10 place-items-center rounded-full ${item.iconBg}`}>
-                      {item.icon}
+              <div className="w-full max-w-[1000px] text-gray-900 text-[15px] md:text-[18px] font-medium">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    {
+                      key: "attach",
+                      icon: (
+                        <svg
+                          className="h-6 w-6 md:h-7 md:w-7"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                      ),
+                      text: "Joindre un fichier pour ajouter une photo ou un document.",
+                      bgClass: "bg-gray-100 ring-gray-200",
+                      iconBg: "bg-gray-200 text-gray-700",
+                    },
+                    {
+                      key: "voice",
+                      icon: <SendWavesIcon className="h-6 w-6 md:h-7 md:w-7" />,
+                      text: "Mode voix pour parler à Ernest au lieu d'écrire.",
+                      bgClass: "bg-blue-50 ring-blue-100",
+                      iconBg: "bg-blue-100 text-blue-700",
+                    },
+                    {
+                      key: "send",
+                      icon: (
+                        <svg
+                          className="h-5 w-5 md:h-6 md:w-6"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          viewBox="0 0 24 24"
+                        >
+                          <line x1="22" y1="2" x2="11" y2="13" />
+                          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                      ),
+                      text: "Envoyer pour transmettre instantanément votre demande.",
+                      bgClass: "bg-green-50 ring-green-100",
+                      iconBg: "bg-green-100 text-green-700",
+                    },
+                    {
+                      key: "trash",
+                      icon: <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />,
+                      text: "Effacer pour relancer une nouvelle conversation propre.",
+                      bgClass: "bg-red-50 ring-red-100",
+                      iconBg: "bg-red-100 text-red-700",
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.key}
+                      className={`flex items-center gap-3 rounded-2xl px-4 py-3 ring-1 ring-inset ${item.bgClass}`}
+                    >
+                      <div className={`grid h-9 w-9 place-items-center rounded-full ${item.iconBg}`}>
+                        {item.icon}
+                      </div>
+                      <span className="text-left leading-relaxed text-[15px] md:text-[17px]">
+                        {item.text}
+                      </span>
                     </div>
-                    <span className="text-left leading-relaxed">{item.text}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           )}
           {/* Safety banner */}
           {showBannerUrl && (
-            <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
+            <div className="mx-auto w-full max-w-[1800px] rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
               <div className="mb-2 md:mb-3 font-semibold text-[16px] md:text-[18px]">Pour votre sécurité, utilisez les canaux officiels.</div>
               <a
                 href={showBannerUrl}
@@ -2404,13 +2423,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           )}
 
           {(currentSteps?.[stepIndex]) && (
-            <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-3 md:gap-4">
-              <Bubble role="assistant">{currentSteps![stepIndex]!.question}</Bubble>
+            <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 md:gap-4">
+              <Bubble role="assistant" className="text-sm md:text-base leading-snug">
+                {currentSteps![stepIndex]!.question}
+              </Bubble>
               <ChoiceGroup step={stepIndex + 1} choices={currentSteps![stepIndex]!.choices} onSelect={handleChoiceSelect} />
             </div>
           )}
 
-          <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
+          <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
             {(() => {
               console.log('Rendu de la conversation - messageFiles state:', messageFiles);
               return null;
@@ -2455,12 +2476,13 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             )}
             <div ref={bottomRef} />
           </div>
+          </div>
         </div>
 
-      {/* Boutons juste au-dessus de l'input (bas de page) */}
-      <div className="px-3 md:px-6">
+        {/* Boutons juste au-dessus de l'input (bas de page) */}
+        <div className="px-3 md:px-6 lg:px-8">
         {screen === "home" && composerText.length === 0 && conversation.length === 0 && attachedFiles.length === 0 && (
-          <div className="mx-auto mb-2 md:mb-3 mt-16 md:mt-20 w-full max-w-screen-sm md:max-w-screen-md">
+          <div className="mx-auto mb-2 md:mb-3 mt-16 md:mt-20 w-full max-w-[1000px] text-center">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-2.5">
               {ALL_INTENTS.map((i) => (
                 <button
@@ -2476,7 +2498,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           </div>
         )}
         {screen === "sos" && (
-          <div className="mx-auto mb-2 md:mb-3 w-full max-w-screen-sm md:max-w-screen-md">
+          <div className="mx-auto mb-2 md:mb-3 w-full max-w-[1000px] text-center">
             <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
               {SOS_OPTIONS.map((o) => (
                 <button
@@ -2491,13 +2513,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             </div>
           </div>
         )}
-      </div>
+        </div>
 
-      {/* Bottom composer present on all screens */}
-      <Composer
-        value={composerText}
-        onChange={(v) => setComposerText(v)}
-        onSend={async () => {
+        {/* Bottom composer present on all screens */}
+        <div className="border-t border-gray-100 bg-white/90 pb-4">
+          <Composer
+            value={composerText}
+            onChange={(v) => setComposerText(v)}
+            onSend={async () => {
           const msg = composerText.replace(/\s*\[.*\]$/, "").trim();
           if (!msg && attachedFiles.length === 0) return;
           
@@ -2638,8 +2661,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           const effectiveStep = stepIndex > 0 ? stepIndex : 1;
           sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: effectiveStep, text: msg });
           setComposerText("");
-        }}
-        onVoice={() => {
+            }}
+            onVoice={() => {
           // Envoyer un message au parent (WeWeb) pour demander la permission micro
           // Le parent gérera la permission et renverra "open_voice_mode" à React
           console.log("Demande de permission micro envoyée au parent (WeWeb)");
@@ -2673,16 +2696,18 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               step: stepIndex 
             });
           }
-        }}
-        onFileAttach={(files) => {
+            }}
+            onFileAttach={(files) => {
           setAttachedFiles((prev) => [...prev, ...files]);
-        }}
-        attachedFiles={attachedFiles}
-        onRemoveFile={(index) => {
+            }}
+            attachedFiles={attachedFiles}
+            onRemoveFile={(index) => {
           setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
-        }}
-        onFocus={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
-      />
+            }}
+            onFocus={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          />
+        </div>
+      </div>
 
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}
       <VoiceModeOverlay

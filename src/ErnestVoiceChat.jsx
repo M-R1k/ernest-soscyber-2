@@ -3,6 +3,8 @@ import ErnestThinkingIndicator from './components/ErnestThinkingIndicator'
 
 const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook-test/ernest/voice'
 const N8N_WEBHOOK = import.meta.env.VITE_N8N_WEBHOOK || DEFAULT_N8N_WEBHOOK
+const MESSAGE_SEPARATOR_REGEX = /🟪\s*\*\*De(?:ux|xui)ième\s+Message\*\*/i
+const MESSAGE_SPLIT_DELAY = 2000
 
 export default function ErnestVoiceChat() {
   const [sessionId] = useState(() => {
@@ -45,50 +47,87 @@ export default function ErnestVoiceChat() {
   const showSendTextButton = !isVoiceActive && !hasAttachments
   
   useEffect(() => {
-    if (answer) {
-      // Si answer est une string qui ressemble à un tableau JSON, la parser
-      let parsedAnswer = answer;
-      if (typeof answer === 'string' && answer.trim().startsWith('[') && answer.trim().endsWith(']')) {
-        try {
-          const parsed = JSON.parse(answer);
-          if (Array.isArray(parsed)) {
-            parsedAnswer = parsed;
-          }
-        } catch (e) {
-          console.warn("Impossible de parser answer comme JSON:", e);
+    if (!answer) return
+
+    let parsedAnswer = answer
+    if (typeof answer === 'string' && answer.trim().startsWith('[') && answer.trim().endsWith(']')) {
+      try {
+        const parsed = JSON.parse(answer)
+        if (Array.isArray(parsed)) {
+          parsedAnswer = parsed
         }
-      }
-      if (Array.isArray(parsedAnswer)) {
-        // Si c'est un tableau, ajouter chaque message avec un délai
-        parsedAnswer.forEach((msg, index) => {
-          const trimmedMsg = String(msg).trim();
-          if (trimmedMsg) {
-            setTimeout(() => {
-              setMessages(prev => [...prev, { 
-                id: crypto.randomUUID(), 
-                from: 'bot', 
-                text: trimmedMsg 
-              }]);
-              if (index === parsedAnswer.length - 1) {
-                setIsThinking(false);
-              }
-            }, index * 2000); // Délai de 2 secondes entre chaque message
-          }
-        });
-        setAnswer(''); // Réinitialiser après avoir traité tous les messages
-      } else {
-        const trimmedAnswer = String(parsedAnswer).trim();
-        if (trimmedAnswer) {
-          setMessages(prev => [...prev, { 
-            id: crypto.randomUUID(), 
-            from: 'bot', 
-            text: trimmedAnswer 
-          }]);
-          setIsThinking(false);
-          setAnswer(''); // Réinitialiser pour éviter les re-déclenchements
-        }
+      } catch (e) {
+        console.warn("Impossible de parser answer comme JSON:", e)
       }
     }
+
+    const appendBotMessage = (rawText, delay = 0) => {
+      const trimmedText = String(rawText).trim()
+      if (!trimmedText) return false
+
+      const pushMessage = () => {
+        setMessages(prev => [
+          ...prev,
+          { id: crypto.randomUUID(), from: 'bot', text: trimmedText },
+        ])
+      }
+
+      if (delay > 0) {
+        setTimeout(pushMessage, delay)
+      } else {
+        pushMessage()
+      }
+
+      return true
+    }
+
+    const finalizeThinking = (delay = 0) => {
+      if (delay > 0) {
+        setTimeout(() => setIsThinking(false), delay)
+      } else {
+        setIsThinking(false)
+      }
+      setAnswer('')
+    }
+
+    if (Array.isArray(parsedAnswer)) {
+      let lastDelay = 0
+      parsedAnswer.forEach((msg, index) => {
+        const delay = index * MESSAGE_SPLIT_DELAY
+        if (appendBotMessage(msg, delay)) {
+          lastDelay = delay
+        }
+      })
+      finalizeThinking(lastDelay)
+      return
+    }
+
+    const trimmedAnswer = String(parsedAnswer).trim()
+    if (!trimmedAnswer) {
+      finalizeThinking()
+      return
+    }
+
+    const match = trimmedAnswer.match(MESSAGE_SEPARATOR_REGEX)
+    if (match) {
+      const separatorIndex = match.index ?? 0
+      const firstPart = trimmedAnswer.substring(0, separatorIndex).trim()
+      const secondPart = trimmedAnswer.substring(separatorIndex + match[0].length).trim()
+
+      let finalDelay = 0
+      if (appendBotMessage(firstPart)) {
+        finalDelay = 0
+      }
+      if (appendBotMessage(secondPart, MESSAGE_SPLIT_DELAY)) {
+        finalDelay = MESSAGE_SPLIT_DELAY
+      }
+
+      finalizeThinking(finalDelay)
+      return
+    }
+
+    appendBotMessage(trimmedAnswer)
+    finalizeThinking()
   }, [answer])
 
   useEffect(() => {
@@ -324,21 +363,49 @@ export default function ErnestVoiceChat() {
     setStatus("Prêt");
   };
 
+  const currentStatus = recording
+    ? { label: 'Enregistrement…', desc: 'Parlez puis appuyez pour arrêter' }
+    : isThinking
+      ? { label: 'Réfléchit…', desc: 'Ernest prépare sa réponse' }
+      : sending
+        ? { label: 'Envoi…', desc: 'Transmission au centre d’assistance' }
+        : { label: status, desc: 'Vous pouvez écrire ou parler' }
+
   return (
-    <section className={`flex h-dvh w-screen flex-col ${fontSizeClass}`}>
-      <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
+    <section className={`flex min-h-screen w-full justify-center bg-slate-50 px-3 sm:px-6 lg:px-10 ${fontSizeClass} dark:bg-gray-950`}>
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col rounded-3xl bg-white shadow-2xl ring-1 ring-gray-100 overflow-hidden dark:bg-gray-900 dark:ring-gray-800">
+        <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-white px-4 sm:px-6 lg:px-8 py-3 dark:border-gray-800 dark:bg-gray-950">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Ernest</h1>
           <span
-            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ring-1 ring-inset
-              ${recording ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900' :
-                sending ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900' :
-                  'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900'}`}
+            className={`inline-flex flex-col gap-1 rounded-2xl px-3 py-2 text-sm font-medium ring-1 ring-inset
+              ${recording
+                ? 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900'
+                : isThinking
+                  ? 'bg-yellow-50 text-yellow-800 ring-yellow-200 dark:bg-yellow-950/40 dark:text-yellow-200 dark:ring-yellow-900'
+                  : sending
+                    ? 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-900'
+                    : 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-900'}`}
             role="status"
             aria-live="polite"
           >
-            <span className={`h-2 w-2 rounded-full ${recording ? 'bg-red-600' : sending ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-            {recording ? 'Enregistrement…' : sending ? 'Envoi…' : status}
+            <span className="inline-flex items-center gap-2">
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  recording
+                    ? 'bg-red-600'
+                    : isThinking
+                      ? 'bg-yellow-500'
+                      : sending
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                }`}
+              />
+              {currentStatus.label}
+            </span>
+            <span className="text-[11px] font-normal text-gray-600 dark:text-gray-300">
+              {currentStatus.desc}
+            </span>
           </span>
         </div>
 
@@ -386,10 +453,10 @@ export default function ErnestVoiceChat() {
             Effacer
           </button>
         </div>
-      </div>
+        </div>
 
-      <div
-        className="flex-1 w-full overflow-y-auto scroll-smooth px-4 py-4 sm:px-6 sm:py-6 bg-white dark:bg-gray-950"
+        <div
+        className="flex-1 w-full overflow-y-auto scroll-smooth px-4 sm:px-6 lg:px-8 py-4 bg-white dark:bg-gray-950"
         role="log"
         aria-live="polite"
         aria-relevant="additions"
@@ -420,9 +487,9 @@ export default function ErnestVoiceChat() {
           )}
           <div ref={bottomRef} />
         </ul>
-      </div>
+        </div>
 
-      <div className="w-full border-t border-gray-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
+        <div className="w-full border-t border-gray-200 bg-white/95 px-4 sm:px-6 lg:px-8 py-3 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
         {/* Zone de fichiers joints */}
         {files.length > 0 && (
           <div className="mx-auto mb-3 flex w-full max-w-screen-lg flex-wrap gap-2">
@@ -548,6 +615,7 @@ export default function ErnestVoiceChat() {
             </button>
           </div>
         )}
+      </div>
       </div>
     </section>
   )

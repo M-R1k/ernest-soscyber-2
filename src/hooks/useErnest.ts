@@ -12,6 +12,9 @@ const SESSION_KEY = "soscyber_session";
 const MESSAGES_KEY = "soscyber_messages";
 const PROGRESS_KEY = "soscyber_progress";
 
+const MESSAGE_SPLIT_DELAY = 2000;
+const MESSAGE_SEPARATOR_REGEX = /🟪\s*\*\*De(?:ux|xui)ième\s+Message\*\*/i;
+
 function getWebhookUrl(override?: string): string {
   const fromEnv = (import.meta as any)?.env?.VITE_ERNEST_WEBHOOK_URL as
     | string
@@ -140,9 +143,45 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
     }));
   }, []);
 
-  const appendAssistant = useCallback((text: string) => {
-    appendMessage({ role: "assistant", text, ts: Date.now() });
-  }, [appendMessage]);
+  const enqueueAssistantMessage = useCallback(
+    (rawText: string, delay = 0) => {
+      const trimmed = String(rawText).trim();
+      if (!trimmed) return;
+
+      const push = () =>
+        appendMessage({ role: "assistant", text: trimmed, ts: Date.now() });
+
+      if (delay > 0) {
+        setTimeout(push, delay);
+      } else {
+        push();
+      }
+    },
+    [appendMessage]
+  );
+
+  const appendAssistant = useCallback(
+    (rawText: string) => {
+      const trimmed = String(rawText).trim();
+      if (!trimmed) return;
+
+      const match = trimmed.match(MESSAGE_SEPARATOR_REGEX);
+      if (match) {
+        const separatorIndex = match.index ?? 0;
+        const firstPart = trimmed.substring(0, separatorIndex).trim();
+        const secondPart = trimmed
+          .substring(separatorIndex + match[0].length)
+          .trim();
+
+        if (firstPart) enqueueAssistantMessage(firstPart);
+        if (secondPart) enqueueAssistantMessage(secondPart, MESSAGE_SPLIT_DELAY);
+        return;
+      }
+
+      enqueueAssistantMessage(trimmed);
+    },
+    [enqueueAssistantMessage]
+  );
 
   const appendUser = useCallback((text: string) => {
     appendMessage({ role: "user", text, ts: Date.now() });
@@ -239,12 +278,8 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
             console.log(`📝 Message ${index}:`, trimmedMsg.substring(0, 50) + "...");
             if (trimmedMsg) {
               setTimeout(() => {
-                appendMessage({ 
-                  role: "assistant", 
-                  text: trimmedMsg, 
-                  ts: Date.now() + index 
-                });
-              }, index * 2000); // Délai de 2 secondes entre chaque message
+                appendAssistant(trimmedMsg);
+              }, index * MESSAGE_SPLIT_DELAY);
             } else {
               console.warn(`⚠️ Message ${index} est vide après trim`);
             }
@@ -254,7 +289,7 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
           console.log("📄 Answer est une string");
           const answerText = String(answer);
           if (answerText) {
-            appendMessage({ role: "assistant", text: answerText, ts: Date.now() });
+            appendAssistant(answerText);
           }
         }
       } catch (e: any) {
@@ -265,7 +300,7 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
         setLoading(false);
       }
     },
-    [appendMessage, webhookUrl]
+    [appendAssistant, appendMessage, webhookUrl]
   );
 
   return {

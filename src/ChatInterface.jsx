@@ -549,7 +549,7 @@ const colorScheme = highContrast ? {
   return (
     <div className={`min-h-screen ${colorScheme.background} transition-all duration-300`}>
       {/* En-tête avec contrôles d'accessibilité */}
-      <header className={`${colorScheme.primary} p-4 shadow-lg`}>
+      <header className={`mt-18 ${colorScheme.primary} p-4 shadow-lg`}>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Titre principal */}
@@ -877,7 +877,7 @@ const colorScheme = highContrast ? {
           </div>
 
           {/* Instructions d'aide - Plus visible */}
-          <div className={`mt-6 p-5 bg-blue-50 rounded-xl border-2 border-blue-200 ${fontSizeClasses[fontSize] || 'text-base'}`}>
+          <div className={`mt-12 p-5 bg-blue-50 rounded-xl border-2 border-blue-200 ${fontSizeClasses[fontSize] || 'text-base'}`}>
             <strong className="text-lg md:text-xl !text-gray-900 font-bold block mb-3">💡 Conseils d'utilisation :</strong>
             <ul className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">

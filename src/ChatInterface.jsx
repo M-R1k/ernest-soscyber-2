@@ -877,28 +877,24 @@ const colorScheme = highContrast ? {
           </div>
 
           {/* Instructions d'aide - Plus visible */}
-          <div className={`mt-12 p-5 bg-blue-50 rounded-xl border-2 border-blue-200 ${fontSizeClasses[fontSize] || 'text-base'}`}>
-            <strong className="text-lg md:text-xl !text-gray-900 font-bold block mb-3">💡 Conseils d'utilisation :</strong>
-            <ul className="space-y-2 text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-xl">•</span>
+          <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-200 text-base md:text-lg">
+            <strong className="text-base md:text-lg !text-gray-900 font-bold block mb-2">💡 Conseils rapides :</strong>
+            <ul className="space-y-1.5 text-gray-700 text-sm md:text-base">
+              <li className="flex items-start gap-1.5">
+                <span className="text-lg">•</span>
                 <span>Cliquez sur le bouton <strong>"Parler"</strong> pour parler au lieu d'écrire</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-xl">•</span>
-                <span>Utilisez le bouton <strong>"Mode Simple"</strong> en haut pour une interface plus claire</span>
+              <li className="flex items-start gap-1.5">
+                <span className="text-lg">•</span>
+                <span>Activez <strong>"Mode Simple"</strong> en haut pour une interface plus claire</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-xl">•</span>
-                <span>Activez le bouton <strong>"Voix"</strong> pour entendre les réponses automatiquement</span>
+              <li className="flex items-start gap-1.5">
+                <span className="text-lg">•</span>
+                <span>Le bouton <strong>"Voix"</strong> lit automatiquement les réponses</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-xl">•</span>
-                <span>Ajustez la taille du texte avec le menu en haut selon vos besoins</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-xl">•</span>
-                <span>Vous pouvez joindre des fichiers (photos, documents) si nécessaire</span>
+              <li className="flex items-start gap-1.5">
+                <span className="text-lg">•</span>
+                <span>Ajustez la taille du texte ou joignez des fichiers si besoin</span>
               </li>
             </ul>
           </div>

@@ -6,7 +6,7 @@ import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/acce
 import ReactMarkdown from 'react-markdown';
 import logoErnest from './assets/logo-ernest.png';
 import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
-import { Keyboard as KeyboardIcon, SendHorizontal } from "lucide-react";
+import { Keyboard as KeyboardIcon, SendHorizontal, ChevronUp, ChevronDown } from "lucide-react";
 import { highContrastClasses } from "./theme/highContrastPalette";
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
@@ -22,6 +22,57 @@ type VoiceModeOverlayProps = {
   finalTranscription: string;
   meterLevel: number;
   locale: string;
+};
+
+type QuickActionKey = "voice" | "write" | "attach" | "reset";
+
+type QuickActionConfig = {
+  key: QuickActionKey;
+  label: string;
+  icon: React.ReactNode;
+  tone: QuickActionKey;
+};
+type InstructionCard = {
+  key: QuickActionKey;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  tone: QuickActionKey;
+};
+
+const QUICK_ACTION_COLOR_MAP: Record<
+  QuickActionKey | "default",
+  {
+    circle: string;
+    hover: string;
+    groupHover: string;
+  }
+> = {
+  voice: {
+    circle: "bg-blue-50 text-blue-700 ring-2 ring-blue-100",
+    hover: "hover:bg-blue-100 hover:ring-blue-200",
+    groupHover: "group-hover:bg-blue-100 group-hover:ring-blue-200",
+  },
+  write: {
+    circle: "bg-violet-50 text-violet-700 ring-2 ring-violet-100",
+    hover: "hover:bg-violet-100 hover:ring-violet-200",
+    groupHover: "group-hover:bg-violet-100 group-hover:ring-violet-200",
+  },
+  attach: {
+    circle: "bg-amber-50 text-amber-700 ring-2 ring-amber-100",
+    hover: "hover:bg-amber-100 hover:ring-amber-200",
+    groupHover: "group-hover:bg-amber-100 group-hover:ring-amber-200",
+  },
+  reset: {
+    circle: "bg-rose-50 text-rose-700 ring-2 ring-rose-100",
+    hover: "hover:bg-rose-100 hover:ring-rose-200",
+    groupHover: "group-hover:bg-rose-100 group-hover:ring-rose-200",
+  },
+  default: {
+    circle: "bg-slate-100 text-gray-900 ring-2 ring-slate-200",
+    hover: "hover:bg-slate-200 hover:ring-slate-300",
+    groupHover: "group-hover:bg-slate-200 group-hover:ring-slate-300",
+  },
 };
 
 function VoiceModeOverlay({
@@ -538,6 +589,58 @@ const ALL_INTENTS: Array<{ key: Intent; label: string; icon: string }> = [
   { key: "SAFE_BROWSING", label: "Je veux naviguer en sécurité", icon: "🌐" },
   { key: "SOS", label: "J’ai besoin d’aide", icon: "🆘" },
 ];
+
+type MobileIntentCarouselProps = {
+  intents: Array<{ key: Intent; label: string; icon: string }>;
+  onSelect: (key: Intent) => void;
+  subtitle?: string;
+  className?: string;
+};
+
+function MobileIntentCarousel({
+  intents,
+  onSelect,
+  subtitle = "Choisissez un sujet pour commencer :",
+  className = "",
+}: MobileIntentCarouselProps) {
+  return (
+    <motion.div
+      key="mobile-intents"
+      layout
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 32 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className={`md:hidden ${className}`}
+    >
+      <p className="mb-4 text-center text-sm font-semibold text-gray-600">{subtitle}</p>
+      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 no-scrollbar">
+        {intents.map((intent, index) => (
+          <motion.button
+            key={intent.key}
+            type="button"
+            onClick={() => onSelect(intent.key)}
+            className="inline-flex min-w-[78%] max-w-sm flex-1 items-center gap-3 rounded-3xl bg-white px-4 py-4 text-left text-base font-semibold text-gray-900 shadow-[0_18px_40px_rgba(15,23,42,0.12)] ring-1 ring-inset ring-gray-100"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 320, damping: 24, delay: index * 0.015 }}
+          >
+            <span className="text-2xl" aria-hidden>
+              {intent.icon}
+            </span>
+            <span className="leading-snug">{intent.label}</span>
+          </motion.button>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+const bubbleVariants = {
+  initial: (shift = 0) => ({ opacity: 0, y: 24, scale: 0.97, x: shift / 2 }),
+  animate: (shift = 0) => ({ opacity: 1, y: 0, scale: 1, x: shift }),
+  exit: (shift = 0) => ({ opacity: 0, y: -12, scale: 0.96, x: shift }),
+};
 
 const SOS_OPTIONS: Array<{ key: SosSubIntent; label: string }> = [
   { key: "ACCOUNT_TAKEOVER", label: "Mon compte a été piraté" },
@@ -1433,6 +1536,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const meterRafRef = useRef<number | null>(null);
   const meterStreamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<any>(null);
@@ -1447,11 +1551,14 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
   const [mobileComposerVisible, setMobileComposerVisible] = useState(false);
   const [mobileIntentsVisible, setMobileIntentsVisible] = useState(false);
   const [voiceReady, setVoiceReady] = useState(false);
   const [hasStartedFlow, setHasStartedFlow] = useState(false);
   const shouldShowMobileComposer = isMobile && (mobileComposerVisible || voiceMode);
+  const scrollControlsVisible = screen !== "home";
   const voiceReadyRef = useRef(false);
   useEffect(() => {
     voiceReadyRef.current = voiceReady;
@@ -1484,12 +1591,13 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     emitTelemetry({ type: "reset" });
   }, [reset]);
 
-  const quickActions = useMemo(
+  const quickActions = useMemo<QuickActionConfig[]>(
     () => [
       {
         key: "voice",
         label: "Parler",
         icon: <SendWavesIcon className="h-5 w-5" />,
+        tone: "voice",
       },
       {
         key: "write",
@@ -1508,6 +1616,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         ),
+        tone: "write",
       },
       {
         key: "attach",
@@ -1527,16 +1636,18 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
         ),
+        tone: "attach",
       },
       {
         key: "reset",
         label: "Effacer",
         icon: <TrashIcon className="h-5 w-5" />,
+        tone: "reset",
       },
     ],
     []
   );
-  const instructionCards = useMemo(
+  const instructionCards = useMemo<InstructionCard[]>(
     () => [
       {
         key: "attach",
@@ -1557,12 +1668,14 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
         ),
+        tone: "attach",
       },
       {
         key: "voice",
         title: "Parler à voix haute",
         description: "Utilisez le micro si l’écriture est difficile ou si vous préférez expliquer oralement.",
         icon: <SendWavesIcon className="h-5 w-5" />,
+        tone: "voice",
       },
       {
         key: "write",
@@ -1582,12 +1695,14 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
         ),
+        tone: "write",
       },
       {
         key: "reset",
         title: "Recommencer",
         description: "Nettoyez la conversation et repartez sur de nouvelles bases quand vous le souhaitez.",
         icon: <TrashIcon className="h-5 w-5" />,
+        tone: "reset",
       },
     ],
     []
@@ -1641,6 +1756,48 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     }
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [hasStartedFlow, isMobile, screen]);
+  const updateScrollBoundaries = useCallback(() => {
+    const el = scrollAreaRef.current;
+    if (!el || screen === "home") {
+      setCanScrollUp(false);
+      setCanScrollDown(false);
+      return;
+    }
+    const threshold = 16;
+    setCanScrollUp(el.scrollTop > threshold);
+    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - threshold);
+  }, [screen]);
+
+  useEffect(() => {
+    const el = scrollAreaRef.current;
+    if (!el) {
+      setCanScrollUp(false);
+      setCanScrollDown(false);
+      return;
+    }
+    updateScrollBoundaries();
+    const handleScroll = () => updateScrollBoundaries();
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [screen, updateScrollBoundaries]);
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => updateScrollBoundaries());
+    return () => cancelAnimationFrame(raf);
+  }, [messages.length, screen, updateScrollBoundaries]);
+
+  const handleScrollControl = useCallback(
+    (direction: "top" | "bottom") => {
+      const el = scrollAreaRef.current;
+      if (!el) return;
+      const targetTop = direction === "top" ? 0 : el.scrollHeight;
+      el.scrollTo({ top: targetTop, behavior: "smooth" });
+      if (direction === "bottom") {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1679,6 +1836,11 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const userBubbleClass = highContrastMode
     ? highContrastTokens.userBubble
     : "bg-blue-600 text-white ring-blue-500";
+  const composerShadow = isMobile && isInputFocused ? "0px -20px 45px rgba(15,23,42,0.22)" : "0px -8px 24px rgba(15,23,42,0.12)";
+  const composerLift = isMobile && isInputFocused ? -4 : 0;
+  const scrollButtonBase = highContrastMode
+    ? "bg-[#1B2027] text-[#E8ECF2] border border-[#2A313D]"
+    : "bg-white text-slate-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] border border-slate-100";
 
   // Mapping texte libre → intent/subIntent (heuristique simple)
   function mapTextToMeta(text: string): { intent: Intent; subIntent?: Exclude<SubIntent, null> } | null {
@@ -2702,8 +2864,12 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           onMenu={() => { /* menu plus tard */ }}
           onReset={resetConversation}
         />
-        <div className={`flex flex-wrap items-center gap-3 px-4 py-3 border-b ${highContrastMode ? "border-[#2A313D] bg-[#1B2027]" : "border-slate-100 bg-white/80"}`}>
-          <button
+        <div
+          className={`sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b px-4 py-3 backdrop-blur-md ${
+            highContrastMode ? "border-[#2A313D] bg-[#1B2027]/90" : "border-slate-100 bg-white/80"
+          }`}
+        >
+          <motion.button
             type="button"
             onClick={() => setIsFontLarge((prev) => !prev)}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
@@ -2715,18 +2881,22 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   ? "bg-blue-600 text-white"
                   : "bg-blue-100 text-blue-900"
             }`}
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
           >
             {isFontLarge ? "Texte large activé" : "Agrandir le texte"}
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="button"
             onClick={() => setHighContrastMode((prev) => !prev)}
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
               highContrastMode ? highContrastTokens.toolbarControlActive : "bg-yellow-100 text-yellow-900"
             }`}
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
           >
             {highContrastMode ? "Mode contraste élevé" : "Activer contraste"}
-          </button>
+          </motion.button>
         </div>
         {/* Home screen top section supprimée pour placer les boutons en bas */}
         {false && screen === "home" && <div />}
@@ -2737,21 +2907,27 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         {/* Conversation area */}
         {screen !== "home" ? (
           <div className="flex-1 overflow-hidden bg-slate-50">
-            <div className="flex h-full flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 overflow-y-auto min-h-0 pb-32 md:pb-36 items-center">
+            <div ref={scrollAreaRef} className="h-full w-full overflow-y-auto">
+              <div className="flex h-full flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 min-h-0 pb-32 md:pb-36 items-center">
           {!isMobile && conversation.length === 0 && (
-            <div className="hidden md:block w-full pt-6">
-              <div className="mx-auto max-w-[1100px]">
-                <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-2">
-                  {instructionCards.map((card) => (
-                    <div
+            <div className="hidden md:flex w-full flex-1 items-center justify-center">
+              <div className="mx-auto w-full max-w-[1100px]">
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {instructionCards.map((card) => {
+                    const toneKey = card.tone ?? card.key;
+                    const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
+                    return (
+                      <div
                       key={card.key}
                       className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset ${
                         highContrastMode ? `${highContrastTokens.quickAction}` : "bg-white text-gray-900 ring-slate-200"
                       }`}
                     >
                       <div
-                        className={`grid h-10 w-10 place-items-center rounded-full ${
-                          highContrastMode ? `${highContrastTokens.quickActionBadge}` : "bg-slate-100 text-gray-900"
+                        className={`grid h-10 w-10 place-items-center rounded-full transition-colors duration-200 ${
+                          highContrastMode
+                            ? `${highContrastTokens.quickActionBadge}`
+                            : `${colorTokens.circle} ${colorTokens.hover}`
                         }`}
                         aria-hidden
                       >
@@ -2761,43 +2937,48 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                         <p className="text-base font-semibold">{card.title}</p>
                         <p className={`text-sm ${highContrastMode ? "text-[#A9B4C6]" : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
                       </div>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           )}
+          <AnimatePresence initial={false}>
             {showMobileIntentGrid && (
-              <div className="w-full md:hidden">
-                <p className="mb-3 text-center text-sm font-semibold text-gray-600">Choisissez un sujet pour commencer :</p>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {ALL_INTENTS.map((i) => (
-                    <button
-                      key={i.key}
-                      type="button"
-                      onClick={() => handleSelectIntent(i.key)}
-                      className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-white px-3 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50"
-                    >
-                      <span className="leading-snug">{i.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <MobileIntentCarousel
+                key="mobile-intents-chat"
+                intents={ALL_INTENTS}
+                onSelect={handleSelectIntent}
+                className="w-full"
+              />
             )}
+          </AnimatePresence>
           {/* Safety banner */}
-          {showBannerUrl && (
-            <div className="mx-auto w-full max-w-[1800px] rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
-              <div className="mb-2 md:mb-3 font-semibold text-[16px] md:text-[18px]">Pour votre sécurité, utilisez les canaux officiels.</div>
-              <a
-                href={showBannerUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-[44px] md:min-h-[48px] items-center justify-center rounded-lg bg-amber-600 px-4 md:px-5 py-2 md:py-2.5 text-[16px] md:text-[18px] text-white hover:bg-amber-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+          <AnimatePresence initial={false}>
+            {showBannerUrl && (
+              <motion.div
+                key="safety-banner"
+                initial={{ opacity: 0, height: 0, scale: 0.97 }}
+                animate={{ opacity: 1, height: "auto", scale: 1 }}
+                exit={{ opacity: 0, height: 0, scale: 0.97 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="mx-auto w-full max-w-[1800px] overflow-hidden rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200"
               >
-                Ouvrir le site officiel
-              </a>
-            </div>
-          )}
+                <div className="mb-2 md:mb-3 font-semibold text-[16px] md:text-[18px]">
+                  Pour votre sécurité, utilisez les canaux officiels.
+                </div>
+                <a
+                  href={showBannerUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-[44px] md:min-h-[48px] items-center justify-center rounded-lg bg-amber-600 px-4 md:px-5 py-2 md:py-2.5 text-[16px] md:text-[18px] text-white hover:bg-amber-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                >
+                  Ouvrir le site officiel
+                </a>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {(currentSteps?.[stepIndex]) && (
             <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 md:gap-4">
@@ -2809,34 +2990,49 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           )}
 
             <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
-            {conversation.map((m, idx) => {
-              const filesForMessage = m.role === "user" ? messageFiles[m.ts] : undefined;
-              if (m.role === "user") {
-                console.log('Message utilisateur:', m.ts, 'texte:', m.text, 'fichiers trouvés:', filesForMessage ? filesForMessage.length : 0);
-                if (filesForMessage && filesForMessage.length > 0) {
-                  console.log('✅ Fichiers pour ce message:', filesForMessage);
-                } else {
-                  console.log('❌ Aucun fichier trouvé pour ce message. Objet complet:', messageFiles);
+            <AnimatePresence initial={false}>
+              {conversation.map((m, idx) => {
+                const filesForMessage = m.role === "user" ? messageFiles[m.ts] : undefined;
+                if (m.role === "user") {
+                  console.log('Message utilisateur:', m.ts, 'texte:', m.text, 'fichiers trouvés:', filesForMessage ? filesForMessage.length : 0);
+                  if (filesForMessage && filesForMessage.length > 0) {
+                    console.log('✅ Fichiers pour ce message:', filesForMessage);
+                  } else {
+                    console.log('❌ Aucun fichier trouvé pour ce message. Objet complet:', messageFiles);
+                  }
                 }
-              }
-              // Récupérer l'image de profil depuis localStorage si disponible
-              const profileImage = typeof window !== 'undefined' ? localStorage.getItem('user_profile_image') : undefined;
-              const userName = typeof window !== 'undefined' ? localStorage.getItem('user_name') || 'U' : 'U';
-              
-              return (
-                <Bubble 
-                  key={idx + m.ts} 
-                  role={m.role} 
-                  attachedFiles={filesForMessage}
-                  showAvatar={m.role === "user"}
-                  profileImage={m.role === "user" ? profileImage || undefined : undefined}
-                  userName={m.role === "user" ? userName : undefined}
-                  className={m.role === "user" ? userBubbleClass : assistantBubbleClass}
-                >
-                  {m.text}
-                </Bubble>
-              );
-            })}
+                const profileImage = typeof window !== 'undefined' ? localStorage.getItem('user_profile_image') : undefined;
+                const userName = typeof window !== 'undefined' ? localStorage.getItem('user_name') || 'U' : 'U';
+                const stackLayer = Math.max(0, Math.min(3, conversation.length - idx - 1));
+                const stackShift = m.role === "user" ? stackLayer * 6 : -stackLayer * 4;
+                
+                return (
+                  <motion.div
+                    key={idx + m.ts}
+                    layout="position"
+                    variants={bubbleVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    custom={stackShift}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="flex w-full"
+                    style={{ zIndex: 1000 - idx, transformOrigin: m.role === "user" ? "bottom right" : "bottom left" }}
+                  >
+                    <Bubble 
+                      role={m.role} 
+                      attachedFiles={filesForMessage}
+                      showAvatar={m.role === "user"}
+                      profileImage={m.role === "user" ? profileImage || undefined : undefined}
+                      userName={m.role === "user" ? userName : undefined}
+                      className={m.role === "user" ? `${userBubbleClass} transition-all duration-200` : assistantBubbleClass}
+                    >
+                      {m.text}
+                    </Bubble>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
             <ErnestThinkingIndicator
               isThinking={loading}
               tone="light"
@@ -2851,50 +3047,92 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             <div ref={bottomRef} />
           </div>
             </div>
+            </div>
           </div>
         ) : (
-          <div className="flex-1 bg-slate-50 flex flex-col overflow-y-auto min-h-0 pb-24 md:pb-28">
+          <div className="flex-1 bg-slate-50 overflow-hidden">
+            <div
+              ref={scrollAreaRef}
+              className="h-full w-full overflow-y-auto"
+            >
+              <div className="flex flex-col min-h-0 pb-24 md:pb-28">
             {isMobile && !shouldShowMobileComposer && screen === "home" && (
               <div className="flex w-full flex-1 items-center justify-center py-10 md:hidden">
                 <div className="grid w-full max-w-lg grid-cols-2 gap-4">
-                  {quickActions.map((action) => (
-                    <button
-                      key={action.key}
-                      type="button"
-                      onClick={() => handleQuickAction(action.key)}
-                      className={`flex flex-col items-center justify-center gap-2 rounded-3xl px-10 py-10 text-lg font-semibold shadow-md ${
-                        highContrastMode
-                          ? `${highContrastTokens.quickAction}`
-                          : "bg-white text-gray-900 ring-1 ring-inset ring-slate-200"
-                      }`}
-                    >
-                      <span className="text-2xl" aria-hidden>
-                        {action.icon}
-                      </span>
-                      <span className="text-lg">{action.label}</span>
-                    </button>
-                  ))}
+                  {quickActions.map((action) => {
+                    const toneKey = action.tone ?? action.key;
+                    const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
+                    return (
+                      <button
+                        key={action.key}
+                        type="button"
+                        onClick={() => handleQuickAction(action.key)}
+                        className={`group flex flex-col items-center justify-center gap-3 rounded-3xl px-10 py-10 text-lg font-semibold shadow-md transition-all duration-200 ${
+                          highContrastMode
+                            ? `${highContrastTokens.quickAction}`
+                            : "bg-white text-gray-900 ring-1 ring-inset ring-slate-200 hover:shadow-lg hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <span
+                          className={`grid h-16 w-16 place-items-center rounded-full transition-all duration-200 ${
+                            highContrastMode
+                              ? `${highContrastTokens.mobileAction}`
+                              : `${colorTokens.circle} ${colorTokens.groupHover}`
+                          }`}
+                          aria-hidden
+                        >
+                          <span className="text-2xl">{action.icon}</span>
+                        </span>
+                        <span className="text-lg">{action.label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
-            {showMobileIntentGrid && (
-              <div className="w-full px-4 pb-4 md:hidden">
-                <p className="mb-3 text-center text-sm font-semibold text-gray-600">Choisissez un sujet pour commencer :</p>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {ALL_INTENTS.map((i) => (
-                    <button
-                      key={i.key}
-                      type="button"
-                      onClick={() => handleSelectIntent(i.key)}
-                      className="inline-flex min-h-[48px] items-center justify-start gap-2 rounded-2xl bg-white px-3 py-2 text-left text-sm font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50"
-                    >
-                      <span className="text-xl" aria-hidden>{i.icon}</span>
-                      <span className="leading-snug">{i.label}</span>
-                    </button>
-                  ))}
-                </div>
+            <AnimatePresence initial={false}>
+              {showMobileIntentGrid && (
+                <MobileIntentCarousel
+                  key="mobile-intents-home"
+                  intents={ALL_INTENTS}
+                  onSelect={handleSelectIntent}
+                  className="w-full px-4 pb-4"
+                />
+              )}
+            </AnimatePresence>
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {scrollControlsVisible && (
+          <div className="pointer-events-none absolute bottom-32 right-4 z-30 flex flex-col gap-3 sm:right-5 md:bottom-36 lg:bottom-40">
+            <button
+              type="button"
+              onClick={() => handleScrollControl("top")}
+              disabled={!canScrollUp}
+              aria-label="Revenir en haut de la conversation"
+              className={`pointer-events-auto inline-flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-4 ${
+                highContrastMode ? "focus-visible:ring-[#2EC1B2]/70" : "focus-visible:ring-blue-300"
+              } ${scrollButtonBase} ${
+                canScrollUp ? "opacity-100 hover:-translate-y-0.5" : "opacity-40 cursor-not-allowed"
+              }`}
+            >
+              <ChevronUp className="h-5 w-5" strokeWidth={2.2} aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleScrollControl("bottom")}
+              disabled={!canScrollDown}
+              aria-label="Aller au dernier message"
+              className={`pointer-events-auto inline-flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-4 ${
+                highContrastMode ? "focus-visible:ring-[#2EC1B2]/70" : "focus-visible:ring-blue-300"
+              } ${scrollButtonBase} ${
+                canScrollDown ? "opacity-100 hover:translate-y-0.5" : "opacity-40 cursor-not-allowed"
+              }`}
+            >
+              <ChevronDown className="h-5 w-5" strokeWidth={2.2} aria-hidden />
+            </button>
           </div>
         )}
 
@@ -2934,7 +3172,13 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         )}
         </div>
         {/* Bottom composer present on all screens */}
-        <div className={`sticky bottom-0 left-0 right-0 z-20 border-t ${highContrastMode ? "border-[#2A313D] bg-[#1B2027]/95" : "border-gray-100 bg-white/90"} shadow-[0_-8px_24px_rgba(15,23,42,0.12)]`}>
+        <motion.div
+          className={`sticky bottom-0 left-0 right-0 z-20 border-t ${
+            highContrastMode ? "border-[#2A313D] bg-[#1B2027]/95" : "border-gray-100 bg-white/90"
+          } backdrop-blur-xl`}
+          animate={{ boxShadow: composerShadow, y: composerLift }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+        >
           <Composer
             value={composerText}
             onChange={(v) => setComposerText(v)}
@@ -3139,7 +3383,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           onFocus={handleComposerFocus}
           onBlur={() => setIsInputFocused(false)}
           />
-        </div>
+        </motion.div>
       </div>
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}
       <VoiceModeOverlay

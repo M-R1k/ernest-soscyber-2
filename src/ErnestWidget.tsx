@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import logoErnest from './assets/logo-ernest.png';
 import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
 import { Keyboard as KeyboardIcon, SendHorizontal, ChevronUp, ChevronDown } from "lucide-react";
-import { highContrastClasses } from "./theme/highContrastPalette";
+import { highContrastClasses, highContrastHex } from "./theme/highContrastPalette";
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
 type VoiceModeOverlayProps = {
@@ -595,6 +595,7 @@ type MobileIntentCarouselProps = {
   onSelect: (key: Intent) => void;
   subtitle?: string;
   className?: string;
+  highContrast?: boolean;
 };
 
 function MobileIntentCarousel({
@@ -602,6 +603,7 @@ function MobileIntentCarousel({
   onSelect,
   subtitle = "Choisissez un sujet pour commencer :",
   className = "",
+  highContrast = false,
 }: MobileIntentCarouselProps) {
   return (
     <motion.div
@@ -613,14 +615,18 @@ function MobileIntentCarousel({
       transition={{ duration: 0.3, ease: "easeOut" }}
       className={`md:hidden ${className}`}
     >
-      <p className="mb-4 text-center text-sm font-semibold text-gray-600">{subtitle}</p>
+      <p className={`mb-4 text-center text-sm font-semibold ${highContrast ? "text-[#A9B4C6]" : "text-gray-600"}`}>{subtitle}</p>
       <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 no-scrollbar">
         {intents.map((intent, index) => (
           <motion.button
             key={intent.key}
             type="button"
             onClick={() => onSelect(intent.key)}
-            className="inline-flex min-w-[78%] max-w-sm flex-1 items-center gap-3 rounded-3xl bg-white px-4 py-4 text-left text-base font-semibold text-gray-900 shadow-[0_18px_40px_rgba(15,23,42,0.12)] ring-1 ring-inset ring-gray-100"
+            className={`inline-flex min-w-[78%] max-w-sm flex-1 items-center gap-3 rounded-3xl px-4 py-4 text-left text-base font-semibold transition-colors ${
+              highContrast
+                ? "bg-[#232834] text-[#E8ECF2] shadow-[0_18px_40px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-[#3B4450] hover:bg-[#2A313D]"
+                : "bg-white text-gray-900 shadow-[0_18px_40px_rgba(15,23,42,0.12)] ring-1 ring-inset ring-gray-100"
+            }`}
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 320, damping: 24, delay: index * 0.015 }}
@@ -917,6 +923,7 @@ function Bubble({
   profileImage,
   userName,
   className = "",
+  largeLineHeight = false,
 }: {
   role: "user" | "assistant";
   children: React.ReactNode;
@@ -925,6 +932,7 @@ function Bubble({
   profileImage?: string;
   userName?: string;
   className?: string;
+  largeLineHeight?: boolean;
 }) {
   const isUser = role === "user";
 
@@ -934,7 +942,7 @@ function Bubble({
         isUser
           ? "bg-white text-gray-900 shadow-lg"
           : "bg-gray-100 text-gray-900 ring-1 ring-inset ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700"
-      } ${className}`}
+      } ${largeLineHeight ? "leading-[1.8]" : ""} ${className}`}
       aria-live={isUser ? undefined : "polite"}
     >
       {isUser ? (
@@ -1050,7 +1058,14 @@ function Bubble({
   );
 }
 
-function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choice[]; onSelect: (value: string, label?: string) => void }) {
+function ChoiceGroup({ step, choices, onSelect, highContrast = false, largeClickTargets = false, enhancedFocus = false }: { step: number; choices: Choice[]; onSelect: (value: string, label?: string) => void; highContrast?: boolean; largeClickTargets?: boolean; enhancedFocus?: boolean }) {
+  const buttonClass = highContrast
+    ? `${highContrastClasses.buttonIdle} ring-1 ring-inset ring-[#3B4450] hover:bg-[#232834] ${enhancedFocus ? "focus-visible:ring-4 focus-visible:ring-offset-2" : "focus-visible:ring-4"} focus-visible:ring-[#2EC1B2]`
+    : `bg-white text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none ${enhancedFocus ? "focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:outline-2" : "focus-visible:ring-4"} focus-visible:ring-blue-300`;
+  
+  const minHeight = largeClickTargets ? "min-h-[56px]" : "min-h-[36px] md:min-h-[40px]";
+  const padding = largeClickTargets ? "px-6 py-4" : "px-4 md:px-5 py-2.5";
+  
   return (
     <div role="group" aria-label={`Choix étape ${step}`} className="flex flex-wrap gap-2 md:gap-3">
       {choices.map((c) => (
@@ -1058,7 +1073,7 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
           key={c.value}
           type="button"
           onClick={() => onSelect(c.value, c.label)}
-          className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+          className={`inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition ${buttonClass}`}
           aria-label={c.label}
         >
           {c.label}
@@ -1067,7 +1082,7 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
       <button
         type="button"
         onClick={() => onSelect("fallback", "Je n'y arrive pas")}
-        className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+        className={`inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition ${buttonClass}`}
         aria-label="Je n'y arrive pas"
       >
         Je n'y arrive pas
@@ -1076,9 +1091,327 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
   );
 }
 
+// Composant Menu d'Accessibilité Senior-Friendly
+type AccessibilityMenuProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  highContrast: boolean;
+  // États des fonctionnalités
+  isFontLarge: boolean;
+  onToggleFontSize: () => void;
+  highContrastMode: boolean;
+  onToggleHighContrast: () => void;
+  largeLineHeight: boolean;
+  onToggleLineHeight: () => void;
+  reduceAnimations: boolean;
+  onToggleAnimations: () => void;
+  simplifiedMode: boolean;
+  onToggleSimplifiedMode: () => void;
+  largeClickTargets: boolean;
+  onToggleClickTargets: () => void;
+  enhancedFocus: boolean;
+  onToggleEnhancedFocus: () => void;
+  showBreadcrumb: boolean;
+  onToggleBreadcrumb: () => void;
+};
+
+function AccessibilityMenu({
+  isOpen,
+  onClose,
+  highContrast,
+  isFontLarge,
+  onToggleFontSize,
+  highContrastMode,
+  onToggleHighContrast,
+  largeLineHeight,
+  onToggleLineHeight,
+  reduceAnimations,
+  onToggleAnimations,
+  simplifiedMode,
+  onToggleSimplifiedMode,
+  largeClickTargets,
+  onToggleClickTargets,
+  enhancedFocus,
+  onToggleEnhancedFocus,
+  showBreadcrumb,
+  onToggleBreadcrumb,
+}: AccessibilityMenuProps) {
+  if (!isOpen) return null;
+
+  const menuBg = highContrast
+    ? "bg-[#1B2027] border-[#3B4450] text-[#E8ECF2]"
+    : "bg-white border-gray-200 text-gray-900 shadow-2xl";
+  
+  const buttonBase = highContrast
+    ? "border border-[#3B4450] hover:bg-[#2A313D]"
+    : "border border-gray-300 hover:bg-gray-50";
+  
+  const buttonActive = highContrast
+    ? "bg-[#2EC1B2] text-white border-[#2EC1B2]"
+    : "bg-blue-600 text-white border-blue-600";
+
+  return (
+    <>
+      {/* Overlay pour fermer le menu */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+      />
+      
+      {/* Menu flottant */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+        transition={{ duration: 0.2 }}
+        className={`fixed top-16 right-4 z-50 w-[90vw] max-w-[420px] rounded-2xl border-2 ${menuBg} p-6`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu d'accessibilité"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className={`text-xl font-bold ${highContrast ? "text-[#F6F8FB]" : "text-gray-900"}`}>
+            🔧 Options d'accessibilité
+          </h2>
+          <button
+            onClick={onClose}
+            className={`grid h-10 w-10 place-items-center rounded-full transition-colors ${
+              highContrast
+                ? "hover:bg-[#2A313D] text-[#E8ECF2]"
+                : "hover:bg-gray-100 text-gray-700"
+            }`}
+            aria-label="Fermer le menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+          {/* Option 1: Taille du texte */}
+          <button
+            onClick={onToggleFontSize}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              isFontLarge ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">📝 Taille du texte</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {isFontLarge ? "Texte agrandi activé" : "Agrandir le texte pour faciliter la lecture"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                isFontLarge
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  isFontLarge ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 2: Contraste élevé */}
+          <button
+            onClick={onToggleHighContrast}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              highContrastMode ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">🎨 Contraste élevé</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {highContrastMode ? "Mode contraste élevé activé" : "Améliorer le contraste des couleurs"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                highContrastMode
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  highContrastMode ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 3: Espacement des lignes */}
+          <button
+            onClick={onToggleLineHeight}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              largeLineHeight ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">📏 Espacement des lignes</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {largeLineHeight ? "Espacement large activé" : "Augmenter l'espacement entre les lignes"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                largeLineHeight
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  largeLineHeight ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 4: Réduire les animations */}
+          <button
+            onClick={onToggleAnimations}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              reduceAnimations ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">🎬 Réduire les animations</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {reduceAnimations ? "Animations réduites" : "Désactiver les animations pour réduire les distractions"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                reduceAnimations
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  reduceAnimations ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 5: Zones cliquables plus grandes */}
+          <button
+            onClick={onToggleClickTargets}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              largeClickTargets ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">👆 Zones cliquables agrandies</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {largeClickTargets ? "Zones agrandies activées" : "Augmenter la taille des boutons et zones cliquables"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                largeClickTargets
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  largeClickTargets ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 6: Focus amélioré */}
+          <button
+            onClick={onToggleEnhancedFocus}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              enhancedFocus ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">🎯 Focus amélioré</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {enhancedFocus ? "Focus amélioré activé" : "Rendre les contours de focus plus visibles"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                enhancedFocus
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  enhancedFocus ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 7: Mode simplifié */}
+          <button
+            onClick={onToggleSimplifiedMode}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              simplifiedMode ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">✨ Mode lecture simplifié</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {simplifiedMode ? "Mode simplifié activé" : "Masquer les éléments non essentiels pour une lecture plus claire"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                simplifiedMode
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  simplifiedMode ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+
+          {/* Option 8: Guide de navigation */}
+          <button
+            onClick={onToggleBreadcrumb}
+            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
+              showBreadcrumb ? buttonActive : ""
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-base mb-1">🧭 Guide de navigation</div>
+                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
+                  {showBreadcrumb ? "Guide activé" : "Afficher un fil d'Ariane pour savoir où vous êtes"}
+                </div>
+              </div>
+              <div className={`w-12 h-6 rounded-full transition-colors ${
+                showBreadcrumb
+                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
+                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
+              }`}>
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                  showBreadcrumb ? "translate-x-6" : "translate-x-0.5"
+                } mt-0.5`} />
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div className={`mt-6 pt-6 border-t ${highContrast ? "border-[#3B4450]" : "border-gray-200"}`}>
+          <p className={`text-xs ${highContrast ? "text-[#B8C5D1]" : "text-gray-500"} text-center`}>
+            💡 Ces paramètres sont sauvegardés dans votre navigateur
+          </p>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
 function TopBar({ onBack, onMenu, onReset, highContrast = false }: { onBack: () => void; onMenu: () => void; onReset: () => void; highContrast?: boolean }) {
   const barBackground = highContrast
-    ? "bg-[#1B2027]/98 text-[#E8ECF2] border-b border-[#2A313D]"
+    ? `${highContrastClasses.panel}/98 ${highContrastClasses.mutedText} border-b border-[#3B4450]`
     : "bg-white/95 text-gray-900 border-b border-slate-100";
   return (
     <header className={`sticky top-0 z-30 flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4 backdrop-blur supports-[backdrop-filter]:bg-white/80 ${barBackground}`}>
@@ -1550,6 +1883,14 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const [isFontLarge, setIsFontLarge] = useState(false);
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // États pour les fonctionnalités d'accessibilité senior-friendly
+  const [accessibilityMenuOpen, setAccessibilityMenuOpen] = useState(false);
+  const [largeLineHeight, setLargeLineHeight] = useState(false);
+  const [reduceAnimations, setReduceAnimations] = useState(false);
+  const [simplifiedMode, setSimplifiedMode] = useState(false);
+  const [largeClickTargets, setLargeClickTargets] = useState(false);
+  const [enhancedFocus, setEnhancedFocus] = useState(false);
+  const [showBreadcrumb, setShowBreadcrumb] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [canScrollUp, setCanScrollUp] = useState(false);
   const [canScrollDown, setCanScrollDown] = useState(false);
@@ -1808,26 +2149,39 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, []);
 
   const highContrastTokens = {
-    root: `${highContrastClasses.background}`,
-    panel: `${highContrastClasses.panel} ring-1 ring-[#2A313D]`,
-    assistantBubble: `${highContrastClasses.botBubble}`,
-    userBubble: "bg-[#F6F8FB] text-[#071014] ring-1 ring-[#C5D2DE]",
-    toolbar: "border border-[#2A313D] bg-[#1B2027]",
-    toolbarText: "text-[#E8ECF2]",
-    toolbarControl: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    root: highContrastClasses.background,
+    panel: `${highContrastClasses.panel} ring-1 ring-[#3B4450]`,
+    assistantBubble: highContrastClasses.botBubble,
+    userBubble: highContrastClasses.userBubble,
+    toolbar: `${highContrastClasses.border} ${highContrastClasses.panel}`,
+    toolbarText: highContrastClasses.mutedText,
+    toolbarControl: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
     toolbarControlActive: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
-    quickAction: `${highContrastClasses.elevated} ring-1 ring-inset ring-[#2A313D]`,
-    quickActionBadge: `${highContrastClasses.buttonIdle} ring-1 ring-inset ring-[#2A313D]`,
-    composerShell: "border-t border-[#2A313D] bg-[#1B2027]/95",
-    mobileAction: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    quickAction: `${highContrastClasses.elevated} ring-1 ring-inset ring-[#3B4450]`,
+    quickActionBadge: `${highContrastClasses.buttonIdle} ring-1 ring-inset ring-[#3B4450]`,
+    composerShell: `border-t border-[#3B4450] ${highContrastClasses.panel}/95`,
+    mobileAction: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
     mobileSend: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
-    mobileHide: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
-    desktopComposer: "bg-[#1B2027] text-[#E8ECF2]",
-    desktopTextarea: "placeholder:text-[#A9B4C6] text-[#E8ECF2]",
-    desktopButton: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    mobileHide: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
+    desktopComposer: `${highContrastClasses.panel} ${highContrastClasses.inputBackground}`,
+    desktopTextarea: `placeholder:${highContrastClasses.mutedText} ${highContrastClasses.inputBackground}`,
+    desktopButton: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
     desktopSend: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
+    choiceButton: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
+    choiceButtonHover: `${highContrastClasses.buttonSecondary} ring-1 ring-[#3B4450]`,
+    errorBubble: highContrastClasses.error,
+    successBubble: highContrastClasses.success,
+    warningBanner: highContrastClasses.warning,
+    toolbarBar: `border-[#3B4450] ${highContrastClasses.panel}/90`,
+    composerBar: `border-[#3B4450] ${highContrastClasses.panel}/95`,
+    scrollButton: `${highContrastClasses.panel} border border-[#3B4450]`,
   };
   const baseTextSizeClass = isFontLarge ? "text-[20px]" : "text-[17px]";
+  const lineHeightClass = largeLineHeight ? "leading-[1.8]" : "";
+  const animationClass = reduceAnimations ? "[&_*]:!transition-none [&_*]:!duration-0 [&_*]:!animate-none" : "";
+  const clickTargetClass = largeClickTargets ? "[&_button]:min-h-[56px] [&_a]:min-h-[56px] [&_button]:px-6 [&_button]:py-4" : "";
+  const focusClass = enhancedFocus ? "[&_*:focus-visible]:ring-4 [&_*:focus-visible]:ring-blue-500 [&_*:focus-visible]:ring-offset-2 [&_*:focus-visible]:outline-2" : "";
+  const simplifiedClass = simplifiedMode ? "[&_.hidden-simplified]:hidden" : "";
   const rootThemeClass = highContrastMode ? highContrastTokens.root : "bg-sky-50 text-gray-900";
   const panelThemeClass = highContrastMode ? highContrastTokens.panel : "bg-white text-gray-900 ring-slate-100";
   const assistantBubbleClass = highContrastMode
@@ -1839,7 +2193,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const composerShadow = isMobile && isInputFocused ? "0px -20px 45px rgba(15,23,42,0.22)" : "0px -8px 24px rgba(15,23,42,0.12)";
   const composerLift = isMobile && isInputFocused ? -4 : 0;
   const scrollButtonBase = highContrastMode
-    ? "bg-[#1B2027] text-[#E8ECF2] border border-[#2A313D]"
+    ? highContrastTokens.scrollButton
     : "bg-white text-slate-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] border border-slate-100";
 
   // Mapping texte libre → intent/subIntent (heuristique simple)
@@ -2855,18 +3209,72 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   return (
     <section
       ref={containerRef}
-      className={`flex min-h-screen w-full justify-center ${rootThemeClass} ${baseTextSizeClass} px-3 sm:px-6 lg:px-10 overflow-x-hidden`}
+      className={`flex min-h-screen w-full justify-center ${rootThemeClass} ${baseTextSizeClass} ${lineHeightClass} ${animationClass} ${clickTargetClass} ${focusClass} ${simplifiedClass} px-3 sm:px-6 lg:px-10 overflow-x-hidden`}
     >
       <div className={`relative flex w-full max-w-[1800px] flex-1 flex-col rounded-3xl shadow-2xl ring-1 overflow-hidden ${panelThemeClass}`}>
         <TopBar
           highContrast={highContrastMode}
           onBack={handleBack}
-          onMenu={() => { /* menu plus tard */ }}
+          onMenu={() => setAccessibilityMenuOpen((prev) => !prev)}
           onReset={resetConversation}
         />
+        
+        {/* Menu d'accessibilité flottant */}
+        <AnimatePresence>
+          {accessibilityMenuOpen && (
+            <AccessibilityMenu
+              isOpen={accessibilityMenuOpen}
+              onClose={() => setAccessibilityMenuOpen(false)}
+              highContrast={highContrastMode}
+              isFontLarge={isFontLarge}
+              onToggleFontSize={() => setIsFontLarge((prev) => !prev)}
+              highContrastMode={highContrastMode}
+              onToggleHighContrast={() => setHighContrastMode((prev) => !prev)}
+              largeLineHeight={largeLineHeight}
+              onToggleLineHeight={() => setLargeLineHeight((prev) => !prev)}
+              reduceAnimations={reduceAnimations}
+              onToggleAnimations={() => setReduceAnimations((prev) => !prev)}
+              simplifiedMode={simplifiedMode}
+              onToggleSimplifiedMode={() => setSimplifiedMode((prev) => !prev)}
+              largeClickTargets={largeClickTargets}
+              onToggleClickTargets={() => setLargeClickTargets((prev) => !prev)}
+              enhancedFocus={enhancedFocus}
+              onToggleEnhancedFocus={() => setEnhancedFocus((prev) => !prev)}
+              showBreadcrumb={showBreadcrumb}
+              onToggleBreadcrumb={() => setShowBreadcrumb((prev) => !prev)}
+            />
+          )}
+        </AnimatePresence>
+        {/* Fil d'Ariane (breadcrumb) */}
+        {showBreadcrumb && (
+          <div className={`sticky top-0 z-30 flex items-center gap-2 px-4 py-2 text-sm border-b ${
+            highContrastMode 
+              ? `${highContrastTokens.toolbarBar} text-[#B8C5D1]` 
+              : "bg-gray-50 border-slate-100 text-gray-600"
+          }`}>
+            <span>🏠</span>
+            <span>/</span>
+            {screen === "home" && <span className="font-semibold">Accueil</span>}
+            {screen === "sos" && <span className="font-semibold">SOS Cyber</span>}
+            {screen === "chat" && intent && (
+              <>
+                <span>{ALL_INTENTS.find(i => i.key === intent)?.label || intent}</span>
+                {subIntent && (
+                  <>
+                    <span>/</span>
+                    <span className="font-semibold">
+                      {SOS_OPTIONS.find(s => s.key === subIntent)?.label || subIntent}
+                    </span>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )}
+        
         <div
-          className={`sticky top-0 z-20 flex flex-wrap items-center gap-3 border-b px-4 py-3 backdrop-blur-md ${
-            highContrastMode ? "border-[#2A313D] bg-[#1B2027]/90" : "border-slate-100 bg-white/80"
+          className={`sticky ${showBreadcrumb ? 'top-[40px]' : 'top-0'} z-20 flex flex-wrap items-center gap-3 border-b px-4 py-3 backdrop-blur-md ${
+            highContrastMode ? highContrastTokens.toolbarBar : "border-slate-100 bg-white/80"
           }`}
         >
           <motion.button
@@ -2881,8 +3289,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   ? "bg-blue-600 text-white"
                   : "bg-blue-100 text-blue-900"
             }`}
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.02 }}
+            whileTap={reduceAnimations ? {} : { scale: 0.95 }}
+            whileHover={reduceAnimations ? {} : { scale: 1.02 }}
+            transition={reduceAnimations ? { duration: 0 } : undefined}
           >
             {isFontLarge ? "Texte large activé" : "Agrandir le texte"}
           </motion.button>
@@ -2892,8 +3301,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
               highContrastMode ? highContrastTokens.toolbarControlActive : "bg-yellow-100 text-yellow-900"
             }`}
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.02 }}
+            whileTap={reduceAnimations ? {} : { scale: 0.95 }}
+            whileHover={reduceAnimations ? {} : { scale: 1.02 }}
+            transition={reduceAnimations ? { duration: 0 } : undefined}
           >
             {highContrastMode ? "Mode contraste élevé" : "Activer contraste"}
           </motion.button>
@@ -2906,9 +3316,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
 
         {/* Conversation area */}
         {screen !== "home" ? (
-          <div className="flex-1 overflow-hidden bg-slate-50">
-            <div ref={scrollAreaRef} className="h-full w-full overflow-y-auto">
-              <div className="flex h-full flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 min-h-0 pb-32 md:pb-36 items-center">
+          <div
+            ref={scrollAreaRef}
+            className={`flex-1 w-full overflow-y-auto scroll-smooth ${highContrastMode ? highContrastClasses.background : "bg-slate-50"}`}
+          >
+            <div className="flex flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 pb-32 md:pb-36 items-center min-h-full">
           {!isMobile && conversation.length === 0 && (
             <div className="hidden md:flex w-full flex-1 items-center justify-center">
               <div className="mx-auto w-full max-w-[1100px]">
@@ -2919,8 +3331,10 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     return (
                       <div
                       key={card.key}
-                      className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset ${
-                        highContrastMode ? `${highContrastTokens.quickAction}` : "bg-white text-gray-900 ring-slate-200"
+                      className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset transition-colors ${
+                        highContrastMode 
+                          ? `${highContrastTokens.quickAction} hover:bg-[#2A313D]` 
+                          : "bg-white text-gray-900 ring-slate-200"
                       }`}
                     >
                       <div
@@ -2931,11 +3345,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                         }`}
                         aria-hidden
                       >
-                        {card.icon}
+                        <span className={highContrastMode ? "text-[#E8ECF2]" : ""}>{card.icon}</span>
                       </div>
                       <div className="text-left">
-                        <p className="text-base font-semibold">{card.title}</p>
-                        <p className={`text-sm ${highContrastMode ? "text-[#A9B4C6]" : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
+                        <p className={`text-base font-semibold ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{card.title}</p>
+                        <p className={`text-sm ${highContrastMode ? highContrastClasses.mutedText : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
                       </div>
                       </div>
                     );
@@ -2951,6 +3365,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 intents={ALL_INTENTS}
                 onSelect={handleSelectIntent}
                 className="w-full"
+                highContrast={highContrastMode}
               />
             )}
           </AnimatePresence>
@@ -2982,10 +3397,10 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
 
           {(currentSteps?.[stepIndex]) && (
             <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 md:gap-4">
-              <Bubble role="assistant" className="text-sm md:text-base leading-snug">
+              <Bubble role="assistant" className={`text-sm md:text-base ${largeLineHeight ? "leading-[1.8]" : "leading-snug"}`} largeLineHeight={largeLineHeight}>
                 {currentSteps![stepIndex]!.question}
               </Bubble>
-              <ChoiceGroup step={stepIndex + 1} choices={currentSteps![stepIndex]!.choices} onSelect={handleChoiceSelect} />
+              <ChoiceGroup step={stepIndex + 1} choices={currentSteps![stepIndex]!.choices} onSelect={handleChoiceSelect} highContrast={highContrastMode} largeClickTargets={largeClickTargets} enhancedFocus={enhancedFocus} />
             </div>
           )}
 
@@ -3026,6 +3441,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       profileImage={m.role === "user" ? profileImage || undefined : undefined}
                       userName={m.role === "user" ? userName : undefined}
                       className={m.role === "user" ? `${userBubbleClass} transition-all duration-200` : assistantBubbleClass}
+                      largeLineHeight={largeLineHeight}
                     >
                       {m.text}
                     </Bubble>
@@ -3035,27 +3451,27 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             </AnimatePresence>
             <ErnestThinkingIndicator
               isThinking={loading}
-              tone="light"
+              tone={highContrastMode ? "dark" : "light"}
               className="mr-auto w-full max-w-md"
-              borderClassName="ring-1 ring-inset ring-gray-200"
+              borderClassName={highContrastMode ? `ring-1 ring-inset ring-[#3B4450]` : "ring-1 ring-inset ring-gray-200"}
             />
             {error && (
-              <div className="mr-auto rounded-2xl bg-red-50 px-4 md:px-5 py-3 md:py-3.5 text-red-800 text-[16px] md:text-[18px] ring-1 ring-inset ring-red-200">
+              <div className={`mr-auto rounded-2xl px-4 md:px-5 py-3 md:py-3.5 text-[16px] md:text-[18px] ring-1 ring-inset ${
+                highContrastMode ? highContrastTokens.errorBubble : "bg-red-50 text-red-800 ring-red-200"
+              }`}>
                 {error} <button onClick={clearError} className="ml-2 underline">OK</button>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
             </div>
-            </div>
           </div>
         ) : (
-          <div className="flex-1 bg-slate-50 overflow-hidden">
-            <div
-              ref={scrollAreaRef}
-              className="h-full w-full overflow-y-auto"
-            >
-              <div className="flex flex-col min-h-0 pb-24 md:pb-28">
+          <div
+            ref={scrollAreaRef}
+            className={`flex-1 w-full overflow-y-auto scroll-smooth ${highContrastMode ? highContrastClasses.background : "bg-slate-50"}`}
+          >
+            <div className="flex flex-col pb-24 md:pb-28 min-h-full">
             {isMobile && !shouldShowMobileComposer && screen === "home" && (
               <div className="flex w-full flex-1 items-center justify-center py-10 md:hidden">
                 <div className="grid w-full max-w-lg grid-cols-2 gap-4">
@@ -3069,21 +3485,21 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                         onClick={() => handleQuickAction(action.key)}
                         className={`group flex flex-col items-center justify-center gap-3 rounded-3xl px-10 py-10 text-lg font-semibold shadow-md transition-all duration-200 ${
                           highContrastMode
-                            ? `${highContrastTokens.quickAction}`
+                            ? `${highContrastTokens.quickAction} hover:bg-[#2A313D] hover:-translate-y-0.5`
                             : "bg-white text-gray-900 ring-1 ring-inset ring-slate-200 hover:shadow-lg hover:-translate-y-0.5"
                         }`}
                       >
                         <span
                           className={`grid h-16 w-16 place-items-center rounded-full transition-all duration-200 ${
                             highContrastMode
-                              ? `${highContrastTokens.mobileAction}`
+                              ? `${highContrastTokens.quickActionBadge}`
                               : `${colorTokens.circle} ${colorTokens.groupHover}`
                           }`}
                           aria-hidden
                         >
-                          <span className="text-2xl">{action.icon}</span>
+                          <span className={`text-2xl ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{action.icon}</span>
                         </span>
-                        <span className="text-lg">{action.label}</span>
+                        <span className={`text-lg ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{action.label}</span>
                       </button>
                     );
                   })}
@@ -3097,10 +3513,10 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   intents={ALL_INTENTS}
                   onSelect={handleSelectIntent}
                   className="w-full px-4 pb-4"
+                  highContrast={highContrastMode}
                 />
               )}
             </AnimatePresence>
-              </div>
             </div>
           </div>
         )}
@@ -3146,7 +3562,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   key={i.key}
                   type="button"
                   onClick={() => handleSelectIntent(i.key)}
-                  className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+                  className={`inline-flex min-h-[48px] items-center justify-center rounded-2xl px-4 py-3 text-center text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 ${
+                    highContrastMode
+                      ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
+                      : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
+                  }`}
                 >
                   <span className="leading-snug">{i.label}</span>
                 </button>
@@ -3162,7 +3582,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   key={o.key}
                   type="button"
                   onClick={() => handleSelectSubIntent(o.key)}
-                  className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl bg-white px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+                  className={`inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 ${
+                    highContrastMode
+                      ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
+                      : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
+                  }`}
                 >
                   {o.label}
                 </button>
@@ -3174,7 +3598,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         {/* Bottom composer present on all screens */}
         <motion.div
           className={`sticky bottom-0 left-0 right-0 z-20 border-t ${
-            highContrastMode ? "border-[#2A313D] bg-[#1B2027]/95" : "border-gray-100 bg-white/90"
+            highContrastMode ? highContrastTokens.composerBar : "border-gray-100 bg-white/90"
           } backdrop-blur-xl`}
           animate={{ boxShadow: composerShadow, y: composerLift }}
           transition={{ duration: 0.25, ease: "easeOut" }}

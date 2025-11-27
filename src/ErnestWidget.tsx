@@ -6,6 +6,8 @@ import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/acce
 import ReactMarkdown from 'react-markdown';
 import logoErnest from './assets/logo-ernest.png';
 import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
+import { Keyboard as KeyboardIcon, SendHorizontal } from "lucide-react";
+import { highContrastClasses } from "./theme/highContrastPalette";
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
 type VoiceModeOverlayProps = {
@@ -390,10 +392,11 @@ function VoiceModeOverlay({
                   <button
                     type="button"
                     onClick={onSendTranscription}
-                    className="w-full rounded-xl bg-blue-600 px-6 py-3 md:py-4 text-white text-[16px] md:text-[18px] font-semibold shadow-md hover:bg-blue-700 transition-all duration-[120ms] ease-in-out focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+                    className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 md:py-4 text-white text-[16px] md:text-[18px] font-semibold shadow-lg transition-all duration-150 ease-out hover:from-emerald-500 hover:to-emerald-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 flex items-center justify-center gap-2"
                     aria-label="Envoyer la transcription"
                   >
-                    Envoyer
+                    <SendHorizontal className="h-5 w-5" aria-hidden />
+                    Envoyer la transcription
                   </button>
                 </motion.div>
               )}
@@ -465,16 +468,19 @@ function VoiceModeOverlay({
                 <motion.button
                   type="button"
                   onClick={recording ? onStopRecording : onStartRecording}
-                  className={`relative grid h-20 w-20 md:h-24 md:w-24 place-items-center rounded-full text-white shadow-lg transition-all duration-[120ms] ease-in-out focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
+                  className={`relative grid h-24 w-24 md:h-28 md:w-28 place-items-center rounded-full text-white shadow-2xl transition-all duration-[160ms] ease-in-out focus:outline-none focus-visible:ring-[6px] focus-visible:ring-blue-200 ${
                     recording
-                      ? 'bg-red-600 hover:bg-red-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
+                      ? 'bg-gradient-to-b from-red-500 to-red-600 hover:from-red-500 hover:to-red-500'
+                      : 'bg-gradient-to-b from-blue-500 to-indigo-600 hover:from-blue-500 hover:to-blue-500'
+                  } ring-4 ${
+                    recording ? 'ring-red-200' : 'ring-blue-200'
                   }`}
                   aria-label={recording ? "Arrêter l'enregistrement" : "Commencer l'enregistrement"}
-                  whileHover={{ scale: 1.05 }}
+                  aria-pressed={recording}
+                  whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.95 }}
                   animate={{
-                    scale: recording ? [1, 1.02, 1] : 1,
+                    scale: recording ? [1, 1.03, 1] : 1,
                   }}
                   transition={{
                     scale: {
@@ -484,16 +490,22 @@ function VoiceModeOverlay({
                     },
                   }}
                 >
-                  {recording ? (
-                    <svg className="h-8 w-8 md:h-10 md:w-10" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="6" y="6" width="12" height="12" rx="2" />
-                    </svg>
-                  ) : (
-                    <svg className="h-8 w-8 md:h-10 md:w-10" fill="currentColor" viewBox="0 0 24 24">
-                      {/* Flèche vers le haut - style simple et moderne */}
-                      <path d="M12 2l8 8h-5v10H9V10H4l8-8z" />
-                    </svg>
-                  )}
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    {recording ? (
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
+                        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                          <rect x="6" y="6" width="12" height="12" rx="2" />
+                        </svg>
+                      </span>
+                    ) : (
+                      <span className="grid h-10 w-10 place-items-center rounded-full bg-white/15">
+                        <MicIcon className="h-7 w-7" />
+                      </span>
+                    )}
+                    <span className="text-sm font-semibold tracking-wide">
+                      {recording ? "Arrêter" : "Parler"}
+                    </span>
+                  </div>
                 </motion.button>
               </div>
 
@@ -506,19 +518,7 @@ function VoiceModeOverlay({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <svg className="h-6 w-6 md:h-7 md:w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                  {/* Icône de clavier moderne */}
-                  <rect x="2" y="4" width="20" height="14" rx="2" />
-                  {/* Rangée supérieure de touches */}
-                  <circle cx="5" cy="9" r="1" fill="currentColor" />
-                  <circle cx="9" cy="9" r="1" fill="currentColor" />
-                  <circle cx="13" cy="9" r="1" fill="currentColor" />
-                  <circle cx="17" cy="9" r="1" fill="currentColor" />
-                  {/* Rangée inférieure de touches */}
-                  <rect x="4" y="12" width="3" height="2" rx="0.5" fill="currentColor" />
-                  <rect x="9" y="12" width="6" height="2" rx="0.5" fill="currentColor" />
-                  <rect x="17" y="12" width="3" height="2" rx="0.5" fill="currentColor" />
-                </svg>
+                <KeyboardIcon className="h-6 w-6 md:h-7 md:w-7" strokeWidth={1.9} aria-hidden />
               </motion.button>
             </div>
           </motion.div>
@@ -973,17 +973,13 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
   );
 }
 
-function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () => void; onReset: () => void }) {
+function TopBar({ onBack, onMenu, onReset, highContrast = false }: { onBack: () => void; onMenu: () => void; onReset: () => void; highContrast?: boolean }) {
+  const barBackground = highContrast
+    ? "bg-[#1B2027]/98 text-[#E8ECF2] border-b border-[#2A313D]"
+    : "bg-white/95 text-gray-900 border-b border-slate-100";
   return (
-    <header className="relative flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-gray-100 text-gray-700 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
-        aria-label="Retour"
-      >
-        <span aria-hidden className="text-base md:text-xl">←</span>
-      </button>
+    <header className={`sticky top-0 z-30 flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4 backdrop-blur supports-[backdrop-filter]:bg-white/80 ${barBackground}`}>
+      <div className="w-9 md:w-12" />
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
         <img 
           src={logoErnest} 
@@ -1019,9 +1015,6 @@ function StickyBar({ onBack, onHome, onContact, onReminder }: { onBack: () => vo
     <div className="sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white/95 px-4 md:px-6 py-3 md:py-4 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
       <div className="mx-auto flex max-w-screen-lg items-center justify-between gap-2 md:gap-3">
         <div className="flex items-center gap-2 md:gap-3">
-          <button type="button" onClick={onBack} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
-            ↩️ Retour
-          </button>
           <button type="button" onClick={onHome} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
             🏠 Menu
           </button>
@@ -1081,6 +1074,14 @@ type ComposerProps = {
   attachedFiles: File[];
   onRemoveFile: (index: number) => void;
   onFocus?: () => void;
+  onBlur?: () => void;
+  onHideKeyboard?: () => void;
+  isMobile?: boolean;
+  inputRef?: React.RefObject<HTMLTextAreaElement>;
+  fileInputRef?: React.RefObject<HTMLInputElement | null>;
+  isFontLarge?: boolean;
+  highContrast?: boolean;
+  mobileComposerVisible?: boolean;
 };
 
 // Fonction utilitaire pour obtenir l'icône selon le type de fichier
@@ -1180,8 +1181,35 @@ function Composer({
   attachedFiles,
   onRemoveFile,
   onFocus,
+  onBlur,
+  onHideKeyboard,
+  isMobile = false,
+  inputRef,
+  fileInputRef,
+  isFontLarge = false,
+  highContrast = false,
+  mobileComposerVisible = true,
 }: ComposerProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const localFileInputRef = useRef<HTMLInputElement>(null);
+  const resolvedFileInputRef = fileInputRef ?? localFileInputRef;
+  const localTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const resolvedTextareaRef = inputRef ?? localTextareaRef;
+  const textSizeClass = isFontLarge ? "text-[19px]" : "text-[16px]";
+  const mobileShellClass = highContrast
+    ? "flex w-full items-center gap-2.5 rounded-full bg-[#1B2027] px-4 py-2.5 text-[#E8ECF2] shadow-sm ring-1 ring-[#2A313D]"
+    : "flex w-full items-center gap-2.5 rounded-full bg-gray-100 px-4 py-2.5 text-gray-700 shadow-sm";
+  const mobileTextareaInlineClass = highContrast
+    ? `flex-1 resize-none bg-transparent leading-7 text-[#E8ECF2] placeholder:text-[#A9B4C6] outline-none ${textSizeClass}`
+    : `flex-1 resize-none bg-transparent leading-7 text-gray-900 placeholder:text-gray-500 outline-none ${textSizeClass}`;
+  const mobileIconButtonBase = highContrast
+    ? "grid h-11 w-11 place-items-center rounded-full ring-1 ring-[#2A313D] shadow-md"
+    : "grid h-11 w-11 place-items-center rounded-full ring-1 ring-gray-200 shadow-md";
+  const desktopShellClass = highContrast
+    ? "hidden md:flex w-full items-center gap-3 rounded-full bg-[#1B2027] px-5 py-3.5 text-[#E8ECF2] shadow-sm ring-1 ring-[#2A313D]"
+    : "hidden md:flex w-full items-center gap-3 rounded-full bg-gray-100 px-5 py-3.5 text-gray-700 shadow-sm";
+  const desktopTextareaClass = highContrast
+    ? `flex-1 resize-none bg-transparent leading-7 outline-none placeholder:text-[#A9B4C6] text-[#E8ECF2] ${textSizeClass}`
+    : `flex-1 resize-none bg-transparent leading-7 outline-none placeholder:text-gray-500 ${textSizeClass}`;
 
   return (
     <div className="w-full px-3 md:px-6 py-2.5 md:py-4">
@@ -1202,75 +1230,177 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-full max-w-[1800px] items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={onFocus}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && value.trim()) onSend();
-          }}
-          placeholder="Posez votre question"
-          aria-label="Posez votre question"
-          className="flex-1 bg-transparent text-[15px] md:text-[18px] outline-none placeholder:text-gray-500"
-        />
-        <input
-          ref={fileInputRef}
-          type="file"
-          multiple
-          className="hidden"
-          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
-          onChange={(e) => {
-            if (e.target.files && e.target.files.length > 0) {
-              const filesArray = Array.from(e.target.files);
-              onFileAttach(filesArray);
-              // Réinitialiser l'input pour permettre de sélectionner le même fichier à nouveau
-              if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-              }
-            }
-          }}
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className={`relative grid h-10 w-10 md:h-12 md:w-12 flex-shrink-0 place-items-center rounded-full bg-gray-100 text-gray-900 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
-            attachedFiles.length > 0 ? 'ring-2 ring-blue-300' : ''
-          }`}
-          aria-label="Joindre des fichiers"
-          title={attachedFiles.length > 0 ? `${attachedFiles.length} fichier(s) joint(s)` : "Joindre des fichiers"}
-        >
-          <svg className="h-6 w-6 md:h-7 md:w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          {attachedFiles.length > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 md:h-6 md:w-6 rounded-full bg-blue-700 text-white text-[10px] md:text-[11px] font-bold flex items-center justify-center shadow-md ring-2 ring-white">
-              {attachedFiles.length > 9 ? '9+' : attachedFiles.length}
-            </span>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={onVoice}
-          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-blue-100 text-blue-800 ring-1 ring-blue-200 shadow-md transition hover:bg-blue-200 disabled:opacity-50"
-          aria-label="Mode Voix"
-        >
-          <SendWavesIcon className="h-6 w-6 md:h-9 md:w-9" />
-        </button>
-        <button
-          type="button"
-          onClick={onSend}
-          disabled={!value.trim() && attachedFiles.length === 0}
-          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-green-100 text-green-800 ring-1 ring-green-200 shadow-md transition hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label="Envoyer"
-        >
-          <svg className="h-6 w-6 md:h-9 md:w-9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
-        </button>
+      <div className="mx-auto w-full max-w-[1800px]">
+        {isMobile ? (
+          <>
+            <div className={`${mobileComposerVisible ? "flex flex-col gap-3 md:hidden" : "hidden md:hidden"}`}>
+              <div className={mobileShellClass}>
+                <textarea
+                  ref={resolvedTextareaRef}
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  rows={1}
+                  placeholder="Écrivez votre message"
+                  aria-label="Écrivez votre message"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      if (value.trim()) onSend();
+                    }
+                  }}
+                  className={mobileTextareaInlineClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => resolvedFileInputRef.current?.click()}
+                  className={`${mobileIconButtonBase} ${
+                    highContrast ? "bg-[#232834] text-[#E8ECF2]" : "bg-white text-gray-900"
+                  }`}
+                  aria-label="Joindre des fichiers"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={onVoice}
+                  className={`${mobileIconButtonBase} ${
+                    highContrast ? "bg-[#232834] text-[#2EC1B2]" : "bg-blue-100 text-blue-800"
+                  }`}
+                  aria-label="Mode Voix"
+                >
+                  <SendWavesIcon className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={onSend}
+                  disabled={!value.trim() && attachedFiles.length === 0}
+                  className={`${mobileIconButtonBase} ${
+                    highContrast ? "bg-[#2EC1B2] text-[#071014]" : "bg-green-100 text-green-900"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  aria-label="Envoyer"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+                {onHideKeyboard && (
+                <button
+                  type="button"
+                  onClick={onHideKeyboard}
+                  className={`w-full rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
+                    highContrast ? "bg-[#232834] text-[#E8ECF2]" : "bg-gray-200 text-gray-900"
+                  }`}
+                >
+                  Fermer le clavier
+                </button>
+              )}
+            </div>
+            <input
+              ref={resolvedFileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const filesArray = Array.from(e.target.files);
+                  onFileAttach(filesArray);
+                  if (resolvedFileInputRef.current) {
+                    resolvedFileInputRef.current.value = "";
+                  }
+                  onFocus?.();
+                }
+              }}
+            />
+          </>
+        ) : (
+          <div className={desktopShellClass}>
+            <textarea
+              ref={resolvedTextareaRef}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onFocus={onFocus}
+              onBlur={onBlur}
+              rows={1}
+              placeholder="Posez votre question"
+              aria-label="Posez votre question"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (value.trim()) onSend();
+                }
+              }}
+              className={desktopTextareaClass}
+            />
+            <input
+              ref={resolvedFileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  const filesArray = Array.from(e.target.files);
+                  onFileAttach(filesArray);
+                  if (resolvedFileInputRef.current) {
+                    resolvedFileInputRef.current.value = "";
+                  }
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => resolvedFileInputRef.current?.click()}
+              className={`relative grid h-11 w-11 place-items-center rounded-full shadow-md ring-1 transition focus:outline-none focus-visible:ring-4 ${
+                highContrast
+                  ? `bg-[#232834] text-[#E8ECF2] ring-[#2A313D] hover:bg-[#2A313D] focus-visible:ring-[#2EC1B2]/40 ${attachedFiles.length > 0 ? "ring-2 ring-[#2EC1B2]/60" : ""}`
+                  : `bg-gray-100 text-gray-900 ring-gray-200 hover:bg-gray-200 focus-visible:ring-blue-300 ${attachedFiles.length > 0 ? "ring-2 ring-blue-300" : ""}`
+              }`}
+              aria-label="Joindre des fichiers"
+              title={attachedFiles.length > 0 ? `${attachedFiles.length} fichier(s) joint(s)` : "Joindre des fichiers"}
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={onVoice}
+              className={`grid h-12 w-12 place-items-center rounded-full ring-1 shadow-md transition disabled:opacity-50 ${
+                highContrast
+                  ? "bg-[#232834] text-[#2EC1B2] ring-[#2A313D] hover:bg-[#2A313D]"
+                  : "bg-blue-100 text-blue-800 ring-blue-200 hover:bg-blue-200"
+              }`}
+              aria-label="Mode Voix"
+            >
+              <SendWavesIcon className="h-7 w-7" />
+            </button>
+            <button
+              type="button"
+              onClick={onSend}
+              disabled={!value.trim() && attachedFiles.length === 0}
+              className={`grid h-12 w-12 place-items-center rounded-full ring-1 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                highContrast ? "bg-[#2EC1B2] text-[#071014] ring-[#2EC1B2]/70 hover:bg-[#3DD2C1]" : "bg-green-100 text-green-800 ring-green-200 hover:bg-green-200"
+              }`}
+              aria-label="Envoyer"
+            >
+              <svg className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1300,6 +1430,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const lastVoiceTimeRef = useRef<number>(0); // Timestamp du dernier moment où de la voix a été détectée
   const mrRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const meterRafRef = useRef<number | null>(null);
@@ -1311,7 +1442,243 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const subIntentRef = useRef<Exclude<SubIntent, null> | null>(null);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
-  const [showHelperTips, setShowHelperTips] = useState(true);
+  const composerFileInputRef = useRef<HTMLInputElement>(null);
+  const [isFontLarge, setIsFontLarge] = useState(false);
+  const [highContrastMode, setHighContrastMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
+  const [mobileComposerVisible, setMobileComposerVisible] = useState(false);
+  const [mobileIntentsVisible, setMobileIntentsVisible] = useState(false);
+  const [voiceReady, setVoiceReady] = useState(false);
+  const [hasStartedFlow, setHasStartedFlow] = useState(false);
+  const shouldShowMobileComposer = isMobile && (mobileComposerVisible || voiceMode);
+  const voiceReadyRef = useRef(false);
+  useEffect(() => {
+    voiceReadyRef.current = voiceReady;
+  }, [voiceReady]);
+  useEffect(() => {
+    if (voiceMode) {
+      setMobileComposerVisible(true);
+      setIsInputFocused(true);
+    }
+  }, [voiceMode]);
+  const resetConversation = useCallback(() => {
+    reset();
+    setScreen("home");
+    setIntent(null);
+    setSubIntent(null);
+    setStepIndex(0);
+    setShowBannerUrl(null);
+    setAttachedFiles([]);
+    setComposerText("");
+    setMessageFiles({});
+    pendingFilesRef.current = null;
+    setVoiceMode(false);
+    setVoiceTranscription("");
+    setFinalTranscription("");
+    setVoiceStatus("Prêt");
+    setMobileComposerVisible(false);
+    setIsInputFocused(false);
+    setMobileIntentsVisible(false);
+    setHasStartedFlow(false);
+    emitTelemetry({ type: "reset" });
+  }, [reset]);
+
+  const quickActions = useMemo(
+    () => [
+      {
+        key: "voice",
+        label: "Parler",
+        icon: <SendWavesIcon className="h-5 w-5" />,
+      },
+      {
+        key: "write",
+        label: "Écrire",
+        icon: (
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        ),
+      },
+      {
+        key: "attach",
+        label: "Joindre",
+        icon: (
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        ),
+      },
+      {
+        key: "reset",
+        label: "Effacer",
+        icon: <TrashIcon className="h-5 w-5" />,
+      },
+    ],
+    []
+  );
+  const instructionCards = useMemo(
+    () => [
+      {
+        key: "attach",
+        title: "Joindre un fichier",
+        description: "Ajoutez une photo ou un document pour nous aider à analyser votre situation.",
+        icon: (
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        ),
+      },
+      {
+        key: "voice",
+        title: "Parler à voix haute",
+        description: "Utilisez le micro si l’écriture est difficile ou si vous préférez expliquer oralement.",
+        icon: <SendWavesIcon className="h-5 w-5" />,
+      },
+      {
+        key: "write",
+        title: "Écrire votre message",
+        description: "Tapez votre question pour recevoir des conseils étape par étape.",
+        icon: (
+          <svg
+            className="h-5 w-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+        ),
+      },
+      {
+        key: "reset",
+        title: "Recommencer",
+        description: "Nettoyez la conversation et repartez sur de nouvelles bases quand vous le souhaitez.",
+        icon: <TrashIcon className="h-5 w-5" />,
+      },
+    ],
+    []
+  );
+  const handleQuickAction = useCallback(
+    (key: string) => {
+      if (key === "voice") {
+        setMobileIntentsVisible(false);
+        setVoiceMode(true);
+        setVoiceStatus("Mode voix");
+        setMobileComposerVisible(true);
+        setIsInputFocused(true);
+        setScreen("chat");
+        return;
+      }
+      if (key === "write") {
+        setMobileIntentsVisible(true);
+        setScreen("chat");
+        setMobileComposerVisible(true);
+        messageInputRef.current?.focus();
+        setIsInputFocused(true);
+        return;
+      }
+      if (key === "attach") {
+        setMobileIntentsVisible(false);
+        setMobileComposerVisible(true);
+        composerFileInputRef.current?.click();
+        setScreen("chat");
+        return;
+      }
+      if (key === "reset") {
+        setMobileIntentsVisible(false);
+        resetConversation();
+        return;
+      }
+    },
+    [composerFileInputRef, messageInputRef, resetConversation, setVoiceStatus]
+  );
+  const handleHideKeyboard = useCallback(() => {
+    messageInputRef.current?.blur();
+    setIsInputFocused(false);
+    setMobileComposerVisible(false);
+    setMobileIntentsVisible(false);
+    setScreen("home");
+  }, []);
+  const handleComposerFocus = useCallback(() => {
+    setIsInputFocused(true);
+    setMobileComposerVisible(true);
+    if (isMobile && !hasStartedFlow && screen === "home") {
+      setMobileIntentsVisible(true);
+    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [hasStartedFlow, isMobile, screen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const highContrastTokens = {
+    root: `${highContrastClasses.background}`,
+    panel: `${highContrastClasses.panel} ring-1 ring-[#2A313D]`,
+    assistantBubble: `${highContrastClasses.botBubble}`,
+    userBubble: "bg-[#F6F8FB] text-[#071014] ring-1 ring-[#C5D2DE]",
+    toolbar: "border border-[#2A313D] bg-[#1B2027]",
+    toolbarText: "text-[#E8ECF2]",
+    toolbarControl: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    toolbarControlActive: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
+    quickAction: `${highContrastClasses.elevated} ring-1 ring-inset ring-[#2A313D]`,
+    quickActionBadge: `${highContrastClasses.buttonIdle} ring-1 ring-inset ring-[#2A313D]`,
+    composerShell: "border-t border-[#2A313D] bg-[#1B2027]/95",
+    mobileAction: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    mobileSend: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
+    mobileHide: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    desktopComposer: "bg-[#1B2027] text-[#E8ECF2]",
+    desktopTextarea: "placeholder:text-[#A9B4C6] text-[#E8ECF2]",
+    desktopButton: `${highContrastClasses.buttonIdle} ring-1 ring-[#2A313D]`,
+    desktopSend: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
+  };
+  const baseTextSizeClass = isFontLarge ? "text-[20px]" : "text-[17px]";
+  const rootThemeClass = highContrastMode ? highContrastTokens.root : "bg-sky-50 text-gray-900";
+  const panelThemeClass = highContrastMode ? highContrastTokens.panel : "bg-white text-gray-900 ring-slate-100";
+  const assistantBubbleClass = highContrastMode
+    ? highContrastTokens.assistantBubble
+    : "bg-gray-100 text-gray-900 ring-1 ring-gray-200";
+  const userBubbleClass = highContrastMode
+    ? highContrastTokens.userBubble
+    : "bg-blue-600 text-white ring-blue-500";
 
   // Mapping texte libre → intent/subIntent (heuristique simple)
   function mapTextToMeta(text: string): { intent: Intent; subIntent?: Exclude<SubIntent, null> } | null {
@@ -1349,14 +1716,9 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, [messages, stepIndex, screen]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      setShowHelperTips(false);
-    }
-  }, [messages]);
-
-  useEffect(() => {
+    if (isMobile) return;
     if (composerText.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [composerText]);
+  }, [composerText, isMobile]);
 
   // Écouter les messages depuis WeWeb pour ouvrir le mode voix (Option B)
   useEffect(() => {
@@ -1371,6 +1733,8 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
         // Ouvrir l'overlay mode voix
         setVoiceMode(true);
         setVoiceStatus("Prêt - Cliquez sur le bouton pour commencer");
+        setMobileComposerVisible(true);
+        setIsInputFocused(true);
         
         // Ne pas démarrer automatiquement - laisser l'utilisateur cliquer sur le bouton
         // La permission micro a déjà été accordée par WeWeb, donc startRec() devrait fonctionner
@@ -1510,7 +1874,13 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
 
     // Nettoyer après l'envoi
     setVoiceStatus("Prêt");
-  }, [finalTranscription, stepIndex, sendAction]);
+    setScreen("chat");
+    setHasStartedFlow(true);
+    if (isMobile) {
+      setMobileComposerVisible(true);
+      setIsInputFocused(true);
+    }
+  }, [finalTranscription, stepIndex, sendAction, isMobile]);
 
   // Détection de silence : arrêter automatiquement après 3 secondes sans voix
   useEffect(() => {
@@ -1566,6 +1936,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   // Transcription vocale pour le mode voix (séparée de la dictée normale)
   useEffect(() => {
     if (!voiceMode) {
+      setVoiceReady(false);
       // Nettoyer la transcription quand on ferme le mode voix
       setVoiceTranscription("");
       // Arrêter et nettoyer la transcription si elle existe
@@ -1574,19 +1945,22 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
         try {
           voiceRec.abort();
         } catch {}
-        voiceRecognitionRef.current = null;
       }
+      voiceRecognitionRef.current = null;
       return;
     }
 
+    setVoiceReady(false);
     const anyWindow = window as any;
     const SpeechRecognition = anyWindow.SpeechRecognition || anyWindow.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("SpeechRecognition non disponible pour le mode voix");
+      setVoiceStatus("Transcription vocale indisponible");
+      setVoiceReady(false);
       return;
     }
 
-    // Créer une nouvelle instance de SpeechRecognition pour le mode voix
+    // Créer ou réutiliser l'instance de SpeechRecognition pour le mode voix
     const voiceRec: any = new SpeechRecognition();
     voiceRec.lang = locale;
     voiceRec.interimResults = true; // Retours en temps réel
@@ -1659,6 +2033,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
 
     // Stocker la référence
     voiceRecognitionRef.current = voiceRec;
+    setVoiceReady(true);
 
     return () => {
       // Nettoyer à la fermeture du mode voix
@@ -1758,6 +2133,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
       setStepIndex(0);
       setScreen("chat");
     }
+    setHasStartedFlow(true);
   }
 
   function handleSelectSubIntent(s: Exclude<SubIntent, null>) {
@@ -1765,6 +2141,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     setSubIntent(s);
     setStepIndex(0);
     setScreen("chat");
+    setHasStartedFlow(true);
   }
 
 async function handleChoiceSelect(value: string, providedLabel?: string) {
@@ -1799,6 +2176,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       // After final step, we stay in chat, allow more actions
       setStepIndex(next);
     }
+    setScreen("chat");
+    setHasStartedFlow(true);
   }
 
   function handleBack() {
@@ -1960,6 +2339,19 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
 
   async function startRec() {
     try {
+      if (!voiceReady) {
+        setVoiceStatus("Initialisation du micro...");
+        let waited = 0;
+        while (!voiceReadyRef.current && waited < 2000) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          waited += 100;
+        }
+        if (!voiceReadyRef.current) {
+          setVoiceStatus("Micro non prêt");
+          return;
+        }
+        setVoiceStatus("Prêt");
+      }
       // Vérifier si on est dans une iframe (WeWeb)
       const isInIframe = window.self !== window.top;
       
@@ -2249,6 +2641,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       }
       
       appendUser(userText);
+      setScreen("chat");
+      setHasStartedFlow(true);
       // Ajouter la réponse assistant (gestion des tableaux)
       if (data?.answer) {
         let answer = data.answer;
@@ -2286,127 +2680,110 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
     }
   }
 
+  const showPrimaryIntents = !hasStartedFlow && screen !== "sos";
+  const showSosSubButtons = !hasStartedFlow && screen === "sos";
+  const showMobileIntentGrid = isMobile && showPrimaryIntents && mobileIntentsVisible;
+
+  useEffect(() => {
+    if (!showPrimaryIntents) {
+      setMobileIntentsVisible(false);
+    }
+  }, [showPrimaryIntents]);
+
   return (
     <section
       ref={containerRef}
-      className="relative flex min-h-screen w-full justify-center bg-gradient-to-br from-sky-50 via-white to-sky-100 px-3 sm:px-6 lg:px-10 text-[16px] md:text-[19px] overflow-hidden"
+      className={`flex min-h-screen w-full justify-center ${rootThemeClass} ${baseTextSizeClass} px-3 sm:px-6 lg:px-10 overflow-x-hidden`}
     >
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 -left-20 h-72 w-72 rounded-full bg-sky-200 blur-3xl opacity-60" />
-        <div className="absolute top-24 right-0 h-80 w-80 rounded-full bg-blue-100 blur-[120px] opacity-60" />
-        <div className="absolute bottom-[-80px] left-1/3 h-72 w-72 rounded-full bg-cyan-100 blur-[120px] opacity-60" />
-      </div>
-      <div className="flex w-full max-w-[1800px] flex-1 flex-col rounded-3xl bg-white shadow-2xl ring-1 ring-slate-100 overflow-hidden">
+      <div className={`relative flex w-full max-w-[1800px] flex-1 flex-col rounded-3xl shadow-2xl ring-1 overflow-hidden ${panelThemeClass}`}>
         <TopBar
+          highContrast={highContrastMode}
           onBack={handleBack}
           onMenu={() => { /* menu plus tard */ }}
-          onReset={() => {
-            reset();
-            setScreen("home");
-            setIntent(null);
-            setSubIntent(null);
-            setStepIndex(0);
-            setShowBannerUrl(null);
-            setAttachedFiles([]);
-            setComposerText("");
-            setMessageFiles({});
-            pendingFilesRef.current = null;
-            setVoiceMode(false);
-            setVoiceTranscription("");
-            setFinalTranscription("");
-            setVoiceStatus("Prêt");
-            setShowHelperTips(true);
-            emitTelemetry({ type: "reset" });
-          }}
+          onReset={resetConversation}
         />
-
+        <div className={`flex flex-wrap items-center gap-3 px-4 py-3 border-b ${highContrastMode ? "border-[#2A313D] bg-[#1B2027]" : "border-slate-100 bg-white/80"}`}>
+          <button
+            type="button"
+            onClick={() => setIsFontLarge((prev) => !prev)}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+              highContrastMode
+                ? isFontLarge
+                  ? highContrastTokens.toolbarControlActive
+                  : highContrastTokens.toolbarControl
+                : isFontLarge
+                  ? "bg-blue-600 text-white"
+                  : "bg-blue-100 text-blue-900"
+            }`}
+          >
+            {isFontLarge ? "Texte large activé" : "Agrandir le texte"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setHighContrastMode((prev) => !prev)}
+            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+              highContrastMode ? highContrastTokens.toolbarControlActive : "bg-yellow-100 text-yellow-900"
+            }`}
+          >
+            {highContrastMode ? "Mode contraste élevé" : "Activer contraste"}
+          </button>
+        </div>
         {/* Home screen top section supprimée pour placer les boutons en bas */}
         {false && screen === "home" && <div />}
 
         {/* SOS submenu top section supprimée pour placer les boutons en bas */}
         {false && screen === "sos" && <div />}
 
-        {/* Conversation area - toujours visible */}
-        <div className="flex-1 overflow-hidden bg-slate-50">
-          <div className="flex h-full flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 overflow-y-auto min-h-0 pb-10 items-center">
-          {/* Message central d'accueil */}
-          {showHelperTips && conversation.length === 0 && (
-            <div className="flex w-full flex-1 items-center justify-center pt-8 md:pt-12">
-              <div className="w-full max-w-[1000px] text-gray-900 text-[15px] md:text-[18px] font-medium">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {[
-                    {
-                      key: "attach",
-                      icon: (
-                        <svg
-                          className="h-6 w-6 md:h-7 md:w-7"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="17 8 12 3 7 8" />
-                          <line x1="12" y1="3" x2="12" y2="15" />
-                        </svg>
-                      ),
-                      text: "Joindre un fichier pour ajouter une photo ou un document.",
-                      bgClass: "bg-gray-100 ring-gray-200",
-                      iconBg: "bg-gray-200 text-gray-700",
-                    },
-                    {
-                      key: "voice",
-                      icon: <SendWavesIcon className="h-6 w-6 md:h-7 md:w-7" />,
-                      text: "Mode voix pour parler à Ernest au lieu d'écrire.",
-                      bgClass: "bg-blue-50 ring-blue-100",
-                      iconBg: "bg-blue-100 text-blue-700",
-                    },
-                    {
-                      key: "send",
-                      icon: (
-                        <svg
-                          className="h-5 w-5 md:h-6 md:w-6"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          viewBox="0 0 24 24"
-                        >
-                          <line x1="22" y1="2" x2="11" y2="13" />
-                          <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                        </svg>
-                      ),
-                      text: "Envoyer pour transmettre instantanément votre demande.",
-                      bgClass: "bg-green-50 ring-green-100",
-                      iconBg: "bg-green-100 text-green-700",
-                    },
-                    {
-                      key: "trash",
-                      icon: <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />,
-                      text: "Effacer pour relancer une nouvelle conversation propre.",
-                      bgClass: "bg-red-50 ring-red-100",
-                      iconBg: "bg-red-100 text-red-700",
-                    },
-                  ].map((item) => (
+        {/* Conversation area */}
+        {screen !== "home" ? (
+          <div className="flex-1 overflow-hidden bg-slate-50">
+            <div className="flex h-full flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 overflow-y-auto min-h-0 pb-32 md:pb-36 items-center">
+          {!isMobile && conversation.length === 0 && (
+            <div className="hidden md:block w-full pt-6">
+              <div className="mx-auto max-w-[1100px]">
+                <div className="grid gap-3 md:grid-cols-4 lg:grid-cols-2">
+                  {instructionCards.map((card) => (
                     <div
-                      key={item.key}
-                      className={`flex items-center gap-3 rounded-2xl px-4 py-3 ring-1 ring-inset ${item.bgClass}`}
+                      key={card.key}
+                      className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset ${
+                        highContrastMode ? `${highContrastTokens.quickAction}` : "bg-white text-gray-900 ring-slate-200"
+                      }`}
                     >
-                      <div className={`grid h-9 w-9 place-items-center rounded-full ${item.iconBg}`}>
-                        {item.icon}
+                      <div
+                        className={`grid h-10 w-10 place-items-center rounded-full ${
+                          highContrastMode ? `${highContrastTokens.quickActionBadge}` : "bg-slate-100 text-gray-900"
+                        }`}
+                        aria-hidden
+                      >
+                        {card.icon}
                       </div>
-                      <span className="text-left leading-relaxed text-[15px] md:text-[17px]">
-                        {item.text}
-                      </span>
+                      <div className="text-left">
+                        <p className="text-base font-semibold">{card.title}</p>
+                        <p className={`text-sm ${highContrastMode ? "text-[#A9B4C6]" : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
           )}
+            {showMobileIntentGrid && (
+              <div className="w-full md:hidden">
+                <p className="mb-3 text-center text-sm font-semibold text-gray-600">Choisissez un sujet pour commencer :</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {ALL_INTENTS.map((i) => (
+                    <button
+                      key={i.key}
+                      type="button"
+                      onClick={() => handleSelectIntent(i.key)}
+                      className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-white px-3 py-2 text-center text-sm font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50"
+                    >
+                      <span className="leading-snug">{i.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           {/* Safety banner */}
           {showBannerUrl && (
             <div className="mx-auto w-full max-w-[1800px] rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
@@ -2431,11 +2808,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             </div>
           )}
 
-          <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
-            {(() => {
-              console.log('Rendu de la conversation - messageFiles state:', messageFiles);
-              return null;
-            })()}
+            <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
             {conversation.map((m, idx) => {
               const filesForMessage = m.role === "user" ? messageFiles[m.ts] : undefined;
               if (m.role === "user") {
@@ -2458,6 +2831,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   showAvatar={m.role === "user"}
                   profileImage={m.role === "user" ? profileImage || undefined : undefined}
                   userName={m.role === "user" ? userName : undefined}
+                  className={m.role === "user" ? userBubbleClass : assistantBubbleClass}
                 >
                   {m.text}
                 </Bubble>
@@ -2476,28 +2850,73 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             )}
             <div ref={bottomRef} />
           </div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex-1 bg-slate-50 flex flex-col overflow-y-auto min-h-0 pb-24 md:pb-28">
+            {isMobile && !shouldShowMobileComposer && screen === "home" && (
+              <div className="flex w-full flex-1 items-center justify-center py-10 md:hidden">
+                <div className="grid w-full max-w-lg grid-cols-2 gap-4">
+                  {quickActions.map((action) => (
+                    <button
+                      key={action.key}
+                      type="button"
+                      onClick={() => handleQuickAction(action.key)}
+                      className={`flex flex-col items-center justify-center gap-2 rounded-3xl px-10 py-10 text-lg font-semibold shadow-md ${
+                        highContrastMode
+                          ? `${highContrastTokens.quickAction}`
+                          : "bg-white text-gray-900 ring-1 ring-inset ring-slate-200"
+                      }`}
+                    >
+                      <span className="text-2xl" aria-hidden>
+                        {action.icon}
+                      </span>
+                      <span className="text-lg">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {showMobileIntentGrid && (
+              <div className="w-full px-4 pb-4 md:hidden">
+                <p className="mb-3 text-center text-sm font-semibold text-gray-600">Choisissez un sujet pour commencer :</p>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {ALL_INTENTS.map((i) => (
+                    <button
+                      key={i.key}
+                      type="button"
+                      onClick={() => handleSelectIntent(i.key)}
+                      className="inline-flex min-h-[48px] items-center justify-start gap-2 rounded-2xl bg-white px-3 py-2 text-left text-sm font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50"
+                    >
+                      <span className="text-xl" aria-hidden>{i.icon}</span>
+                      <span className="leading-snug">{i.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Boutons juste au-dessus de l'input (bas de page) */}
-        <div className="px-3 md:px-6 lg:px-8">
-        {screen === "home" && composerText.length === 0 && conversation.length === 0 && attachedFiles.length === 0 && (
-          <div className="mx-auto mb-2 md:mb-3 mt-16 md:mt-20 w-full max-w-[1000px] text-center">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-2.5">
+        <div className="hidden md:block px-3 md:px-6 lg:px-8">
+        {!isMobile && showPrimaryIntents && composerText.length === 0 && conversation.length === 0 && attachedFiles.length === 0 && (
+          <div className="mx-auto mb-4 mt-10 w-full max-w-[1200px]">
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-6">
               {ALL_INTENTS.map((i) => (
                 <button
                   key={i.key}
                   type="button"
                   onClick={() => handleSelectIntent(i.key)}
-                  className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-2.5 md:px-3 py-1.5 md:py-2 text-[14px] md:text-[15px] text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+                  className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-white px-4 py-3 text-center text-[15px] font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
                 >
-                  {i.label}
+                  <span className="leading-snug">{i.label}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
-        {screen === "sos" && (
+        {showSosSubButtons && !isMobile && (
           <div className="mx-auto mb-2 md:mb-3 w-full max-w-[1000px] text-center">
             <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
               {SOS_OPTIONS.map((o) => (
@@ -2514,9 +2933,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           </div>
         )}
         </div>
-
         {/* Bottom composer present on all screens */}
-        <div className="border-t border-gray-100 bg-white/90 pb-4">
+        <div className={`sticky bottom-0 left-0 right-0 z-20 border-t ${highContrastMode ? "border-[#2A313D] bg-[#1B2027]/95" : "border-gray-100 bg-white/90"} shadow-[0_-8px_24px_rgba(15,23,42,0.12)]`}>
           <Composer
             value={composerText}
             onChange={(v) => setComposerText(v)}
@@ -2651,6 +3069,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             // Nettoyer
             setAttachedFiles([]);
             setComposerText("");
+            setScreen("chat");
+            setHasStartedFlow(true);
             return;
           }
           
@@ -2661,11 +3081,16 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           const effectiveStep = stepIndex > 0 ? stepIndex : 1;
           sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: effectiveStep, text: msg });
           setComposerText("");
+          setScreen("chat");
+          setHasStartedFlow(true);
             }}
             onVoice={() => {
           // Envoyer un message au parent (WeWeb) pour demander la permission micro
           // Le parent gérera la permission et renverra "open_voice_mode" à React
           console.log("Demande de permission micro envoyée au parent (WeWeb)");
+          setMobileIntentsVisible(false);
+          setMobileComposerVisible(true);
+          setIsInputFocused(true);
           
           try {
             // Essayer d'envoyer au parent
@@ -2701,14 +3126,21 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           setAttachedFiles((prev) => [...prev, ...files]);
             }}
             attachedFiles={attachedFiles}
-            onRemoveFile={(index) => {
+          onRemoveFile={(index) => {
           setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
-            }}
-            onFocus={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          }}
+          inputRef={messageInputRef as React.RefObject<HTMLTextAreaElement>}
+          fileInputRef={composerFileInputRef}
+          isMobile={isMobile}
+          isFontLarge={isFontLarge}
+          highContrast={highContrastMode}
+          mobileComposerVisible={mobileComposerVisible}
+          onHideKeyboard={handleHideKeyboard}
+          onFocus={handleComposerFocus}
+          onBlur={() => setIsInputFocused(false)}
           />
         </div>
       </div>
-
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}
       <VoiceModeOverlay
         isOpen={voiceMode}

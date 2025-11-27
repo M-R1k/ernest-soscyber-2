@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, SendHorizontal } from 'lucide-react'
+import { highContrastClasses } from './theme/highContrastPalette'
 import ErnestThinkingIndicator from './components/ErnestThinkingIndicator'
 
 // Configuration de l'API N8N
@@ -93,17 +94,27 @@ export default function ChatInterface() {
     xlarge: 'text-xl'
   }
   
-  // Configuration des couleurs pour le mode haut contraste
-const colorScheme = highContrast ? {
-    primary: 'bg-blue-900 text-white',
-    secondary: 'bg-yellow-400 text-black',
-    background: 'bg-white text-black',
-    border: 'border-2 border-black'
+  // Palette contrastée senior-friendly
+  const colorScheme = highContrast ? {
+    background: highContrastClasses.background,
+    header: highContrastClasses.header,
+    userBubble: highContrastClasses.userBubble,
+    botBubble: highContrastClasses.botBubble,
+    border: highContrastClasses.border,
+    controlActive: highContrastClasses.buttonActive,
+    controlIdle: highContrastClasses.buttonIdle,
+    inputBorder: highContrastClasses.inputBorder,
+    panel: highContrastClasses.panel,
   } : {
-    primary: 'bg-blue-600 text-white',
-    secondary: 'bg-white text-gray-900',
     background: 'bg-sky-50 text-gray-900',
-    border: 'border border-blue-200'
+    header: 'bg-blue-600 text-white',
+    userBubble: 'bg-blue-600 text-white',
+    botBubble: 'bg-gray-800 text-white border border-gray-700',
+    border: 'border border-blue-200',
+    controlActive: 'bg-blue-600 text-white',
+    controlIdle: 'bg-gray-200 !text-gray-900',
+    inputBorder: 'border-gray-400',
+    panel: 'bg-white text-gray-900',
   }
 
   // Auto-scroll vers le bas des messages
@@ -559,9 +570,17 @@ const colorScheme = highContrast ? {
   };
 
   const tipsPanel = (
-    <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm md:text-base shadow-sm">
-      <strong className="block text-sm md:text-base font-semibold !text-gray-900 mb-1">💡 Conseils rapides :</strong>
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-gray-700 text-xs md:text-sm leading-snug">
+    <div className={`rounded-lg p-3 text-sm md:text-base shadow-sm ${
+      highContrast
+        ? `${highContrastClasses.border} bg-[#1B2027] text-[#E8ECF2]`
+        : 'border border-blue-200 bg-blue-50 text-gray-700'
+    }`}>
+      <strong className={`block text-sm md:text-base font-semibold mb-1 ${
+        highContrast ? '!text-[#F6F8FB]' : '!text-gray-900'
+      }`}>💡 Conseils rapides :</strong>
+      <ul className={`grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs md:text-sm leading-snug ${
+        highContrast ? 'text-[#E8ECF2]' : 'text-gray-700'
+      }`}>
         <li className="flex items-start gap-1">
           <span className="text-base leading-tight">•</span>
           <span>Le bouton <strong>"Parler"</strong> remplace la saisie clavier.</span>
@@ -593,7 +612,7 @@ const colorScheme = highContrast ? {
   return (
     <div className={`min-h-screen ${colorScheme.background} transition-all duration-300`}>
       {/* En-tête avec contrôles d'accessibilité */}
-      <header className={`mt-10 ${colorScheme.primary} py-4 shadow-lg`}>
+      <header className={`mt-10 ${colorScheme.header} py-4 shadow-lg`}>
         <div className="mx-auto w-full max-w-[1800px] px-4 sm:px-6 lg:px-10 2xl:px-14">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             {/* Titre principal */}
@@ -603,13 +622,18 @@ const colorScheme = highContrast ? {
                 Assistant Ernest
               </h1>
               <span className={`px-3 py-2 rounded-full text-sm font-medium leading-tight ${
-                isThinking ? 'bg-yellow-100 text-yellow-800' : 
-                isRecording ? 'bg-red-100 text-red-800' :
-                sending ? 'bg-amber-100 text-amber-800' :
-                'bg-green-100 text-green-800'
+                highContrast
+                  ? `${highContrastClasses.badge} ${highContrastClasses.mutedText}`
+                  : isThinking
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : isRecording
+                      ? 'bg-red-100 text-red-800'
+                      : sending
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-green-100 text-green-800'
               }`}>
                 <span>{currentStatus.label}</span>
-                <span className="block text-[11px] text-gray-600 mt-1">
+                <span className={`block text-[11px] mt-1 ${highContrast ? highContrastClasses.mutedText : 'text-gray-600'}`}>
                   {currentStatus.desc}
                 </span>
               </span>
@@ -637,7 +661,13 @@ const colorScheme = highContrast ? {
               <button
                 onClick={() => setSimplifiedMode(!simplifiedMode)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  simplifiedMode ? 'bg-yellow-500 text-white' : 'bg-gray-200 !text-gray-900'
+                  simplifiedMode
+                    ? highContrast
+                      ? colorScheme.controlActive
+                      : 'bg-yellow-500 text-white'
+                    : highContrast
+                      ? colorScheme.controlIdle
+                      : 'bg-gray-200 !text-gray-900'
                 }`}
                 aria-pressed={simplifiedMode}
               >
@@ -648,7 +678,13 @@ const colorScheme = highContrast ? {
               <button
                 onClick={() => setVoiceMode(!voiceMode)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  voiceMode ? 'bg-green-500 text-white' : 'bg-gray-200 !text-gray-900'
+                  voiceMode
+                    ? highContrast
+                      ? colorScheme.controlActive
+                      : 'bg-green-500 text-white'
+                    : highContrast
+                      ? colorScheme.controlIdle
+                      : 'bg-gray-200 !text-gray-900'
                 }`}
                 aria-pressed={voiceMode}
               >
@@ -659,7 +695,7 @@ const colorScheme = highContrast ? {
               <button
                 onClick={() => setHighContrast(!highContrast)}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  highContrast ? 'bg-black text-white' : 'bg-gray-200 !text-gray-900'
+                  highContrast ? colorScheme.controlActive : 'bg-gray-200 !text-gray-900'
                 }`}
                 aria-pressed={highContrast}
               >
@@ -690,18 +726,24 @@ const colorScheme = highContrast ? {
               <div
                 className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
                   message.from === 'user'
-                    ? `${colorScheme.primary} text-white`
-                    : `bg-gray-800 text-white ${colorScheme.border}`
+                    ? colorScheme.userBubble
+                    : colorScheme.botBubble
                 }`}
               >
                 <div className="whitespace-pre-wrap leading-relaxed flex items-start gap-2">
                   {message.from === 'bot' && (
-                    <Sparkles className="w-5 h-5 mt-0.5 flex-shrink-0 text-white" />
+                    <Sparkles className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                      highContrast ? 'text-[#2EC1B2]' : 'text-white'
+                    }`} />
                   )}
                   <span>{message.text}</span>
                 </div>
                 <div className={`text-xs opacity-70 mt-2 ${
-                  message.from === 'bot' ? 'text-gray-300' : ''
+                  message.from === 'bot'
+                    ? highContrast
+                      ? highContrastClasses.mutedText
+                      : 'text-gray-300'
+                    : ''
                 }`}>
                   {message.timestamp.toLocaleTimeString('fr-FR', { 
                     hour: '2-digit', 
@@ -713,7 +755,11 @@ const colorScheme = highContrast ? {
                 {message.from === 'bot' && voiceMode && (
                   <button
                     onClick={() => speakText(message.text)}
-                    className="mt-2 px-3 py-1 text-xs bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    className={`mt-2 px-3 py-1 text-xs rounded-lg transition-colors ${
+                      highContrast
+                        ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
                     disabled={isSpeaking}
                   >
                     {isSpeaking ? '⏸️' : '🔊'} Lire
@@ -741,7 +787,9 @@ const colorScheme = highContrast ? {
             {/* Zone de texte principale - Plus grande et visible */}
             {showTextComposer && (
               <div className="relative">
-                <label htmlFor="message-input" className="block text-base md:text-lg font-semibold mb-2 !text-gray-900">
+                <label htmlFor="message-input" className={`block text-base md:text-lg font-semibold mb-2 ${
+                  highContrast ? '!text-[#F6F8FB]' : '!text-gray-900'
+                }`}>
                   Votre message :
                 </label>
                 <textarea
@@ -750,16 +798,20 @@ const colorScheme = highContrast ? {
                   value={currentMessage}
                   onChange={(e) => setCurrentMessage(e.target.value)}
                   placeholder="Tapez votre message ici..."
-                  className={`w-full p-5 md:p-6 rounded-xl border-3 resize-none focus:outline-none focus:ring-4 focus:ring-blue-400 ${fontSizeClasses[fontSize] || 'text-lg'} ${
-                    highContrast ? 'border-black' : 'border-gray-400'
-                  } min-h-[120px] md:min-h-[140px]`}
+                  className={`w-full p-5 md:p-6 rounded-xl border-[3px] resize-none focus:outline-none focus:ring-4 ${
+                    highContrast ? 'focus:ring-[#2EC1B2]' : 'focus:ring-blue-400'
+                  } ${fontSizeClasses[fontSize] || 'text-lg'} ${
+                    highContrast ? colorScheme.inputBorder : 'border-gray-400'
+                  } min-h-[120px] md:min-h-[140px] bg-transparent`}
                   rows={4}
                   disabled={isThinking || sending}
                 />
                 
                 {/* Compteur de caractères - Plus visible */}
                 <div className={`absolute bottom-3 right-3 text-sm md:text-base font-medium ${
-                  currentMessage.length > 450 ? 'text-red-600' : 'text-gray-600'
+                  currentMessage.length > 450
+                    ? highContrast ? 'text-[#F76C5E]' : 'text-red-600'
+                    : highContrast ? highContrastClasses.mutedText : 'text-gray-600'
                 }`}>
                   {currentMessage.length}/500
                 </div>
@@ -768,15 +820,25 @@ const colorScheme = highContrast ? {
 
             {/* Fichiers attachés - Plus visible */}
             {attachedFiles.length > 0 && (
-              <div className="p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+              <div className={`p-4 rounded-xl border-2 ${
+                highContrast
+                  ? `${highContrastClasses.border} bg-[#1B2027] text-[#E8ECF2]`
+                  : 'bg-blue-50 border-blue-200'
+              }`}>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base md:text-lg font-semibold !text-gray-900">📎 Fichiers joints :</span>
+                  <span className={`text-base md:text-lg font-semibold ${
+                    highContrast ? '!text-[#F6F8FB]' : '!text-gray-900'
+                  }`}>📎 Fichiers joints :</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {attachedFiles.map((file, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-3 px-4 py-3 bg-blue-100 text-blue-900 rounded-lg border border-blue-300"
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${
+                        highContrast
+                          ? 'bg-[#232834] text-[#E8ECF2] border-[#2A313D]'
+                          : 'bg-blue-100 text-blue-900 border-blue-300'
+                      }`}
                     >
                       <span className={`text-base md:text-lg font-medium ${fontSizeClasses[fontSize]}`}>📎 {file.name}</span>
                       <button
@@ -795,8 +857,12 @@ const colorScheme = highContrast ? {
                     disabled={!attachedFiles.length || sending}
                     className={`mt-4 w-full px-6 py-4 rounded-xl font-bold transition-all text-lg md:text-xl min-h-[60px] ${
                       attachedFiles.length && !sending
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? highContrast
+                          ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5] shadow-lg`
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg'
+                        : highContrast
+                          ? 'bg-[#2A313D] text-[#7A8599] cursor-not-allowed'
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     ⬆️ Envoyer les fichiers ({attachedFiles.length})
@@ -807,15 +873,27 @@ const colorScheme = highContrast ? {
 
             {/* Barre d'outils de formatage - Plus accessible */}
             {!simplifiedMode && showTextComposer && (
-              <div className="p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div className={`p-4 rounded-xl border-2 ${
+                highContrast
+                  ? `${highContrastClasses.border} bg-[#1B2027]`
+                  : 'bg-gray-50 border-gray-200'
+              }`}>
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className={`text-base md:text-lg font-semibold !text-gray-900 ${fontSizeClasses[fontSize]}`}>Formatage :</span>
+                  <span className={`text-base md:text-lg font-semibold ${fontSizeClasses[fontSize]} ${
+                    highContrast ? '!text-[#F6F8FB]' : '!text-gray-900'
+                  }`}>Formatage :</span>
                   
                   {/* Boutons de formatage - Plus grands */}
                   <button
                     onClick={() => toggleTextFormat('bold')}
                     className={`px-5 py-3 rounded-xl font-bold transition-colors min-w-[56px] min-h-[56px] text-lg ${
-                      textFormat.bold ? 'bg-blue-600 text-white' : 'bg-gray-300 !text-gray-900'
+                      textFormat.bold
+                        ? highContrast
+                          ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                          : 'bg-blue-600 text-white'
+                        : highContrast
+                          ? colorScheme.controlIdle
+                          : 'bg-gray-300 !text-gray-900'
                     }`}
                     aria-pressed={textFormat.bold}
                   >
@@ -825,7 +903,13 @@ const colorScheme = highContrast ? {
                   <button
                     onClick={() => toggleTextFormat('italic')}
                     className={`px-5 py-3 rounded-xl italic transition-colors min-w-[56px] min-h-[56px] text-lg ${
-                      textFormat.italic ? 'bg-blue-600 text-white' : 'bg-gray-300 !text-gray-900'
+                      textFormat.italic
+                        ? highContrast
+                          ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                          : 'bg-blue-600 text-white'
+                        : highContrast
+                          ? colorScheme.controlIdle
+                          : 'bg-gray-300 !text-gray-900'
                     }`}
                     aria-pressed={textFormat.italic}
                   >
@@ -835,7 +919,13 @@ const colorScheme = highContrast ? {
                   <button
                     onClick={() => toggleTextFormat('underline')}
                     className={`px-5 py-3 rounded-xl underline transition-colors min-w-[56px] min-h-[56px] text-lg ${
-                      textFormat.underline ? 'bg-blue-600 text-white' : 'bg-gray-300 !text-gray-900'
+                      textFormat.underline
+                        ? highContrast
+                          ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                          : 'bg-blue-600 text-white'
+                        : highContrast
+                          ? colorScheme.controlIdle
+                          : 'bg-gray-300 !text-gray-900'
                     }`}
                     aria-pressed={textFormat.underline}
                   >
@@ -844,7 +934,11 @@ const colorScheme = highContrast ? {
 
                   <button
                     onClick={applyFormatting}
-                    className="px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors font-semibold text-base md:text-lg min-h-[56px]"
+                    className={`px-6 py-3 rounded-xl transition-colors font-semibold text-base md:text-lg min-h-[56px] ${
+                      highContrast
+                        ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                        : 'bg-green-600 text-white hover:bg-green-700'
+                    }`}
                   >
                     Appliquer le formatage
                   </button>
@@ -863,7 +957,9 @@ const colorScheme = highContrast ? {
                     className={`w-full px-8 py-5 md:py-6 rounded-xl font-bold transition-all text-xl md:text-2xl min-h-[70px] shadow-lg ${
                       isRecording 
                         ? 'bg-red-600 text-white hover:bg-red-700 animate-pulse' 
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                        : highContrast
+                          ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
                     } ${fontSizeClasses[fontSize] || 'text-xl'}`}
                     disabled={isThinking || sending}
                   >
@@ -872,19 +968,30 @@ const colorScheme = highContrast ? {
                 )}
 
                 {/* Bouton d'envoi principal - Plus grand */}
-                {showSendTextButton && (
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!currentMessage.trim() || isThinking || sending}
-                    className={`w-full px-8 py-5 md:py-6 rounded-xl font-bold transition-all text-xl md:text-2xl min-h-[70px] shadow-lg ${
-                      currentMessage.trim() && !isThinking && !sending
-                        ? 'bg-green-600 text-white hover:bg-green-700'
+              {showSendTextButton && (
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!currentMessage.trim() || isThinking || sending}
+                  className={`w-full px-8 py-5 md:py-6 rounded-2xl font-bold transition-all text-xl md:text-2xl min-h-[70px] shadow-xl ${
+                    currentMessage.trim() && !isThinking && !sending
+                      ? highContrast
+                        ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                        : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-500 hover:to-emerald-500'
+                      : highContrast
+                        ? 'bg-[#2A313D] text-[#7A8599] cursor-not-allowed'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    } ${fontSizeClasses[fontSize] || 'text-xl'}`}
-                  >
-                    {isThinking || sending ? '⏳ Envoi en cours...' : '➤ Envoyer le message'}
-                  </button>
-                )}
+                  } ${fontSizeClasses[fontSize] || 'text-xl'} flex items-center justify-center gap-3`}
+                >
+                  {isThinking || sending ? (
+                    '⏳ Envoi en cours...'
+                  ) : (
+                    <>
+                      <SendHorizontal className="h-6 w-6" aria-hidden />
+                      Envoyer le message
+                    </>
+                  )}
+                </button>
+              )}
               </div>
 
               {/* Deuxième ligne : Boutons secondaires */}
@@ -893,7 +1000,11 @@ const colorScheme = highContrast ? {
                 {showAttachButton && (
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className={`px-6 md:px-8 py-4 md:py-5 rounded-xl font-semibold bg-gray-600 text-white hover:bg-gray-700 transition-all text-lg md:text-xl min-h-[60px] shadow-md ${fontSizeClasses[fontSize] || 'text-lg'}`}
+                    className={`px-6 md:px-8 py-4 md:py-5 rounded-xl font-semibold transition-all text-lg md:text-xl min-h-[60px] shadow-md ${
+                      highContrast
+                        ? `${colorScheme.controlIdle} hover:bg-[#353d4a]`
+                        : 'bg-gray-600 text-white hover:bg-gray-700'
+                    } ${fontSizeClasses[fontSize] || 'text-lg'}`}
                     disabled={isThinking || sending}
                   >
                     📎 Joindre un fichier
@@ -916,7 +1027,9 @@ const colorScheme = highContrast ? {
                     className={`px-6 md:px-8 py-4 md:py-5 rounded-xl font-semibold transition-all text-lg md:text-xl min-h-[60px] shadow-md ${
                       isSpeaking 
                         ? 'bg-orange-600 text-white hover:bg-orange-700' 
-                        : 'bg-green-600 text-white hover:bg-green-700'
+                        : highContrast
+                          ? `${highContrastClasses.buttonActive} hover:bg-[#29b2a5]`
+                          : 'bg-green-600 text-white hover:bg-green-700'
                     } ${fontSizeClasses[fontSize] || 'text-lg'}`}
                     disabled={!currentMessage.trim() || isThinking || sending}
                   >

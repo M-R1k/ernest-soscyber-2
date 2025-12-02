@@ -9,6 +9,9 @@ import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
 import { Keyboard as KeyboardIcon, SendHorizontal, ChevronUp, ChevronDown } from "lucide-react";
 import { highContrastClasses, highContrastHex } from "./theme/highContrastPalette";
 
+// Type pour les tailles de texte adaptées aux seniors
+export type FontSize = "normal" | "large" | "xlarge";
+
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
 type VoiceModeOverlayProps = {
   isOpen: boolean;
@@ -46,32 +49,44 @@ const QUICK_ACTION_COLOR_MAP: Record<
     circle: string;
     hover: string;
     groupHover: string;
+    gradient: string;
+    ring: string;
   }
 > = {
   voice: {
-    circle: "bg-blue-50 text-blue-700 ring-2 ring-blue-100",
-    hover: "hover:bg-blue-100 hover:ring-blue-200",
-    groupHover: "group-hover:bg-blue-100 group-hover:ring-blue-200",
+    circle: "bg-blue-100 text-blue-800 ring-2 ring-blue-200",
+    hover: "hover:bg-blue-200 hover:ring-blue-300",
+    groupHover: "group-hover:bg-blue-200 group-hover:ring-blue-300",
+    gradient: "bg-gradient-to-br from-blue-100 via-blue-100/80 to-blue-100",
+    ring: "ring-3 ring-blue-300 shadow-[0_4px_12px_rgba(59,130,246,0.25)]",
   },
   write: {
-    circle: "bg-violet-50 text-violet-700 ring-2 ring-violet-100",
-    hover: "hover:bg-violet-100 hover:ring-violet-200",
-    groupHover: "group-hover:bg-violet-100 group-hover:ring-violet-200",
+    circle: "bg-green-100 text-green-800 ring-2 ring-green-200",
+    hover: "hover:bg-green-200 hover:ring-green-300",
+    groupHover: "group-hover:bg-green-200 group-hover:ring-green-300",
+    gradient: "bg-gradient-to-br from-green-50 via-green-100/80 to-green-50",
+    ring: "ring-3 ring-green-300 shadow-[0_4px_12px_rgba(34,197,94,0.25)]",
   },
   attach: {
-    circle: "bg-amber-50 text-amber-700 ring-2 ring-amber-100",
-    hover: "hover:bg-amber-100 hover:ring-amber-200",
-    groupHover: "group-hover:bg-amber-100 group-hover:ring-amber-200",
+    circle: "bg-gray-100 text-gray-900 ring-2 ring-gray-200",
+    hover: "hover:bg-gray-200 hover:ring-gray-300",
+    groupHover: "group-hover:bg-gray-200 group-hover:ring-gray-300",
+    gradient: "bg-gradient-to-br from-gray-50 via-gray-100/80 to-gray-50",
+    ring: "ring-3 ring-gray-300 shadow-[0_4px_12px_rgba(107,114,128,0.25)]",
   },
   reset: {
-    circle: "bg-rose-50 text-rose-700 ring-2 ring-rose-100",
-    hover: "hover:bg-rose-100 hover:ring-rose-200",
-    groupHover: "group-hover:bg-rose-100 group-hover:ring-rose-200",
+    circle: "bg-red-50 text-red-600 ring-2 ring-red-200",
+    hover: "hover:bg-red-100 hover:ring-red-300",
+    groupHover: "group-hover:bg-red-100 group-hover:ring-red-300",
+    gradient: "bg-gradient-to-br from-red-50 via-red-50/80 to-red-50",
+    ring: "ring-3 ring-red-300 shadow-[0_4px_12px_rgba(239,68,68,0.25)]",
   },
   default: {
     circle: "bg-slate-100 text-gray-900 ring-2 ring-slate-200",
     hover: "hover:bg-slate-200 hover:ring-slate-300",
     groupHover: "group-hover:bg-slate-200 group-hover:ring-slate-300",
+    gradient: "bg-gradient-to-br from-slate-50 via-slate-100/80 to-slate-50",
+    ring: "ring-3 ring-slate-300 shadow-[0_4px_12px_rgba(71,85,105,0.25)]",
   },
 };
 
@@ -622,19 +637,30 @@ function MobileIntentCarousel({
             key={intent.key}
             type="button"
             onClick={() => onSelect(intent.key)}
-            className={`inline-flex min-w-[78%] max-w-sm flex-1 items-center gap-3 rounded-3xl px-4 py-4 text-left text-base font-semibold transition-colors ${
+            className={`relative inline-flex min-w-[65%] max-w-[280px] flex-shrink-0 items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-center text-sm font-semibold transition-colors overflow-hidden ${
               highContrast
                 ? "bg-[#232834] text-[#E8ECF2] shadow-[0_18px_40px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-[#3B4450] hover:bg-[#2A313D]"
                 : "bg-white text-gray-900 shadow-[0_18px_40px_rgba(15,23,42,0.12)] ring-1 ring-inset ring-gray-100"
             }`}
-            whileTap={{ scale: 0.96 }}
-            whileHover={{ scale: 1.01 }}
-            transition={{ type: "spring", stiffness: 320, damping: 24, delay: index * 0.015 }}
+            whileTap={{ scale: 0.94 }}
+            whileHover={{ scale: 1.02 }}
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 320, 
+              damping: 24, 
+              delay: index * 0.03,
+              scale: { duration: 0.15 }
+            }}
           >
-            <span className="text-2xl" aria-hidden>
-              {intent.icon}
-            </span>
-            <span className="leading-snug">{intent.label}</span>
+            <motion.span
+              className="absolute inset-0 bg-white/30 rounded-full"
+              initial={{ scale: 0, opacity: 0.6 }}
+              whileTap={{ scale: 2.5, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+            />
+            <span className="relative leading-snug z-10">{intent.label}</span>
           </motion.button>
         ))}
       </div>
@@ -1067,27 +1093,68 @@ function ChoiceGroup({ step, choices, onSelect, highContrast = false, largeClick
   const padding = largeClickTargets ? "px-6 py-4" : "px-4 md:px-5 py-2.5";
   
   return (
-    <div role="group" aria-label={`Choix étape ${step}`} className="flex flex-wrap gap-2 md:gap-3">
-      {choices.map((c) => (
-        <button
+    <motion.div
+      role="group"
+      aria-label={`Choix étape ${step}`}
+      className="flex flex-wrap gap-2 md:gap-3"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      {choices.map((c, index) => (
+        <motion.button
           key={c.value}
           type="button"
           onClick={() => onSelect(c.value, c.label)}
-          className={`inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition ${buttonClass}`}
+          className={`relative inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition overflow-hidden ${buttonClass}`}
           aria-label={c.label}
+          initial={{ opacity: 0, y: 15, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.03, y: -1 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 300, 
+            damping: 20,
+            delay: index * 0.05,
+            scale: { duration: 0.15 }
+          }}
         >
-          {c.label}
-        </button>
+          <motion.span
+            className="absolute inset-0 bg-blue-200/40 rounded-full"
+            initial={{ scale: 0, opacity: 0.6 }}
+            whileTap={{ scale: 2.5, opacity: 0 }}
+            transition={{ duration: 0.4 }}
+          />
+          <span className="relative z-10">{c.label}</span>
+        </motion.button>
       ))}
-      <button
+      <motion.button
         type="button"
         onClick={() => onSelect("fallback", "Je n'y arrive pas")}
-        className={`inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition ${buttonClass}`}
+        className={`relative inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition overflow-hidden ${buttonClass}`}
         aria-label="Je n'y arrive pas"
+        initial={{ opacity: 0, y: 15, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.03, y: -1 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 20,
+          delay: choices.length * 0.05,
+          scale: { duration: 0.15 }
+        }}
       >
-        Je n'y arrive pas
-      </button>
-    </div>
+        <motion.span
+          className="absolute inset-0 bg-blue-200/40 rounded-full"
+          initial={{ scale: 0, opacity: 0.6 }}
+          whileTap={{ scale: 2.5, opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        />
+        <span className="relative z-10">Je n'y arrive pas</span>
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -1097,8 +1164,8 @@ type AccessibilityMenuProps = {
   onClose: () => void;
   highContrast: boolean;
   // États des fonctionnalités
-  isFontLarge: boolean;
-  onToggleFontSize: () => void;
+  fontSize: FontSize;
+  onFontSizeChange: (size: FontSize) => void;
   highContrastMode: boolean;
   onToggleHighContrast: () => void;
   largeLineHeight: boolean;
@@ -1119,8 +1186,8 @@ function AccessibilityMenu({
   isOpen,
   onClose,
   highContrast,
-  isFontLarge,
-  onToggleFontSize,
+  fontSize,
+  onFontSizeChange,
   highContrastMode,
   onToggleHighContrast,
   largeLineHeight,
@@ -1190,33 +1257,7 @@ function AccessibilityMenu({
         </div>
 
         <div className="space-y-3 max-h-[70vh] overflow-y-auto">
-          {/* Option 1: Taille du texte */}
-          <button
-            onClick={onToggleFontSize}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              isFontLarge ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">📝 Taille du texte</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {isFontLarge ? "Texte agrandi activé" : "Agrandir le texte pour faciliter la lecture"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                isFontLarge
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  isFontLarge ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 2: Contraste élevé */}
+          {/* Option 1: Contraste élevé */}
           <button
             onClick={onToggleHighContrast}
             className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
@@ -1515,7 +1556,7 @@ type ComposerProps = {
   isMobile?: boolean;
   inputRef?: React.RefObject<HTMLTextAreaElement>;
   fileInputRef?: React.RefObject<HTMLInputElement | null>;
-  isFontLarge?: boolean;
+  fontSize?: FontSize;
   highContrast?: boolean;
   mobileComposerVisible?: boolean;
 };
@@ -1622,7 +1663,7 @@ function Composer({
   isMobile = false,
   inputRef,
   fileInputRef,
-  isFontLarge = false,
+  fontSize = "normal",
   highContrast = false,
   mobileComposerVisible = true,
 }: ComposerProps) {
@@ -1630,7 +1671,10 @@ function Composer({
   const resolvedFileInputRef = fileInputRef ?? localFileInputRef;
   const localTextareaRef = useRef<HTMLTextAreaElement>(null);
   const resolvedTextareaRef = inputRef ?? localTextareaRef;
-  const textSizeClass = isFontLarge ? "text-[19px]" : "text-[16px]";
+  const textSizeClass = 
+    fontSize === "xlarge" ? "text-[24px]" :
+    fontSize === "large" ? "text-[20px]" :
+    "text-[16px]";
   const mobileShellClass = highContrast
     ? "flex w-full items-center gap-2.5 rounded-full bg-[#1B2027] px-4 py-2.5 text-[#E8ECF2] shadow-sm ring-1 ring-[#2A313D]"
     : "flex w-full items-center gap-2.5 rounded-full bg-gray-100 px-4 py-2.5 text-gray-700 shadow-sm";
@@ -1880,7 +1924,8 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
   const composerFileInputRef = useRef<HTMLInputElement>(null);
-  const [isFontLarge, setIsFontLarge] = useState(false);
+  // Tailles de texte : "normal" (16px), "large" (20px), "xlarge" (24px)
+  const [fontSize, setFontSize] = useState<FontSize>("normal");
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   // États pour les fonctionnalités d'accessibilité senior-friendly
@@ -1937,7 +1982,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
       {
         key: "voice",
         label: "Parler",
-        icon: <SendWavesIcon className="h-5 w-5" />,
+        icon: <SendWavesIcon className="h-6 w-6" />,
         tone: "voice",
       },
       {
@@ -1996,7 +2041,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
         description: "Ajoutez une photo ou un document pour nous aider à analyser votre situation.",
         icon: (
           <svg
-            className="h-5 w-5"
+            className="h-6 w-6"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -2014,17 +2059,17 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
       {
         key: "voice",
         title: "Parler à voix haute",
-        description: "Utilisez le micro si l’écriture est difficile ou si vous préférez expliquer oralement.",
-        icon: <SendWavesIcon className="h-5 w-5" />,
+        description: "Utilisez le micro si l'écriture est difficile ou si vous préférez expliquer oralement.",
+        icon: <SendWavesIcon className="h-7 w-7" />,
         tone: "voice",
       },
       {
         key: "write",
-        title: "Écrire votre message",
+        title: "Envoyer votre message",
         description: "Tapez votre question pour recevoir des conseils étape par étape.",
         icon: (
           <svg
-            className="h-5 w-5"
+            className="h-6 w-6"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -2032,8 +2077,8 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
             strokeLinecap="round"
             strokeLinejoin="round"
           >
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         ),
         tone: "write",
@@ -2176,7 +2221,11 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     composerBar: `border-[#3B4450] ${highContrastClasses.panel}/95`,
     scrollButton: `${highContrastClasses.panel} border border-[#3B4450]`,
   };
-  const baseTextSizeClass = isFontLarge ? "text-[20px]" : "text-[17px]";
+  // Tailles de texte adaptées aux seniors : normal (16px), large (20px), xlarge (24px)
+  const baseTextSizeClass = 
+    fontSize === "xlarge" ? "text-[24px]" :
+    fontSize === "large" ? "text-[20px]" :
+    "text-[16px]";
   const lineHeightClass = largeLineHeight ? "leading-[1.8]" : "";
   const animationClass = reduceAnimations ? "[&_*]:!transition-none [&_*]:!duration-0 [&_*]:!animate-none" : "";
   const clickTargetClass = largeClickTargets ? "[&_button]:min-h-[56px] [&_a]:min-h-[56px] [&_button]:px-6 [&_button]:py-4" : "";
@@ -2639,6 +2688,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, [intent, subIntent]);
 
   function handleSelectIntent(i: Intent) {
+    console.log("handleSelectIntent called with:", i);
     emitTelemetry({ type: "intent", intent: i });
     if (i === "SOS") {
       setIntent("SOS");
@@ -3209,9 +3259,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   return (
     <section
       ref={containerRef}
-      className={`flex min-h-screen w-full justify-center ${rootThemeClass} ${baseTextSizeClass} ${lineHeightClass} ${animationClass} ${clickTargetClass} ${focusClass} ${simplifiedClass} px-3 sm:px-6 lg:px-10 overflow-x-hidden`}
+      className={`flex min-h-screen w-full justify-center ${rootThemeClass} ${baseTextSizeClass} ${lineHeightClass} ${animationClass} ${clickTargetClass} ${focusClass} ${simplifiedClass} px-3 sm:px-6 lg:px-4 overflow-x-hidden`}
     >
-      <div className={`relative flex w-full max-w-[1800px] flex-1 flex-col rounded-3xl shadow-2xl ring-1 overflow-hidden ${panelThemeClass}`}>
+      <div className={`relative flex w-full max-w-[1800px] lg:max-w-[98vw] flex-1 flex-col rounded-3xl shadow-2xl ring-1 overflow-hidden ${panelThemeClass}`}>
         <TopBar
           highContrast={highContrastMode}
           onBack={handleBack}
@@ -3226,8 +3276,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               isOpen={accessibilityMenuOpen}
               onClose={() => setAccessibilityMenuOpen(false)}
               highContrast={highContrastMode}
-              isFontLarge={isFontLarge}
-              onToggleFontSize={() => setIsFontLarge((prev) => !prev)}
+              fontSize={fontSize}
+              onFontSizeChange={setFontSize}
               highContrastMode={highContrastMode}
               onToggleHighContrast={() => setHighContrastMode((prev) => !prev)}
               largeLineHeight={largeLineHeight}
@@ -3272,42 +3322,44 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           </div>
         )}
         
-        <div
-          className={`sticky ${showBreadcrumb ? 'top-[40px]' : 'top-0'} z-20 flex flex-wrap items-center gap-3 border-b px-4 py-3 backdrop-blur-md ${
-            highContrastMode ? highContrastTokens.toolbarBar : "border-slate-100 bg-white/80"
-          }`}
-        >
-          <motion.button
-            type="button"
-            onClick={() => setIsFontLarge((prev) => !prev)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
-              highContrastMode
-                ? isFontLarge
-                  ? highContrastTokens.toolbarControlActive
-                  : highContrastTokens.toolbarControl
-                : isFontLarge
-                  ? "bg-blue-600 text-white"
-                  : "bg-blue-100 text-blue-900"
+        {screen !== "home" && (
+          <div
+            className={`sticky ${showBreadcrumb ? 'top-[40px]' : 'top-0'} z-20 flex flex-wrap items-center gap-3 border-b px-4 py-3 backdrop-blur-md ${
+              highContrastMode ? highContrastTokens.toolbarBar : "border-slate-100 bg-white/80"
             }`}
-            whileTap={reduceAnimations ? {} : { scale: 0.95 }}
-            whileHover={reduceAnimations ? {} : { scale: 1.02 }}
-            transition={reduceAnimations ? { duration: 0 } : undefined}
           >
-            {isFontLarge ? "Texte large activé" : "Agrandir le texte"}
-          </motion.button>
-          <motion.button
-            type="button"
-            onClick={() => setHighContrastMode((prev) => !prev)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
-              highContrastMode ? highContrastTokens.toolbarControlActive : "bg-yellow-100 text-yellow-900"
-            }`}
-            whileTap={reduceAnimations ? {} : { scale: 0.95 }}
-            whileHover={reduceAnimations ? {} : { scale: 1.02 }}
-            transition={reduceAnimations ? { duration: 0 } : undefined}
-          >
-            {highContrastMode ? "Mode contraste élevé" : "Activer contraste"}
-          </motion.button>
-        </div>
+            <motion.button
+              type="button"
+              onClick={() => setHighContrastMode((prev) => !prev)}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                highContrastMode ? highContrastTokens.toolbarControlActive : "bg-yellow-100 text-yellow-900"
+              }`}
+              whileTap={reduceAnimations ? {} : { scale: 0.95 }}
+              whileHover={reduceAnimations ? {} : { scale: 1.02 }}
+              transition={reduceAnimations ? { duration: 0 } : undefined}
+            >
+              {highContrastMode ? "Mode contraste élevé" : "Activer contraste"}
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => setAccessibilityMenuOpen((prev) => !prev)}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
+                highContrastMode
+                  ? accessibilityMenuOpen
+                    ? highContrastTokens.toolbarControlActive
+                    : highContrastTokens.toolbarControl
+                  : accessibilityMenuOpen
+                    ? "bg-blue-600 text-white"
+                    : "bg-blue-100 text-blue-900"
+              }`}
+              whileTap={reduceAnimations ? {} : { scale: 0.95 }}
+              whileHover={reduceAnimations ? {} : { scale: 1.02 }}
+              transition={reduceAnimations ? { duration: 0 } : undefined}
+            >
+              Options
+            </motion.button>
+          </div>
+        )}
         {/* Home screen top section supprimée pour placer les boutons en bas */}
         {false && screen === "home" && <div />}
 
@@ -3475,34 +3527,85 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             {isMobile && !shouldShowMobileComposer && screen === "home" && (
               <div className="flex w-full flex-1 items-center justify-center py-10 md:hidden">
                 <div className="grid w-full max-w-lg grid-cols-2 gap-4">
-                  {quickActions.map((action) => {
+                  {quickActions.map((action, index) => {
                     const toneKey = action.tone ?? action.key;
                     const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
                     return (
-                      <button
+                      <motion.button
                         key={action.key}
                         type="button"
                         onClick={() => handleQuickAction(action.key)}
-                        className={`group flex flex-col items-center justify-center gap-3 rounded-3xl px-10 py-10 text-lg font-semibold shadow-md transition-all duration-200 ${
+                        className={`group flex flex-col items-center justify-center gap-3 rounded-3xl px-10 py-10 text-lg font-semibold transition-all duration-200 ${
                           highContrastMode
-                            ? `${highContrastTokens.quickAction} hover:bg-[#2A313D] hover:-translate-y-0.5`
-                            : "bg-white text-gray-900 ring-1 ring-inset ring-slate-200 hover:shadow-lg hover:-translate-y-0.5"
+                            ? `${highContrastTokens.quickAction}`
+                            : `${colorTokens.gradient} text-gray-900 ${colorTokens.ring}`
                         }`}
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 300, 
+                          damping: 20,
+                          delay: index * 0.1,
+                          scale: { duration: 0.15 }
+                        }}
                       >
-                        <span
+                        <motion.span
                           className={`grid h-16 w-16 place-items-center rounded-full transition-all duration-200 ${
                             highContrastMode
                               ? `${highContrastTokens.quickActionBadge}`
                               : `${colorTokens.circle} ${colorTokens.groupHover}`
                           }`}
                           aria-hidden
+                          whileTap={{ scale: 0.9 }}
+                          transition={{ duration: 0.15 }}
                         >
                           <span className={`text-2xl ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{action.icon}</span>
-                        </span>
-                        <span className={`text-lg ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{action.label}</span>
-                      </button>
+                        </motion.span>
+                        <span className={`text-lg font-semibold ${highContrastMode ? "text-[#E8ECF2]" : "text-gray-800"}`}>{action.label}</span>
+                      </motion.button>
                     );
                   })}
+                </div>
+              </div>
+            )}
+            {!isMobile && screen === "home" && (
+              <div className="flex w-full flex-1 items-center justify-center py-10">
+                <div className="mx-auto w-full max-w-[1100px]">
+                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-2">
+                    {instructionCards.map((card) => {
+                      const toneKey = card.tone ?? card.key;
+                      const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
+                      return (
+                        <div
+                        key={card.key}
+                        className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset transition-colors ${
+                          highContrastMode 
+                            ? `${highContrastTokens.quickAction} hover:bg-[#2A313D]` 
+                            : "bg-white text-gray-900 ring-slate-200"
+                        }`}
+                      >
+                        <div
+                          className={`grid h-10 w-10 aspect-square place-items-center rounded-full transition-colors duration-200 ${
+                            highContrastMode
+                              ? `${highContrastTokens.quickActionBadge}`
+                              : `${colorTokens.circle} ${colorTokens.hover} focus:outline-none active:outline-none`
+                          }`}
+                          aria-hidden
+                          tabIndex={-1}
+                          onMouseDown={(e) => e.preventDefault()}
+                        >
+                          <span className={highContrastMode ? "text-[#E8ECF2]" : ""}>{card.icon}</span>
+                        </div>
+                        <div className="text-left">
+                          <p className={`text-base font-semibold ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{card.title}</p>
+                          <p className={`text-sm ${highContrastMode ? highContrastClasses.mutedText : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
+                        </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
@@ -3553,47 +3656,90 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         )}
 
         {/* Boutons juste au-dessus de l'input (bas de page) */}
-        <div className="hidden md:block px-3 md:px-6 lg:px-8">
+        <div className="hidden md:block px-3 md:px-6 lg:px-8 relative z-10">
         {!isMobile && showPrimaryIntents && composerText.length === 0 && conversation.length === 0 && attachedFiles.length === 0 && (
           <div className="mx-auto mb-4 mt-10 w-full max-w-[1200px]">
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-6">
-              {ALL_INTENTS.map((i) => (
-                <button
+              {ALL_INTENTS.map((i, index) => (
+                <motion.button
                   key={i.key}
                   type="button"
                   onClick={() => handleSelectIntent(i.key)}
-                  className={`inline-flex min-h-[48px] items-center justify-center rounded-2xl px-4 py-3 text-center text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 ${
+                  className={`relative inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl px-3 md:px-4 lg:px-5 py-1.5 md:py-2 text-center text-[14px] md:text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 overflow-hidden ${
                     highContrastMode
                       ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
                       : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
                   }`}
+                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 300, 
+                    damping: 20,
+                    delay: index * 0.04,
+                    scale: { duration: 0.15 }
+                  }}
                 >
-                  <span className="leading-snug">{i.label}</span>
-                </button>
+                  <motion.span
+                    className="absolute inset-0 bg-blue-200/40 rounded-full pointer-events-none"
+                    initial={{ scale: 0, opacity: 0.6 }}
+                    whileTap={{ scale: 2.5, opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                  <span className="relative leading-snug z-10 md:whitespace-nowrap lg:whitespace-normal">{i.label}</span>
+                </motion.button>
               ))}
             </div>
           </div>
         )}
-        {showSosSubButtons && !isMobile && (
-          <div className="mx-auto mb-2 md:mb-3 w-full max-w-[1000px] text-center">
-            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
-              {SOS_OPTIONS.map((o) => (
-                <button
-                  key={o.key}
-                  type="button"
-                  onClick={() => handleSelectSubIntent(o.key)}
-                  className={`inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 ${
-                    highContrastMode
-                      ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
-                      : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
-                  }`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {showSosSubButtons && !isMobile && (
+            <motion.div
+              key="sos-sub-buttons"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="mx-auto mb-2 md:mb-3 w-full max-w-[1000px] text-center"
+            >
+              <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
+                {SOS_OPTIONS.map((o, index) => (
+                  <motion.button
+                    key={o.key}
+                    type="button"
+                    onClick={() => handleSelectSubIntent(o.key)}
+                    className={`relative inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 overflow-hidden ${
+                      highContrastMode
+                        ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
+                        : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
+                    }`}
+                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03, y: -1 }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 300, 
+                      damping: 20,
+                      delay: index * 0.05,
+                      scale: { duration: 0.15 }
+                    }}
+                  >
+                    <motion.span
+                      className="absolute inset-0 bg-blue-200/40 rounded-full pointer-events-none"
+                      initial={{ scale: 0, opacity: 0.6 }}
+                      whileTap={{ scale: 2.5, opacity: 0 }}
+                      transition={{ duration: 0.4 }}
+                    />
+                    <span className="relative z-10">{o.label}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         </div>
         {/* Bottom composer present on all screens */}
         <motion.div
@@ -3800,7 +3946,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           inputRef={messageInputRef as React.RefObject<HTMLTextAreaElement>}
           fileInputRef={composerFileInputRef}
           isMobile={isMobile}
-          isFontLarge={isFontLarge}
+          fontSize={fontSize}
           highContrast={highContrastMode}
           mobileComposerVisible={mobileComposerVisible}
           onHideKeyboard={handleHideKeyboard}

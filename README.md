@@ -91,3 +91,4 @@ VITE_N8N_WEBHOOK=https://clic-et-moi.app.n8n.cloud/webhook/ernest/voice
 ```
 
 **Note** : Les variables doivent commencer par `VITE_` pour être accessibles dans le code client.
+# Test dev environment

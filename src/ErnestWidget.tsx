@@ -2921,19 +2921,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       // Vérifier si on est dans une iframe (WeWeb)
       const isInIframe = window.self !== window.top;
       
-      // Si on est dans une iframe, on NE DOIT PAS utiliser getUserMedia ici
-      // La permission doit être gérée par le parent (WeWeb)
-      if (isInIframe) {
-        console.log("⚠️ Détection iframe : on ne peut pas utiliser getUserMedia dans l'iframe");
-        console.log("ℹ️ La permission micro doit être gérée par WeWeb (parent)");
-        setVoiceStatus("⚠️ Mode voix dans iframe : la permission micro doit être gérée par WeWeb");
-        setRecording(false);
-        return;
-      }
-      
-      // Si on n'est PAS dans une iframe (app standalone), on peut utiliser getUserMedia normalement
-      console.log("✅ Mode standalone : utilisation normale de getUserMedia");
-      
       // Détecter Safari
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                        (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'));
@@ -2965,11 +2952,19 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         console.log("ℹ️ API Permissions non disponible, on continue avec getUserMedia...");
       }
       
-      // Demander l'accès au microphone (seulement en mode standalone)
+      // Si on est dans une iframe, informer que ça va tenter (si allow="microphone" est présent, ça fonctionnera)
+      if (isInIframe) {
+        console.log("ℹ️ Mode iframe détecté : tentative d'accès au microphone");
+        console.log("ℹ️ Si allow='microphone' est présent sur l'iframe, cela devrait fonctionner");
+      } else {
+        console.log("✅ Mode standalone : utilisation normale de getUserMedia");
+      }
+      
+      // Demander l'accès au microphone (fonctionne dans iframe si allow="microphone" est présent)
       let stream: MediaStream;
       
       try {
-        console.log("🎤 Demande d'accès au microphone (mode standalone)...");
+        console.log(`🎤 Demande d'accès au microphone${isInIframe ? " (mode iframe)" : " (mode standalone)"}...`);
         
         // Essayer d'abord avec les contraintes optimisées
         try {

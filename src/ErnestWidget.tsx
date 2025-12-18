@@ -1208,7 +1208,7 @@ function Composer({
           }}
           placeholder="Posez votre question"
           aria-label="Posez votre question"
-          className="flex-1 bg-transparent text-[15px] md:text-[18px] outline-none placeholder:text-gray-400 text-gray-900"
+          className="flex-1 bg-transparent text-[16px] md:text-[18px] outline-none placeholder:text-gray-400 text-gray-900"
         />
         <input
           ref={fileInputRef}

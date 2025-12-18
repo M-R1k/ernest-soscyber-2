@@ -5,12 +5,11 @@ import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage,
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
 import logoErnest from './assets/logo-ernest.png';
+import logoSosCyber from './assets/logo_soscyber.png';
+import ernestAvatar from './assets/ernest_avatar.png';
+import ernestImage from './assets/ernest_image.png';
+import userProfilePic from './assets/profile_pic_user_ernest.png';
 import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
-import { Keyboard as KeyboardIcon, SendHorizontal, ChevronUp, ChevronDown } from "lucide-react";
-import { highContrastClasses, highContrastHex } from "./theme/highContrastPalette";
-
-// Type pour les tailles de texte adaptées aux seniors
-export type FontSize = "normal" | "large" | "xlarge";
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
 type VoiceModeOverlayProps = {
@@ -25,69 +24,6 @@ type VoiceModeOverlayProps = {
   finalTranscription: string;
   meterLevel: number;
   locale: string;
-};
-
-type QuickActionKey = "voice" | "write" | "attach" | "reset";
-
-type QuickActionConfig = {
-  key: QuickActionKey;
-  label: string;
-  icon: React.ReactNode;
-  tone: QuickActionKey;
-};
-type InstructionCard = {
-  key: QuickActionKey;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  tone: QuickActionKey;
-};
-
-const QUICK_ACTION_COLOR_MAP: Record<
-  QuickActionKey | "default",
-  {
-    circle: string;
-    hover: string;
-    groupHover: string;
-    gradient: string;
-    ring: string;
-  }
-> = {
-  voice: {
-    circle: "bg-blue-100 text-blue-800 ring-2 ring-blue-200",
-    hover: "hover:bg-blue-200 hover:ring-blue-300",
-    groupHover: "group-hover:bg-blue-200 group-hover:ring-blue-300",
-    gradient: "bg-gradient-to-br from-blue-100 via-blue-100/80 to-blue-100",
-    ring: "ring-3 ring-blue-300 shadow-[0_4px_12px_rgba(59,130,246,0.25)]",
-  },
-  write: {
-    circle: "bg-green-100 text-green-800 ring-2 ring-green-200",
-    hover: "hover:bg-green-200 hover:ring-green-300",
-    groupHover: "group-hover:bg-green-200 group-hover:ring-green-300",
-    gradient: "bg-gradient-to-br from-green-50 via-green-100/80 to-green-50",
-    ring: "ring-3 ring-green-300 shadow-[0_4px_12px_rgba(34,197,94,0.25)]",
-  },
-  attach: {
-    circle: "bg-gray-100 text-gray-900 ring-2 ring-gray-200",
-    hover: "hover:bg-gray-200 hover:ring-gray-300",
-    groupHover: "group-hover:bg-gray-200 group-hover:ring-gray-300",
-    gradient: "bg-gradient-to-br from-gray-50 via-gray-100/80 to-gray-50",
-    ring: "ring-3 ring-gray-300 shadow-[0_4px_12px_rgba(107,114,128,0.25)]",
-  },
-  reset: {
-    circle: "bg-red-50 text-red-600 ring-2 ring-red-200",
-    hover: "hover:bg-red-100 hover:ring-red-300",
-    groupHover: "group-hover:bg-red-100 group-hover:ring-red-300",
-    gradient: "bg-gradient-to-br from-red-50 via-red-50/80 to-red-50",
-    ring: "ring-3 ring-red-300 shadow-[0_4px_12px_rgba(239,68,68,0.25)]",
-  },
-  default: {
-    circle: "bg-slate-100 text-gray-900 ring-2 ring-slate-200",
-    hover: "hover:bg-slate-200 hover:ring-slate-300",
-    groupHover: "group-hover:bg-slate-200 group-hover:ring-slate-300",
-    gradient: "bg-gradient-to-br from-slate-50 via-slate-100/80 to-slate-50",
-    ring: "ring-3 ring-slate-300 shadow-[0_4px_12px_rgba(71,85,105,0.25)]",
-  },
 };
 
 function VoiceModeOverlay({
@@ -345,8 +281,8 @@ function VoiceModeOverlay({
             initial="hidden"
             animate="visible"
           >
-            {/* Message d'aide pour erreur iframe */}
-            {voiceStatus.includes("Iframe non autorisée") && (
+            {/* Message d'aide pour erreur iframe / Permissions Policy */}
+            {(voiceStatus.includes("Permissions Policy bloque") || voiceStatus.includes("Iframe non autorisée")) && (
               <motion.div
                 className="w-full max-w-md mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl"
                 initial={{ opacity: 0, y: -10 }}
@@ -354,12 +290,23 @@ function VoiceModeOverlay({
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-amber-900 text-[14px] md:text-[15px]">
-                  <p className="font-semibold mb-2">🔧 Configuration requise dans WeWeb :</p>
-                  <ol className="list-decimal list-inside space-y-1 text-[13px] md:text-[14px]">
-                    <li>Sélectionnez votre composant iframe</li>
-                    <li>Ajoutez l'attribut : <code className="bg-amber-100 px-1 rounded">allow="microphone"</code></li>
-                    <li>Rechargez la page</li>
-                  </ol>
+                  <p className="font-semibold mb-3">💡 Solution : Ouvrir dans une nouvelle fenêtre</p>
+                  <p className="mb-3 text-[13px] md:text-[14px]">
+                    Le mode voix ne peut pas fonctionner dans cette iframe à cause des restrictions de WeWeb.
+                  </p>
+                  <button
+                    onClick={() => {
+                      const url = window.location.href;
+                      const width = 800;
+                      const height = 900;
+                      const left = (window.screen.width - width) / 2;
+                      const top = (window.screen.height - height) / 2;
+                      window.open(url, 'ErnestVoice', `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,status=no,menubar=no`);
+                    }}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    Ouvrir Ernest dans une nouvelle fenêtre
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -458,11 +405,10 @@ function VoiceModeOverlay({
                   <button
                     type="button"
                     onClick={onSendTranscription}
-                    className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 md:py-4 text-white text-[16px] md:text-[18px] font-semibold shadow-lg transition-all duration-150 ease-out hover:from-emerald-500 hover:to-emerald-500 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 flex items-center justify-center gap-2"
+                    className="w-full rounded-xl bg-blue-600 px-6 py-3 md:py-4 text-white text-[16px] md:text-[18px] font-semibold shadow-md hover:bg-blue-700 transition-all duration-[120ms] ease-in-out focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
                     aria-label="Envoyer la transcription"
                   >
-                    <SendHorizontal className="h-5 w-5" aria-hidden />
-                    Envoyer la transcription
+                    Envoyer
                   </button>
                 </motion.div>
               )}
@@ -534,19 +480,16 @@ function VoiceModeOverlay({
                 <motion.button
                   type="button"
                   onClick={recording ? onStopRecording : onStartRecording}
-                  className={`relative grid h-24 w-24 md:h-28 md:w-28 place-items-center rounded-full text-white shadow-2xl transition-all duration-[160ms] ease-in-out focus:outline-none focus-visible:ring-[6px] focus-visible:ring-blue-200 ${
+                  className={`relative grid h-20 w-20 md:h-24 md:w-24 place-items-center rounded-full text-white shadow-lg transition-all duration-[120ms] ease-in-out focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
                     recording
-                      ? 'bg-gradient-to-b from-red-500 to-red-600 hover:from-red-500 hover:to-red-500'
-                      : 'bg-gradient-to-b from-blue-500 to-indigo-600 hover:from-blue-500 hover:to-blue-500'
-                  } ring-4 ${
-                    recording ? 'ring-red-200' : 'ring-blue-200'
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
                   }`}
                   aria-label={recording ? "Arrêter l'enregistrement" : "Commencer l'enregistrement"}
-                  aria-pressed={recording}
-                  whileHover={{ scale: 1.03 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   animate={{
-                    scale: recording ? [1, 1.03, 1] : 1,
+                    scale: recording ? [1, 1.02, 1] : 1,
                   }}
                   transition={{
                     scale: {
@@ -556,22 +499,16 @@ function VoiceModeOverlay({
                     },
                   }}
                 >
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    {recording ? (
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/20">
-                        <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                          <rect x="6" y="6" width="12" height="12" rx="2" />
-                        </svg>
-                      </span>
-                    ) : (
-                      <span className="grid h-10 w-10 place-items-center rounded-full bg-white/15">
-                        <MicIcon className="h-7 w-7" />
-                      </span>
-                    )}
-                    <span className="text-sm font-semibold tracking-wide">
-                      {recording ? "Arrêter" : "Parler"}
-                    </span>
-                  </div>
+                  {recording ? (
+                    <svg className="h-8 w-8 md:h-10 md:w-10" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="6" y="6" width="12" height="12" rx="2" />
+                    </svg>
+                  ) : (
+                    <svg className="h-8 w-8 md:h-10 md:w-10" fill="currentColor" viewBox="0 0 24 24">
+                      {/* Flèche vers le haut - style simple et moderne */}
+                      <path d="M12 2l8 8h-5v10H9V10H4l8-8z" />
+                    </svg>
+                  )}
                 </motion.button>
               </div>
 
@@ -584,7 +521,19 @@ function VoiceModeOverlay({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <KeyboardIcon className="h-6 w-6 md:h-7 md:w-7" strokeWidth={1.9} aria-hidden />
+                <svg className="h-6 w-6 md:h-7 md:w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  {/* Icône de clavier moderne */}
+                  <rect x="2" y="4" width="20" height="14" rx="2" />
+                  {/* Rangée supérieure de touches */}
+                  <circle cx="5" cy="9" r="1" fill="currentColor" />
+                  <circle cx="9" cy="9" r="1" fill="currentColor" />
+                  <circle cx="13" cy="9" r="1" fill="currentColor" />
+                  <circle cx="17" cy="9" r="1" fill="currentColor" />
+                  {/* Rangée inférieure de touches */}
+                  <rect x="4" y="12" width="3" height="2" rx="0.5" fill="currentColor" />
+                  <rect x="9" y="12" width="6" height="2" rx="0.5" fill="currentColor" />
+                  <rect x="17" y="12" width="3" height="2" rx="0.5" fill="currentColor" />
+                </svg>
               </motion.button>
             </div>
           </motion.div>
@@ -604,75 +553,6 @@ const ALL_INTENTS: Array<{ key: Intent; label: string; icon: string }> = [
   { key: "SAFE_BROWSING", label: "Je veux naviguer en sécurité", icon: "🌐" },
   { key: "SOS", label: "J’ai besoin d’aide", icon: "🆘" },
 ];
-
-type MobileIntentCarouselProps = {
-  intents: Array<{ key: Intent; label: string; icon: string }>;
-  onSelect: (key: Intent) => void;
-  subtitle?: string;
-  className?: string;
-  highContrast?: boolean;
-};
-
-function MobileIntentCarousel({
-  intents,
-  onSelect,
-  subtitle = "Choisissez un sujet pour commencer :",
-  className = "",
-  highContrast = false,
-}: MobileIntentCarouselProps) {
-  return (
-    <motion.div
-      key="mobile-intents"
-      layout
-      initial={{ opacity: 0, y: 32 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 32 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className={`md:hidden ${className}`}
-    >
-      <p className={`mb-4 text-center text-sm font-semibold ${highContrast ? "text-[#A9B4C6]" : "text-gray-600"}`}>{subtitle}</p>
-      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 no-scrollbar">
-        {intents.map((intent, index) => (
-          <motion.button
-            key={intent.key}
-            type="button"
-            onClick={() => onSelect(intent.key)}
-            className={`relative inline-flex min-w-[65%] max-w-[280px] flex-shrink-0 items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-center text-sm font-semibold transition-colors overflow-hidden ${
-              highContrast
-                ? "bg-[#232834] text-[#E8ECF2] shadow-[0_18px_40px_rgba(0,0,0,0.3)] ring-1 ring-inset ring-[#3B4450] hover:bg-[#2A313D]"
-                : "bg-white text-gray-900 shadow-[0_18px_40px_rgba(15,23,42,0.12)] ring-1 ring-inset ring-gray-100"
-            }`}
-            whileTap={{ scale: 0.94 }}
-            whileHover={{ scale: 1.02 }}
-            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 320, 
-              damping: 24, 
-              delay: index * 0.03,
-              scale: { duration: 0.15 }
-            }}
-          >
-            <motion.span
-              className="absolute inset-0 bg-white/30 rounded-full"
-              initial={{ scale: 0, opacity: 0.6 }}
-              whileTap={{ scale: 2.5, opacity: 0 }}
-              transition={{ duration: 0.4 }}
-            />
-            <span className="relative leading-snug z-10">{intent.label}</span>
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-const bubbleVariants = {
-  initial: (shift = 0) => ({ opacity: 0, y: 24, scale: 0.97, x: shift / 2 }),
-  animate: (shift = 0) => ({ opacity: 1, y: 0, scale: 1, x: shift }),
-  exit: (shift = 0) => ({ opacity: 0, y: -12, scale: 0.96, x: shift }),
-};
 
 const SOS_OPTIONS: Array<{ key: SosSubIntent; label: string }> = [
   { key: "ACCOUNT_TAKEOVER", label: "Mon compte a été piraté" },
@@ -885,26 +765,23 @@ function UserAvatar({
   name?: string;
 }) {
   const initial = name.charAt(0).toUpperCase();
+  const defaultImage = profileImage || userProfilePic;
   
   return (
-    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm md:text-base shadow-md ring-2 ring-white">
-      {profileImage ? (
-        <img 
-          src={profileImage} 
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Si l'image ne charge pas, on affiche l'initiale
-            e.currentTarget.style.display = 'none';
-            const parent = e.currentTarget.parentElement;
-            if (parent) {
-              parent.innerHTML = `<span class="text-white font-semibold text-sm md:text-base">${initial}</span>`;
-            }
-          }}
-        />
-      ) : (
-        <span>{initial}</span>
-      )}
+    <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm md:text-base shadow-md ring-2 ring-white">
+      <img 
+        src={defaultImage} 
+        alt={name}
+        className="h-24 w-auto object-cover"
+        onError={(e) => {
+          // Si l'image ne charge pas, on affiche l'initiale
+          e.currentTarget.style.display = 'none';
+          const parent = e.currentTarget.parentElement;
+          if (parent) {
+            parent.innerHTML = `<span class="text-white font-semibold text-sm md:text-base">${initial}</span>`;
+          }
+        }}
+      />
     </div>
   );
 }
@@ -912,31 +789,13 @@ function UserAvatar({
 // Composant Avatar pour le chatbot (Ernest)
 function BotAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-300 flex items-center justify-center shadow-md ring-2 ring-white relative">
-      <svg 
-        className="w-5 h-5 md:w-6 md:h-6" 
-        viewBox="0 0 24 24"
-        fill="none"
+    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-300 flex items-center justify-center shadow-md ring-2 ring-white relative overflow-hidden">
+      <img 
+        src={ernestAvatar}
+        alt="Ernest"
+        className="w-full h-full object-cover"
         aria-label="Ernest"
-      >
-        {/* Grande étoile centrale (4 pointes) */}
-        <path 
-          d="M12 3L13.5 9.5L20 11L13.5 12.5L12 19L10.5 12.5L4 11L10.5 9.5L12 3Z" 
-          fill="white" 
-        />
-        {/* Petite étoile en haut à droite */}
-        <path 
-          d="M17 5L17.3 6.5L18.5 7L17.3 7.5L17 9L16.7 7.5L15.5 7L16.7 6.5L17 5Z" 
-          fill="white" 
-          opacity="0.6"
-        />
-        {/* Petite étoile en bas à gauche */}
-        <path 
-          d="M7 17L7.3 18.5L8.5 19L7.3 19.5L7 21L6.7 19.5L5.5 19L6.7 18.5L7 17Z" 
-          fill="white" 
-          opacity="0.6"
-        />
-      </svg>
+      />
     </div>
   );
 }
@@ -948,8 +807,6 @@ function Bubble({
   showAvatar = false,
   profileImage,
   userName,
-  className = "",
-  largeLineHeight = false,
 }: {
   role: "user" | "assistant";
   children: React.ReactNode;
@@ -957,18 +814,16 @@ function Bubble({
   showAvatar?: boolean;
   profileImage?: string;
   userName?: string;
-  className?: string;
-  largeLineHeight?: boolean;
 }) {
   const isUser = role === "user";
 
   const bubbleContent = (
     <div
-      className={`max-w-[85%] md:max-w-[75%] whitespace-pre-wrap rounded-2xl px-3 md:px-5 py-2 md:py-4 ${
+      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px] whitespace-pre-wrap rounded-2xl px-3 md:px-5 py-2 md:py-4 ${
         isUser
           ? "bg-white text-gray-900 shadow-lg"
           : "bg-gray-100 text-gray-900 ring-1 ring-inset ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700"
-      } ${largeLineHeight ? "leading-[1.8]" : ""} ${className}`}
+      }`}
       aria-live={isUser ? undefined : "polite"}
     >
       {isUser ? (
@@ -1059,7 +914,7 @@ function Bubble({
   // Si c'est un message utilisateur et qu'on doit afficher l'avatar, on l'enveloppe
   if (isUser && showAvatar) {
     return (
-      <div className="flex items-end gap-2 md:gap-3 ml-auto max-w-[85%] md:max-w-[75%]">
+      <div className="flex items-end gap-2 md:gap-3 ml-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
         {bubbleContent}
         <UserAvatar profileImage={profileImage} name={userName} />
       </div>
@@ -1069,7 +924,7 @@ function Bubble({
   // Si c'est un message assistant, on affiche l'avatar du bot
   if (!isUser) {
     return (
-      <div className="flex items-end gap-2 md:gap-3 mr-auto max-w-[85%] md:max-w-[75%]">
+      <div className="flex items-end gap-2 md:gap-3 mr-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
         <BotAvatar />
         {bubbleContent}
       </div>
@@ -1084,405 +939,35 @@ function Bubble({
   );
 }
 
-function ChoiceGroup({ step, choices, onSelect, highContrast = false, largeClickTargets = false, enhancedFocus = false }: { step: number; choices: Choice[]; onSelect: (value: string, label?: string) => void; highContrast?: boolean; largeClickTargets?: boolean; enhancedFocus?: boolean }) {
-  const buttonClass = highContrast
-    ? `${highContrastClasses.buttonIdle} ring-1 ring-inset ring-[#3B4450] hover:bg-[#232834] ${enhancedFocus ? "focus-visible:ring-4 focus-visible:ring-offset-2" : "focus-visible:ring-4"} focus-visible:ring-[#2EC1B2]`
-    : `bg-white text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none ${enhancedFocus ? "focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:outline-2" : "focus-visible:ring-4"} focus-visible:ring-blue-300`;
-  
-  const minHeight = largeClickTargets ? "min-h-[56px]" : "min-h-[36px] md:min-h-[40px]";
-  const padding = largeClickTargets ? "px-6 py-4" : "px-4 md:px-5 py-2.5";
-  
+function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choice[]; onSelect: (value: string, label?: string) => void }) {
   return (
-    <motion.div
-      role="group"
-      aria-label={`Choix étape ${step}`}
-      className="flex flex-wrap gap-2 md:gap-3"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-    >
-      {choices.map((c, index) => (
-        <motion.button
+    <div role="group" aria-label={`Choix étape ${step}`} className="flex flex-wrap gap-2 md:gap-3">
+      {choices.map((c) => (
+        <button
           key={c.value}
           type="button"
           onClick={() => onSelect(c.value, c.label)}
-          className={`relative inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition overflow-hidden ${buttonClass}`}
+          className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
           aria-label={c.label}
-          initial={{ opacity: 0, y: 15, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.03, y: -1 }}
-          transition={{ 
-            type: "spring", 
-            stiffness: 300, 
-            damping: 20,
-            delay: index * 0.05,
-            scale: { duration: 0.15 }
-          }}
         >
-          <motion.span
-            className="absolute inset-0 bg-blue-200/40 rounded-full"
-            initial={{ scale: 0, opacity: 0.6 }}
-            whileTap={{ scale: 2.5, opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          />
-          <span className="relative z-10">{c.label}</span>
-        </motion.button>
+          {c.label}
+        </button>
       ))}
-      <motion.button
+      <button
         type="button"
         onClick={() => onSelect("fallback", "Je n'y arrive pas")}
-        className={`relative inline-flex ${minHeight} items-center justify-center rounded-xl ${padding} text-[14px] md:text-[15px] font-semibold transition overflow-hidden ${buttonClass}`}
+        className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
         aria-label="Je n'y arrive pas"
-        initial={{ opacity: 0, y: 15, scale: 0.9 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        whileTap={{ scale: 0.95 }}
-        whileHover={{ scale: 1.03, y: -1 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 300, 
-          damping: 20,
-          delay: choices.length * 0.05,
-          scale: { duration: 0.15 }
-        }}
       >
-        <motion.span
-          className="absolute inset-0 bg-blue-200/40 rounded-full"
-          initial={{ scale: 0, opacity: 0.6 }}
-          whileTap={{ scale: 2.5, opacity: 0 }}
-          transition={{ duration: 0.4 }}
-        />
-        <span className="relative z-10">Je n'y arrive pas</span>
-      </motion.button>
-    </motion.div>
+        Je n'y arrive pas
+      </button>
+    </div>
   );
 }
 
-// Composant Menu d'Accessibilité Senior-Friendly
-type AccessibilityMenuProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  highContrast: boolean;
-  // États des fonctionnalités
-  fontSize: FontSize;
-  onFontSizeChange: (size: FontSize) => void;
-  highContrastMode: boolean;
-  onToggleHighContrast: () => void;
-  largeLineHeight: boolean;
-  onToggleLineHeight: () => void;
-  reduceAnimations: boolean;
-  onToggleAnimations: () => void;
-  simplifiedMode: boolean;
-  onToggleSimplifiedMode: () => void;
-  largeClickTargets: boolean;
-  onToggleClickTargets: () => void;
-  enhancedFocus: boolean;
-  onToggleEnhancedFocus: () => void;
-  showBreadcrumb: boolean;
-  onToggleBreadcrumb: () => void;
-};
-
-function AccessibilityMenu({
-  isOpen,
-  onClose,
-  highContrast,
-  fontSize,
-  onFontSizeChange,
-  highContrastMode,
-  onToggleHighContrast,
-  largeLineHeight,
-  onToggleLineHeight,
-  reduceAnimations,
-  onToggleAnimations,
-  simplifiedMode,
-  onToggleSimplifiedMode,
-  largeClickTargets,
-  onToggleClickTargets,
-  enhancedFocus,
-  onToggleEnhancedFocus,
-  showBreadcrumb,
-  onToggleBreadcrumb,
-}: AccessibilityMenuProps) {
-  if (!isOpen) return null;
-
-  const menuBg = highContrast
-    ? "bg-[#1B2027] border-[#3B4450] text-[#E8ECF2]"
-    : "bg-white border-gray-200 text-gray-900 shadow-2xl";
-  
-  const buttonBase = highContrast
-    ? "border border-[#3B4450] hover:bg-[#2A313D]"
-    : "border border-gray-300 hover:bg-gray-50";
-  
-  const buttonActive = highContrast
-    ? "bg-[#2EC1B2] text-white border-[#2EC1B2]"
-    : "bg-blue-600 text-white border-blue-600";
-
+function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () => void; onReset: () => void }) {
   return (
-    <>
-      {/* Overlay pour fermer le menu */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
-      />
-      
-      {/* Menu flottant */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-        transition={{ duration: 0.2 }}
-        className={`fixed top-16 right-4 z-50 w-[90vw] max-w-[420px] rounded-2xl border-2 ${menuBg} p-6`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Menu d'accessibilité"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h2 className={`text-xl font-bold ${highContrast ? "text-[#F6F8FB]" : "text-gray-900"}`}>
-            🔧 Options d'accessibilité
-          </h2>
-          <button
-            onClick={onClose}
-            className={`grid h-10 w-10 place-items-center rounded-full transition-colors ${
-              highContrast
-                ? "hover:bg-[#2A313D] text-[#E8ECF2]"
-                : "hover:bg-gray-100 text-gray-700"
-            }`}
-            aria-label="Fermer le menu"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="space-y-3 max-h-[70vh] overflow-y-auto">
-          {/* Option 1: Contraste élevé */}
-          <button
-            onClick={onToggleHighContrast}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              highContrastMode ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">🎨 Contraste élevé</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {highContrastMode ? "Mode contraste élevé activé" : "Améliorer le contraste des couleurs"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                highContrastMode
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  highContrastMode ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 3: Espacement des lignes */}
-          <button
-            onClick={onToggleLineHeight}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              largeLineHeight ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">📏 Espacement des lignes</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {largeLineHeight ? "Espacement large activé" : "Augmenter l'espacement entre les lignes"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                largeLineHeight
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  largeLineHeight ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 4: Réduire les animations */}
-          <button
-            onClick={onToggleAnimations}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              reduceAnimations ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">🎬 Réduire les animations</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {reduceAnimations ? "Animations réduites" : "Désactiver les animations pour réduire les distractions"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                reduceAnimations
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  reduceAnimations ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 5: Zones cliquables plus grandes */}
-          <button
-            onClick={onToggleClickTargets}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              largeClickTargets ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">👆 Zones cliquables agrandies</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {largeClickTargets ? "Zones agrandies activées" : "Augmenter la taille des boutons et zones cliquables"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                largeClickTargets
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  largeClickTargets ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 6: Focus amélioré */}
-          <button
-            onClick={onToggleEnhancedFocus}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              enhancedFocus ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">🎯 Focus amélioré</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {enhancedFocus ? "Focus amélioré activé" : "Rendre les contours de focus plus visibles"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                enhancedFocus
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  enhancedFocus ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 7: Mode simplifié */}
-          <button
-            onClick={onToggleSimplifiedMode}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              simplifiedMode ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">✨ Mode lecture simplifié</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {simplifiedMode ? "Mode simplifié activé" : "Masquer les éléments non essentiels pour une lecture plus claire"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                simplifiedMode
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  simplifiedMode ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-
-          {/* Option 8: Guide de navigation */}
-          <button
-            onClick={onToggleBreadcrumb}
-            className={`w-full text-left px-5 py-4 rounded-xl transition-all ${buttonBase} ${
-              showBreadcrumb ? buttonActive : ""
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-base mb-1">🧭 Guide de navigation</div>
-                <div className={`text-sm ${highContrast ? "text-[#B8C5D1]" : "text-gray-600"}`}>
-                  {showBreadcrumb ? "Guide activé" : "Afficher un fil d'Ariane pour savoir où vous êtes"}
-                </div>
-              </div>
-              <div className={`w-12 h-6 rounded-full transition-colors ${
-                showBreadcrumb
-                  ? highContrast ? "bg-[#2EC1B2]" : "bg-blue-600"
-                  : highContrast ? "bg-[#3B4450]" : "bg-gray-300"
-              }`}>
-                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                  showBreadcrumb ? "translate-x-6" : "translate-x-0.5"
-                } mt-0.5`} />
-              </div>
-            </div>
-          </button>
-        </div>
-
-        <div className={`mt-6 pt-6 border-t ${highContrast ? "border-[#3B4450]" : "border-gray-200"}`}>
-          <p className={`text-xs ${highContrast ? "text-[#B8C5D1]" : "text-gray-500"} text-center`}>
-            💡 Ces paramètres sont sauvegardés dans votre navigateur
-          </p>
-        </div>
-      </motion.div>
-    </>
-  );
-}
-
-function TopBar({ onBack, onMenu, onReset, highContrast = false }: { onBack: () => void; onMenu: () => void; onReset: () => void; highContrast?: boolean }) {
-  const barBackground = highContrast
-    ? `${highContrastClasses.panel}/98 ${highContrastClasses.mutedText} border-b border-[#3B4450]`
-    : "bg-white/95 text-gray-900 border-b border-slate-100";
-  return (
-    <header className={`sticky top-0 z-30 flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4 backdrop-blur supports-[backdrop-filter]:bg-white/80 ${barBackground}`}>
-      <div className="w-9 md:w-12" />
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-        <img 
-          src={logoErnest} 
-          alt="Ernest" 
-          className="h-6 md:h-8 w-auto"
-        />
-      </div>
-      <div className="flex items-center gap-2 md:gap-3">
-        <button
-          type="button"
-          onClick={onReset}
-          className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-red-50 text-red-600 ring-1 ring-red-200 shadow-sm transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300"
-          aria-label="Effacer la conversation"
-          title="Effacer la conversation"
-        >
-          <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-        <button
-          type="button"
-          onClick={onMenu}
-          className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-gray-100 text-gray-700 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
-          aria-label="Menu"
-        >
-          <span aria-hidden className="text-base md:text-xl">≡</span>
-        </button>
-      </div>
+    <header className="relative flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4">
     </header>
   );
 }
@@ -1492,6 +977,9 @@ function StickyBar({ onBack, onHome, onContact, onReminder }: { onBack: () => vo
     <div className="sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white/95 px-4 md:px-6 py-3 md:py-4 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
       <div className="mx-auto flex max-w-screen-lg items-center justify-between gap-2 md:gap-3">
         <div className="flex items-center gap-2 md:gap-3">
+          <button type="button" onClick={onBack} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
+            ↩️ Retour
+          </button>
           <button type="button" onClick={onHome} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
             🏠 Menu
           </button>
@@ -1551,14 +1039,6 @@ type ComposerProps = {
   attachedFiles: File[];
   onRemoveFile: (index: number) => void;
   onFocus?: () => void;
-  onBlur?: () => void;
-  onHideKeyboard?: () => void;
-  isMobile?: boolean;
-  inputRef?: React.RefObject<HTMLTextAreaElement>;
-  fileInputRef?: React.RefObject<HTMLInputElement | null>;
-  fontSize?: FontSize;
-  highContrast?: boolean;
-  mobileComposerVisible?: boolean;
 };
 
 // Fonction utilitaire pour obtenir l'icône selon le type de fichier
@@ -1658,44 +1138,14 @@ function Composer({
   attachedFiles,
   onRemoveFile,
   onFocus,
-  onBlur,
-  onHideKeyboard,
-  isMobile = false,
-  inputRef,
-  fileInputRef,
-  fontSize = "normal",
-  highContrast = false,
-  mobileComposerVisible = true,
 }: ComposerProps) {
-  const localFileInputRef = useRef<HTMLInputElement>(null);
-  const resolvedFileInputRef = fileInputRef ?? localFileInputRef;
-  const localTextareaRef = useRef<HTMLTextAreaElement>(null);
-  const resolvedTextareaRef = inputRef ?? localTextareaRef;
-  const textSizeClass = 
-    fontSize === "xlarge" ? "text-[24px]" :
-    fontSize === "large" ? "text-[20px]" :
-    "text-[16px]";
-  const mobileShellClass = highContrast
-    ? "flex w-full items-center gap-2.5 rounded-full bg-[#1B2027] px-4 py-2.5 text-[#E8ECF2] shadow-sm ring-1 ring-[#2A313D]"
-    : "flex w-full items-center gap-2.5 rounded-full bg-gray-100 px-4 py-2.5 text-gray-700 shadow-sm";
-  const mobileTextareaInlineClass = highContrast
-    ? `flex-1 resize-none bg-transparent leading-7 text-[#E8ECF2] placeholder:text-[#A9B4C6] outline-none ${textSizeClass}`
-    : `flex-1 resize-none bg-transparent leading-7 text-gray-900 placeholder:text-gray-500 outline-none ${textSizeClass}`;
-  const mobileIconButtonBase = highContrast
-    ? "grid h-11 w-11 place-items-center rounded-full ring-1 ring-[#2A313D] shadow-md"
-    : "grid h-11 w-11 place-items-center rounded-full ring-1 ring-gray-200 shadow-md";
-  const desktopShellClass = highContrast
-    ? "hidden md:flex w-full items-center gap-3 rounded-full bg-[#1B2027] px-5 py-3.5 text-[#E8ECF2] shadow-sm ring-1 ring-[#2A313D]"
-    : "hidden md:flex w-full items-center gap-3 rounded-full bg-gray-100 px-5 py-3.5 text-gray-700 shadow-sm";
-  const desktopTextareaClass = highContrast
-    ? `flex-1 resize-none bg-transparent leading-7 outline-none placeholder:text-[#A9B4C6] text-[#E8ECF2] ${textSizeClass}`
-    : `flex-1 resize-none bg-transparent leading-7 outline-none placeholder:text-gray-500 ${textSizeClass}`;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="w-full px-3 md:px-6 py-2.5 md:py-4">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
-        <div className="mx-auto mb-2 w-full max-w-[1800px]">
+        <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
           <div className="flex flex-wrap gap-2 md:gap-3">
             {attachedFiles.map((file, index) => (
               <AttachedFileItem
@@ -1710,177 +1160,47 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto w-full max-w-[1800px]">
-        {isMobile ? (
-          <>
-            <div className={`${mobileComposerVisible ? "flex flex-col gap-3 md:hidden" : "hidden md:hidden"}`}>
-              <div className={mobileShellClass}>
-                <textarea
-                  ref={resolvedTextareaRef}
-                  value={value}
-                  onChange={(e) => onChange(e.target.value)}
-                  onFocus={onFocus}
-                  onBlur={onBlur}
-                  rows={1}
-                  placeholder="Écrivez votre message"
-                  aria-label="Écrivez votre message"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      if (value.trim()) onSend();
-                    }
-                  }}
-                  className={mobileTextareaInlineClass}
-                />
-                <button
-                  type="button"
-                  onClick={() => resolvedFileInputRef.current?.click()}
-                  className={`${mobileIconButtonBase} ${
-                    highContrast ? "bg-[#232834] text-[#E8ECF2]" : "bg-white text-gray-900"
-                  }`}
-                  aria-label="Joindre des fichiers"
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={onVoice}
-                  className={`${mobileIconButtonBase} ${
-                    highContrast ? "bg-[#232834] text-[#2EC1B2]" : "bg-blue-100 text-blue-800"
-                  }`}
-                  aria-label="Mode Voix"
-                >
-                  <SendWavesIcon className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={onSend}
-                  disabled={!value.trim() && attachedFiles.length === 0}
-                  className={`${mobileIconButtonBase} ${
-                    highContrast ? "bg-[#2EC1B2] text-[#071014]" : "bg-green-100 text-green-900"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  aria-label="Envoyer"
-                >
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
-                </button>
-              </div>
-                {onHideKeyboard && (
-                <button
-                  type="button"
-                  onClick={onHideKeyboard}
-                  className={`w-full rounded-full px-4 py-2 text-sm font-semibold shadow-sm ${
-                    highContrast ? "bg-[#232834] text-[#E8ECF2]" : "bg-gray-200 text-gray-900"
-                  }`}
-                >
-                  Fermer le clavier
-                </button>
-              )}
-            </div>
-            <input
-              ref={resolvedFileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  const filesArray = Array.from(e.target.files);
-                  onFileAttach(filesArray);
-                  if (resolvedFileInputRef.current) {
-                    resolvedFileInputRef.current.value = "";
-                  }
-                  onFocus?.();
-                }
-              }}
-            />
-          </>
-        ) : (
-          <div className={desktopShellClass}>
-            <textarea
-              ref={resolvedTextareaRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onFocus={onFocus}
-              onBlur={onBlur}
-              rows={1}
-              placeholder="Posez votre question"
-              aria-label="Posez votre question"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  if (value.trim()) onSend();
-                }
-              }}
-              className={desktopTextareaClass}
-            />
-            <input
-              ref={resolvedFileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
-              onChange={(e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                  const filesArray = Array.from(e.target.files);
-                  onFileAttach(filesArray);
-                  if (resolvedFileInputRef.current) {
-                    resolvedFileInputRef.current.value = "";
-                  }
-                }
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => resolvedFileInputRef.current?.click()}
-              className={`relative grid h-11 w-11 place-items-center rounded-full shadow-md ring-1 transition focus:outline-none focus-visible:ring-4 ${
-                highContrast
-                  ? `bg-[#232834] text-[#E8ECF2] ring-[#2A313D] hover:bg-[#2A313D] focus-visible:ring-[#2EC1B2]/40 ${attachedFiles.length > 0 ? "ring-2 ring-[#2EC1B2]/60" : ""}`
-                  : `bg-gray-100 text-gray-900 ring-gray-200 hover:bg-gray-200 focus-visible:ring-blue-300 ${attachedFiles.length > 0 ? "ring-2 ring-blue-300" : ""}`
-              }`}
-              aria-label="Joindre des fichiers"
-              title={attachedFiles.length > 0 ? `${attachedFiles.length} fichier(s) joint(s)` : "Joindre des fichiers"}
-            >
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={onVoice}
-              className={`grid h-12 w-12 place-items-center rounded-full ring-1 shadow-md transition disabled:opacity-50 ${
-                highContrast
-                  ? "bg-[#232834] text-[#2EC1B2] ring-[#2A313D] hover:bg-[#2A313D]"
-                  : "bg-blue-100 text-blue-800 ring-blue-200 hover:bg-blue-200"
-              }`}
-              aria-label="Mode Voix"
-            >
-              <SendWavesIcon className="h-7 w-7" />
-            </button>
-            <button
-              type="button"
-              onClick={onSend}
-              disabled={!value.trim() && attachedFiles.length === 0}
-              className={`grid h-12 w-12 place-items-center rounded-full ring-1 shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed ${
-                highContrast ? "bg-[#2EC1B2] text-[#071014] ring-[#2EC1B2]/70 hover:bg-[#3DD2C1]" : "bg-green-100 text-green-800 ring-green-200 hover:bg-green-200"
-              }`}
-              aria-label="Envoyer"
-            >
-              <svg className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
-            </button>
-          </div>
-        )}
+      <div className="mx-auto flex w-[70%] items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={onFocus}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && value.trim()) onSend();
+          }}
+          placeholder="Posez votre question"
+          aria-label="Posez votre question"
+          className="flex-1 bg-transparent text-[15px] md:text-[18px] outline-none placeholder:text-gray-500"
+        />
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              const filesArray = Array.from(e.target.files);
+              onFileAttach(filesArray);
+              // Réinitialiser l'input pour permettre de sélectionner le même fichier à nouveau
+              if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+              }
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={onSend}
+          disabled={!value.trim() && attachedFiles.length === 0}
+          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-green-100 text-green-800 ring-1 ring-green-200 shadow-md transition hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Envoyer"
+        >
+          <svg className="h-6 w-6 md:h-9 md:w-9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -1910,10 +1230,8 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const lastVoiceTimeRef = useRef<number>(0); // Timestamp du dernier moment où de la voix a été détectée
   const mrRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
-  const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const meterRafRef = useRef<number | null>(null);
   const meterStreamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<any>(null);
@@ -1923,327 +1241,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const subIntentRef = useRef<Exclude<SubIntent, null> | null>(null);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
-  const composerFileInputRef = useRef<HTMLInputElement>(null);
-  // Tailles de texte : "normal" (16px), "large" (20px), "xlarge" (24px)
-  const [fontSize, setFontSize] = useState<FontSize>("normal");
-  const [highContrastMode, setHighContrastMode] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  // États pour les fonctionnalités d'accessibilité senior-friendly
-  const [accessibilityMenuOpen, setAccessibilityMenuOpen] = useState(false);
-  const [largeLineHeight, setLargeLineHeight] = useState(false);
-  const [reduceAnimations, setReduceAnimations] = useState(false);
-  const [simplifiedMode, setSimplifiedMode] = useState(false);
-  const [largeClickTargets, setLargeClickTargets] = useState(false);
-  const [enhancedFocus, setEnhancedFocus] = useState(false);
-  const [showBreadcrumb, setShowBreadcrumb] = useState(false);
-  const [isInputFocused, setIsInputFocused] = useState(false);
-  const [canScrollUp, setCanScrollUp] = useState(false);
-  const [canScrollDown, setCanScrollDown] = useState(false);
-  const [mobileComposerVisible, setMobileComposerVisible] = useState(false);
-  const [mobileIntentsVisible, setMobileIntentsVisible] = useState(false);
-  const [voiceReady, setVoiceReady] = useState(false);
-  const [hasStartedFlow, setHasStartedFlow] = useState(false);
-  const shouldShowMobileComposer = isMobile && (mobileComposerVisible || voiceMode);
-  const scrollControlsVisible = screen !== "home";
-  const voiceReadyRef = useRef(false);
-  useEffect(() => {
-    voiceReadyRef.current = voiceReady;
-  }, [voiceReady]);
-  useEffect(() => {
-    if (voiceMode) {
-      setMobileComposerVisible(true);
-      setIsInputFocused(true);
-    }
-  }, [voiceMode]);
-  const resetConversation = useCallback(() => {
-    reset();
-    setScreen("home");
-    setIntent(null);
-    setSubIntent(null);
-    setStepIndex(0);
-    setShowBannerUrl(null);
-    setAttachedFiles([]);
-    setComposerText("");
-    setMessageFiles({});
-    pendingFilesRef.current = null;
-    setVoiceMode(false);
-    setVoiceTranscription("");
-    setFinalTranscription("");
-    setVoiceStatus("Prêt");
-    setMobileComposerVisible(false);
-    setIsInputFocused(false);
-    setMobileIntentsVisible(false);
-    setHasStartedFlow(false);
-    emitTelemetry({ type: "reset" });
-  }, [reset]);
-
-  const quickActions = useMemo<QuickActionConfig[]>(
-    () => [
-      {
-        key: "voice",
-        label: "Parler",
-        icon: <SendWavesIcon className="h-6 w-6" />,
-        tone: "voice",
-      },
-      {
-        key: "write",
-        label: "Écrire",
-        icon: (
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-          </svg>
-        ),
-        tone: "write",
-      },
-      {
-        key: "attach",
-        label: "Joindre",
-        icon: (
-          <svg
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-        ),
-        tone: "attach",
-      },
-      {
-        key: "reset",
-        label: "Effacer",
-        icon: <TrashIcon className="h-5 w-5" />,
-        tone: "reset",
-      },
-    ],
-    []
-  );
-  const instructionCards = useMemo<InstructionCard[]>(
-    () => [
-      {
-        key: "attach",
-        title: "Joindre un fichier",
-        description: "Ajoutez une photo ou un document pour nous aider à analyser votre situation.",
-        icon: (
-          <svg
-            className="h-6 w-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-        ),
-        tone: "attach",
-      },
-      {
-        key: "voice",
-        title: "Parler à voix haute",
-        description: "Utilisez le micro si l'écriture est difficile ou si vous préférez expliquer oralement.",
-        icon: <SendWavesIcon className="h-7 w-7" />,
-        tone: "voice",
-      },
-      {
-        key: "write",
-        title: "Envoyer votre message",
-        description: "Tapez votre question pour recevoir des conseils étape par étape.",
-        icon: (
-          <svg
-            className="h-6 w-6"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
-        ),
-        tone: "write",
-      },
-      {
-        key: "reset",
-        title: "Recommencer",
-        description: "Nettoyez la conversation et repartez sur de nouvelles bases quand vous le souhaitez.",
-        icon: <TrashIcon className="h-5 w-5" />,
-        tone: "reset",
-      },
-    ],
-    []
-  );
-  const handleQuickAction = useCallback(
-    (key: string) => {
-      if (key === "voice") {
-        setMobileIntentsVisible(false);
-        setVoiceMode(true);
-        setVoiceStatus("Mode voix");
-        setMobileComposerVisible(true);
-        setIsInputFocused(true);
-        setScreen("chat");
-        return;
-      }
-      if (key === "write") {
-        setMobileIntentsVisible(true);
-        setScreen("chat");
-        setMobileComposerVisible(true);
-        messageInputRef.current?.focus();
-        setIsInputFocused(true);
-        return;
-      }
-      if (key === "attach") {
-        setMobileIntentsVisible(false);
-        setMobileComposerVisible(true);
-        composerFileInputRef.current?.click();
-        setScreen("chat");
-        return;
-      }
-      if (key === "reset") {
-        setMobileIntentsVisible(false);
-        resetConversation();
-        return;
-      }
-    },
-    [composerFileInputRef, messageInputRef, resetConversation, setVoiceStatus]
-  );
-  const handleHideKeyboard = useCallback(() => {
-    messageInputRef.current?.blur();
-    setIsInputFocused(false);
-    setMobileComposerVisible(false);
-    setMobileIntentsVisible(false);
-    setScreen("home");
-  }, []);
-  const handleComposerFocus = useCallback(() => {
-    setIsInputFocused(true);
-    setMobileComposerVisible(true);
-    if (isMobile && !hasStartedFlow && screen === "home") {
-      setMobileIntentsVisible(true);
-    }
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [hasStartedFlow, isMobile, screen]);
-  const updateScrollBoundaries = useCallback(() => {
-    const el = scrollAreaRef.current;
-    if (!el || screen === "home") {
-      setCanScrollUp(false);
-      setCanScrollDown(false);
-      return;
-    }
-    const threshold = 16;
-    setCanScrollUp(el.scrollTop > threshold);
-    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - threshold);
-  }, [screen]);
-
-  useEffect(() => {
-    const el = scrollAreaRef.current;
-    if (!el) {
-      setCanScrollUp(false);
-      setCanScrollDown(false);
-      return;
-    }
-    updateScrollBoundaries();
-    const handleScroll = () => updateScrollBoundaries();
-    el.addEventListener("scroll", handleScroll);
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [screen, updateScrollBoundaries]);
-
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => updateScrollBoundaries());
-    return () => cancelAnimationFrame(raf);
-  }, [messages.length, screen, updateScrollBoundaries]);
-
-  const handleScrollControl = useCallback(
-    (direction: "top" | "bottom") => {
-      const el = scrollAreaRef.current;
-      if (!el) return;
-      const targetTop = direction === "top" ? 0 : el.scrollHeight;
-      el.scrollTo({ top: targetTop, behavior: "smooth" });
-      if (direction === "bottom") {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const highContrastTokens = {
-    root: highContrastClasses.background,
-    panel: `${highContrastClasses.panel} ring-1 ring-[#3B4450]`,
-    assistantBubble: highContrastClasses.botBubble,
-    userBubble: highContrastClasses.userBubble,
-    toolbar: `${highContrastClasses.border} ${highContrastClasses.panel}`,
-    toolbarText: highContrastClasses.mutedText,
-    toolbarControl: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
-    toolbarControlActive: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
-    quickAction: `${highContrastClasses.elevated} ring-1 ring-inset ring-[#3B4450]`,
-    quickActionBadge: `${highContrastClasses.buttonIdle} ring-1 ring-inset ring-[#3B4450]`,
-    composerShell: `border-t border-[#3B4450] ${highContrastClasses.panel}/95`,
-    mobileAction: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
-    mobileSend: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
-    mobileHide: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
-    desktopComposer: `${highContrastClasses.panel} ${highContrastClasses.inputBackground}`,
-    desktopTextarea: `placeholder:${highContrastClasses.mutedText} ${highContrastClasses.inputBackground}`,
-    desktopButton: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
-    desktopSend: `${highContrastClasses.buttonActive} ring-1 ring-[#2EC1B2]/70`,
-    choiceButton: `${highContrastClasses.buttonIdle} ring-1 ring-[#3B4450]`,
-    choiceButtonHover: `${highContrastClasses.buttonSecondary} ring-1 ring-[#3B4450]`,
-    errorBubble: highContrastClasses.error,
-    successBubble: highContrastClasses.success,
-    warningBanner: highContrastClasses.warning,
-    toolbarBar: `border-[#3B4450] ${highContrastClasses.panel}/90`,
-    composerBar: `border-[#3B4450] ${highContrastClasses.panel}/95`,
-    scrollButton: `${highContrastClasses.panel} border border-[#3B4450]`,
-  };
-  // Tailles de texte adaptées aux seniors : normal (16px), large (20px), xlarge (24px)
-  const baseTextSizeClass = 
-    fontSize === "xlarge" ? "text-[24px]" :
-    fontSize === "large" ? "text-[20px]" :
-    "text-[16px]";
-  const lineHeightClass = largeLineHeight ? "leading-[1.8]" : "";
-  const animationClass = reduceAnimations ? "[&_*]:!transition-none [&_*]:!duration-0 [&_*]:!animate-none" : "";
-  const clickTargetClass = largeClickTargets ? "[&_button]:min-h-[56px] [&_a]:min-h-[56px] [&_button]:px-6 [&_button]:py-4" : "";
-  const focusClass = enhancedFocus ? "[&_*:focus-visible]:ring-4 [&_*:focus-visible]:ring-blue-500 [&_*:focus-visible]:ring-offset-2 [&_*:focus-visible]:outline-2" : "";
-  const simplifiedClass = simplifiedMode ? "[&_.hidden-simplified]:hidden" : "";
-  const rootThemeClass = highContrastMode ? highContrastTokens.root : "bg-sky-50 text-gray-900";
-  const panelThemeClass = highContrastMode ? highContrastTokens.panel : "bg-white text-gray-900 ring-slate-100";
-  const assistantBubbleClass = highContrastMode
-    ? highContrastTokens.assistantBubble
-    : "bg-gray-100 text-gray-900 ring-1 ring-gray-200";
-  const userBubbleClass = highContrastMode
-    ? highContrastTokens.userBubble
-    : "bg-blue-600 text-white ring-blue-500";
-  const composerShadow = isMobile && isInputFocused ? "0px -20px 45px rgba(15,23,42,0.22)" : "0px -8px 24px rgba(15,23,42,0.12)";
-  const composerLift = isMobile && isInputFocused ? -4 : 0;
-  const scrollButtonBase = highContrastMode
-    ? highContrastTokens.scrollButton
-    : "bg-white text-slate-900 shadow-[0_18px_40px_rgba(15,23,42,0.18)] border border-slate-100";
+  const [showHelperTips, setShowHelperTips] = useState(true);
 
   // Mapping texte libre → intent/subIntent (heuristique simple)
   function mapTextToMeta(text: string): { intent: Intent; subIntent?: Exclude<SubIntent, null> } | null {
@@ -2281,9 +1279,14 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, [messages, stepIndex, screen]);
 
   useEffect(() => {
-    if (isMobile) return;
+    if (messages.length > 0) {
+      setShowHelperTips(false);
+    }
+  }, [messages]);
+
+  useEffect(() => {
     if (composerText.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [composerText, isMobile]);
+  }, [composerText]);
 
   // Écouter les messages depuis WeWeb pour ouvrir le mode voix (Option B)
   useEffect(() => {
@@ -2298,8 +1301,6 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
         // Ouvrir l'overlay mode voix
         setVoiceMode(true);
         setVoiceStatus("Prêt - Cliquez sur le bouton pour commencer");
-        setMobileComposerVisible(true);
-        setIsInputFocused(true);
         
         // Ne pas démarrer automatiquement - laisser l'utilisateur cliquer sur le bouton
         // La permission micro a déjà été accordée par WeWeb, donc startRec() devrait fonctionner
@@ -2439,13 +1440,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
 
     // Nettoyer après l'envoi
     setVoiceStatus("Prêt");
-    setScreen("chat");
-    setHasStartedFlow(true);
-    if (isMobile) {
-      setMobileComposerVisible(true);
-      setIsInputFocused(true);
-    }
-  }, [finalTranscription, stepIndex, sendAction, isMobile]);
+  }, [finalTranscription, stepIndex, sendAction]);
 
   // Détection de silence : arrêter automatiquement après 3 secondes sans voix
   useEffect(() => {
@@ -2501,7 +1496,6 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   // Transcription vocale pour le mode voix (séparée de la dictée normale)
   useEffect(() => {
     if (!voiceMode) {
-      setVoiceReady(false);
       // Nettoyer la transcription quand on ferme le mode voix
       setVoiceTranscription("");
       // Arrêter et nettoyer la transcription si elle existe
@@ -2510,22 +1504,19 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
         try {
           voiceRec.abort();
         } catch {}
+        voiceRecognitionRef.current = null;
       }
-      voiceRecognitionRef.current = null;
       return;
     }
 
-    setVoiceReady(false);
     const anyWindow = window as any;
     const SpeechRecognition = anyWindow.SpeechRecognition || anyWindow.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn("SpeechRecognition non disponible pour le mode voix");
-      setVoiceStatus("Transcription vocale indisponible");
-      setVoiceReady(false);
       return;
     }
 
-    // Créer ou réutiliser l'instance de SpeechRecognition pour le mode voix
+    // Créer une nouvelle instance de SpeechRecognition pour le mode voix
     const voiceRec: any = new SpeechRecognition();
     voiceRec.lang = locale;
     voiceRec.interimResults = true; // Retours en temps réel
@@ -2598,7 +1589,6 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
 
     // Stocker la référence
     voiceRecognitionRef.current = voiceRec;
-    setVoiceReady(true);
 
     return () => {
       // Nettoyer à la fermeture du mode voix
@@ -2688,7 +1678,6 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, [intent, subIntent]);
 
   function handleSelectIntent(i: Intent) {
-    console.log("handleSelectIntent called with:", i);
     emitTelemetry({ type: "intent", intent: i });
     if (i === "SOS") {
       setIntent("SOS");
@@ -2699,7 +1688,6 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
       setStepIndex(0);
       setScreen("chat");
     }
-    setHasStartedFlow(true);
   }
 
   function handleSelectSubIntent(s: Exclude<SubIntent, null>) {
@@ -2707,7 +1695,6 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     setSubIntent(s);
     setStepIndex(0);
     setScreen("chat");
-    setHasStartedFlow(true);
   }
 
 async function handleChoiceSelect(value: string, providedLabel?: string) {
@@ -2742,8 +1729,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       // After final step, we stay in chat, allow more actions
       setStepIndex(next);
     }
-    setScreen("chat");
-    setHasStartedFlow(true);
   }
 
   function handleBack() {
@@ -2905,21 +1890,17 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
 
   async function startRec() {
     try {
-      if (!voiceReady) {
-        setVoiceStatus("Initialisation du micro...");
-        let waited = 0;
-        while (!voiceReadyRef.current && waited < 2000) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          waited += 100;
-        }
-        if (!voiceReadyRef.current) {
-          setVoiceStatus("Micro non prêt");
-          return;
-        }
-        setVoiceStatus("Prêt");
-      }
       // Vérifier si on est dans une iframe (WeWeb)
       const isInIframe = window.self !== window.top;
+      
+      // Note : getUserMedia fonctionne dans une iframe si l'attribut allow="microphone" 
+      // est correctement configuré sur l'iframe dans WeWeb
+      if (isInIframe) {
+        console.log("ℹ️ Détection iframe : tentative d'utilisation de getUserMedia dans l'iframe");
+        console.log("ℹ️ Assurez-vous que l'iframe a l'attribut allow='microphone' dans WeWeb");
+      } else {
+        console.log("✅ Mode standalone : utilisation normale de getUserMedia");
+      }
       
       // Détecter Safari
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
@@ -2952,19 +1933,16 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         console.log("ℹ️ API Permissions non disponible, on continue avec getUserMedia...");
       }
       
-      // Si on est dans une iframe, informer que ça va tenter (si allow="microphone" est présent, ça fonctionnera)
-      if (isInIframe) {
-        console.log("ℹ️ Mode iframe détecté : tentative d'accès au microphone");
-        console.log("ℹ️ Si allow='microphone' est présent sur l'iframe, cela devrait fonctionner");
-      } else {
-        console.log("✅ Mode standalone : utilisation normale de getUserMedia");
-      }
-      
-      // Demander l'accès au microphone (fonctionne dans iframe si allow="microphone" est présent)
+      // Demander l'accès au microphone
+      // Fonctionne dans une iframe si allow="microphone" est configuré
       let stream: MediaStream;
       
       try {
-        console.log(`🎤 Demande d'accès au microphone${isInIframe ? " (mode iframe)" : " (mode standalone)"}...`);
+        if (isInIframe) {
+          console.log("🎤 Demande d'accès au microphone dans l'iframe...");
+        } else {
+          console.log("🎤 Demande d'accès au microphone (mode standalone)...");
+        }
         
         // Essayer d'abord avec les contraintes optimisées
         try {
@@ -2993,6 +1971,13 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         console.log("📊 Stream tracks:", stream.getTracks().length);
       } catch (e: any) {
         console.error("❌ Erreur lors de l'obtention du stream:", e);
+        
+        // Diagnostic complet
+        const isInIframe = window.self !== window.top;
+        const isSecureContext = window.isSecureContext;
+        const currentUrl = window.location.href;
+        const isLocalhost = currentUrl.startsWith('http://localhost') || currentUrl.startsWith('http://127.0.0.1');
+        
         console.error("📋 Détails de l'erreur:", {
           name: e.name,
           message: e.message,
@@ -3000,28 +1985,57 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           stack: e.stack
         });
         
+        console.error("🔍 Diagnostic environnement:", {
+          isInIframe,
+          isSecureContext,
+          currentUrl,
+          isLocalhost,
+          userAgent: navigator.userAgent,
+          mediaDevicesAvailable: !!navigator.mediaDevices,
+          getUserMediaAvailable: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        });
+        
         // Gérer les différents types d'erreurs avec des messages plus clairs
         if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
           // Message plus détaillé pour aider l'utilisateur
-          const isInIframe = window.self !== window.top;
           const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                            (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'));
           
           console.error("🚫 Permission refusée - isInIframe:", isInIframe, "isSafari:", isSafari);
           
           // Vérifier si c'est une erreur de Permissions Policy
+          // Note: Chrome affiche "[Violation] Permissions policy violation" dans la console
+          // mais le message d'erreur peut juste être "Permission denied"
           const isPermissionsPolicyError = e.message?.includes("Permissions policy") || 
                                           e.message?.includes("not allowed in this document") ||
-                                          e.message?.includes("Feature Policy");
+                                          e.message?.includes("Feature Policy") ||
+                                          e.message?.includes("feature is not allowed") ||
+                                          e.message?.includes("policy violation");
           
-          if (isPermissionsPolicyError || (isInIframe && e.message?.includes("Permission denied"))) {
-            // Erreur de Permissions Policy - l'attribut allow="microphone" n'est pas correctement configuré
+          // Si on est dans une iframe avec "Permission denied" et que l'API Permissions dit "denied",
+          // c'est très probablement une erreur de Permissions Policy (allow="microphone" manquant ou mal configuré)
+          // Note: On vérifie aussi si permissionStatus est null car l'API peut ne pas être disponible
+          const likelyPermissionsPolicyError = isInIframe && 
+                                               e.message === "Permission denied" && 
+                                               (permissionStatus === "denied" || permissionStatus === null);
+          
+          console.error("🔍 Erreur Permissions Policy détectée:", isPermissionsPolicyError || likelyPermissionsPolicyError);
+          console.error("🔍 Message d'erreur complet:", e.message);
+          console.error("🔍 Permission status:", permissionStatus);
+          console.error("🔍 Likely Permissions Policy error:", likelyPermissionsPolicyError);
+          
+          if (isPermissionsPolicyError || likelyPermissionsPolicyError) {
+            // Erreur de Permissions Policy - WeWeb bloque probablement les permissions microphone dans les iframes
             let policyMessage = "⚠️ Permissions Policy bloque l'accès au microphone.\n\n";
-            policyMessage += "Dans WeWeb, vérifiez que l'iframe a bien :\n";
-            policyMessage += "• allow='microphone'\n";
-            policyMessage += "• Ou allow='microphone *'\n";
-            policyMessage += "• Dans les attributs HTML de l'iframe\n\n";
-            policyMessage += "Si c'est déjà configuré, rechargez la page.";
+            policyMessage += "Le problème vient probablement de WeWeb qui bloque les permissions microphone dans les iframes, même si allow='microphone' est configuré.\n\n";
+            policyMessage += "🔧 Solutions possibles :\n\n";
+            policyMessage += "1. Ouvrir dans une nouvelle fenêtre :\n";
+            policyMessage += "   Cliquez sur le lien ci-dessous pour ouvrir Ernest dans une nouvelle fenêtre\n\n";
+            policyMessage += "2. Contacter WeWeb :\n";
+            policyMessage += "   Demander à WeWeb de permettre le microphone dans les iframes\n\n";
+            policyMessage += "3. Utiliser l'application directement :\n";
+            policyMessage += "   Ouvrez l'URL de l'application sans passer par WeWeb\n\n";
+            policyMessage += "💡 Note : C'est une limitation de sécurité imposée par WeWeb, pas un bug de votre code.";
             
             setVoiceStatus(policyMessage);
             setRecording(false);
@@ -3060,9 +2074,29 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           setVoiceStatus("Microphone déjà utilisé par une autre application. Fermez les autres applications qui utilisent le micro.");
           setRecording(false);
           return;
+        } else if (e.message?.includes("secure context") || (!isSecureContext && !isLocalhost)) {
+          // Erreur de contexte sécurisé (nécessite HTTPS sauf localhost)
+          let secureContextMessage = "⚠️ Le microphone nécessite un contexte sécurisé (HTTPS).\n\n";
+          if (isInIframe) {
+            secureContextMessage += "Votre iframe est chargée depuis une URL non sécurisée.\n";
+            secureContextMessage += "Assurez-vous que l'URL de l'iframe utilise HTTPS\n";
+            secureContextMessage += "(localhost est une exception qui devrait fonctionner).";
+          } else {
+            secureContextMessage += "Veuillez utiliser HTTPS ou localhost.";
+          }
+          setVoiceStatus(secureContextMessage);
+          setRecording(false);
+          return;
         } else {
-          // Autre erreur
-          setVoiceStatus(`Erreur d'accès au microphone: ${e.message || e.name}`);
+          // Autre erreur - afficher le message détaillé
+          let errorDetails = `Erreur d'accès au microphone: ${e.name}`;
+          if (e.message) {
+            errorDetails += `\n\nDétails: ${e.message}`;
+          }
+          if (isInIframe) {
+            errorDetails += `\n\nVous êtes dans une iframe. Vérifiez que allow="microphone" est bien configuré dans WeWeb.`;
+          }
+          setVoiceStatus(errorDetails);
           setRecording(false);
           return;
         }
@@ -3202,8 +2236,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       }
       
       appendUser(userText);
-      setScreen("chat");
-      setHasStartedFlow(true);
       // Ajouter la réponse assistant (gestion des tableaux)
       if (data?.answer) {
         let answer = data.answer;
@@ -3241,513 +2273,159 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
     }
   }
 
-  const showPrimaryIntents = !hasStartedFlow && screen !== "sos";
-  const showSosSubButtons = !hasStartedFlow && screen === "sos";
-  const showMobileIntentGrid = isMobile && showPrimaryIntents && mobileIntentsVisible;
-
-  useEffect(() => {
-    if (!showPrimaryIntents) {
-      setMobileIntentsVisible(false);
-    }
-  }, [showPrimaryIntents]);
-
   return (
-    <section
-      ref={containerRef}
-      className={`flex min-h-screen w-full justify-center ${rootThemeClass} ${baseTextSizeClass} ${lineHeightClass} ${animationClass} ${clickTargetClass} ${focusClass} ${simplifiedClass} px-3 sm:px-6 lg:px-4 overflow-x-hidden`}
-    >
-      <div className={`relative flex w-full max-w-[1800px] lg:max-w-[98vw] flex-1 flex-col rounded-3xl shadow-2xl ring-1 overflow-hidden ${panelThemeClass}`}>
-        <TopBar
-          highContrast={highContrastMode}
-          onBack={handleBack}
-          onMenu={() => setAccessibilityMenuOpen((prev) => !prev)}
-          onReset={resetConversation}
-        />
-        
-        {/* Menu d'accessibilité flottant */}
-        <AnimatePresence>
-          {accessibilityMenuOpen && (
-            <AccessibilityMenu
-              isOpen={accessibilityMenuOpen}
-              onClose={() => setAccessibilityMenuOpen(false)}
-              highContrast={highContrastMode}
-              fontSize={fontSize}
-              onFontSizeChange={setFontSize}
-              highContrastMode={highContrastMode}
-              onToggleHighContrast={() => setHighContrastMode((prev) => !prev)}
-              largeLineHeight={largeLineHeight}
-              onToggleLineHeight={() => setLargeLineHeight((prev) => !prev)}
-              reduceAnimations={reduceAnimations}
-              onToggleAnimations={() => setReduceAnimations((prev) => !prev)}
-              simplifiedMode={simplifiedMode}
-              onToggleSimplifiedMode={() => setSimplifiedMode((prev) => !prev)}
-              largeClickTargets={largeClickTargets}
-              onToggleClickTargets={() => setLargeClickTargets((prev) => !prev)}
-              enhancedFocus={enhancedFocus}
-              onToggleEnhancedFocus={() => setEnhancedFocus((prev) => !prev)}
-              showBreadcrumb={showBreadcrumb}
-              onToggleBreadcrumb={() => setShowBreadcrumb((prev) => !prev)}
-            />
+    <section ref={containerRef} className="flex h-screen w-full flex-col bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 text-[16px] md:text-[19px] overflow-hidden">
+      <TopBar
+        onBack={handleBack}
+        onMenu={() => { /* menu plus tard */ }}
+        onReset={() => {
+          reset();
+          setScreen("home");
+          setIntent(null);
+          setSubIntent(null);
+          setStepIndex(0);
+          setShowBannerUrl(null);
+          setAttachedFiles([]);
+          setComposerText("");
+          setMessageFiles({});
+          pendingFilesRef.current = null;
+          setVoiceMode(false);
+          setVoiceTranscription("");
+          setFinalTranscription("");
+          setVoiceStatus("Prêt");
+          setShowHelperTips(true);
+          emitTelemetry({ type: "reset" });
+        }}
+      />
+
+      {/* Home screen top section supprimée pour placer les boutons en bas */}
+      {false && screen === "home" && <div />}
+
+      {/* SOS submenu top section supprimée pour placer les boutons en bas */}
+      {false && screen === "sos" && <div />}
+
+      {/* Conversation area - toujours visible */}
+      <div className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
+          {/* Safety banner */}
+          {showBannerUrl && (
+            <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
+              <div className="mb-2 md:mb-3 font-semibold text-[16px] md:text-[18px]">Pour votre sécurité, utilisez les canaux officiels.</div>
+              <a
+                href={showBannerUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex min-h-[44px] md:min-h-[48px] items-center justify-center rounded-lg bg-amber-600 px-4 md:px-5 py-2 md:py-2.5 text-[16px] md:text-[18px] text-white hover:bg-amber-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+              >
+                Ouvrir le site officiel
+              </a>
+            </div>
           )}
-        </AnimatePresence>
-        {/* Fil d'Ariane (breadcrumb) */}
-        {showBreadcrumb && (
-          <div className={`sticky top-0 z-30 flex items-center gap-2 px-4 py-2 text-sm border-b ${
-            highContrastMode 
-              ? `${highContrastTokens.toolbarBar} text-[#B8C5D1]` 
-              : "bg-gray-50 border-slate-100 text-gray-600"
-          }`}>
-            <span>🏠</span>
-            <span>/</span>
-            {screen === "home" && <span className="font-semibold">Accueil</span>}
-            {screen === "sos" && <span className="font-semibold">SOS Cyber</span>}
-            {screen === "chat" && intent && (
-              <>
-                <span>{ALL_INTENTS.find(i => i.key === intent)?.label || intent}</span>
-                {subIntent && (
-                  <>
-                    <span>/</span>
-                    <span className="font-semibold">
-                      {SOS_OPTIONS.find(s => s.key === subIntent)?.label || subIntent}
-                    </span>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        )}
-        
-        {screen !== "home" && (
-          <div
-            className={`sticky ${showBreadcrumb ? 'top-[40px]' : 'top-0'} z-20 flex flex-wrap items-center gap-3 border-b px-4 py-3 backdrop-blur-md ${
-              highContrastMode ? highContrastTokens.toolbarBar : "border-slate-100 bg-white/80"
-            }`}
-          >
-            <motion.button
-              type="button"
-              onClick={() => setHighContrastMode((prev) => !prev)}
-              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
-                highContrastMode ? highContrastTokens.toolbarControlActive : "bg-yellow-100 text-yellow-900"
-              }`}
-              whileTap={reduceAnimations ? {} : { scale: 0.95 }}
-              whileHover={reduceAnimations ? {} : { scale: 1.02 }}
-              transition={reduceAnimations ? { duration: 0 } : undefined}
-            >
-              {highContrastMode ? "Mode contraste élevé" : "Activer contraste"}
-            </motion.button>
-            <motion.button
-              type="button"
-              onClick={() => setAccessibilityMenuOpen((prev) => !prev)}
-              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${
-                highContrastMode
-                  ? accessibilityMenuOpen
-                    ? highContrastTokens.toolbarControlActive
-                    : highContrastTokens.toolbarControl
-                  : accessibilityMenuOpen
-                    ? "bg-blue-600 text-white"
-                    : "bg-blue-100 text-blue-900"
-              }`}
-              whileTap={reduceAnimations ? {} : { scale: 0.95 }}
-              whileHover={reduceAnimations ? {} : { scale: 1.02 }}
-              transition={reduceAnimations ? { duration: 0 } : undefined}
-            >
-              Options
-            </motion.button>
-          </div>
-        )}
-        {/* Home screen top section supprimée pour placer les boutons en bas */}
-        {false && screen === "home" && <div />}
 
-        {/* SOS submenu top section supprimée pour placer les boutons en bas */}
-        {false && screen === "sos" && <div />}
+          {(currentSteps?.[stepIndex]) && (
+            <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-3 md:gap-4">
+              <Bubble role="assistant">{currentSteps![stepIndex]!.question}</Bubble>
+              <ChoiceGroup step={stepIndex + 1} choices={currentSteps![stepIndex]!.choices} onSelect={handleChoiceSelect} />
+            </div>
+          )}
 
-        {/* Conversation area */}
-        {screen !== "home" ? (
-          <div
-            ref={scrollAreaRef}
-            className={`flex-1 w-full overflow-y-auto scroll-smooth ${highContrastMode ? highContrastClasses.background : "bg-slate-50"}`}
-          >
-            <div className="flex flex-col gap-3 md:gap-5 px-3 md:px-6 lg:px-10 py-4 md:py-5 pb-32 md:pb-36 items-center min-h-full">
-          {!isMobile && conversation.length === 0 && (
-            <div className="hidden md:flex w-full flex-1 items-center justify-center">
-              <div className="mx-auto w-full max-w-[1100px]">
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  {instructionCards.map((card) => {
-                    const toneKey = card.tone ?? card.key;
-                    const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
-                    return (
-                      <div
-                      key={card.key}
-                      className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset transition-colors ${
-                        highContrastMode 
-                          ? `${highContrastTokens.quickAction} hover:bg-[#2A313D]` 
-                          : "bg-white text-gray-900 ring-slate-200"
-                      }`}
-                    >
-                      <div
-                        className={`grid h-10 w-10 place-items-center rounded-full transition-colors duration-200 ${
-                          highContrastMode
-                            ? `${highContrastTokens.quickActionBadge}`
-                            : `${colorTokens.circle} ${colorTokens.hover}`
-                        }`}
-                        aria-hidden
-                      >
-                        <span className={highContrastMode ? "text-[#E8ECF2]" : ""}>{card.icon}</span>
-                      </div>
-                      <div className="text-left">
-                        <p className={`text-base font-semibold ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{card.title}</p>
-                        <p className={`text-sm ${highContrastMode ? highContrastClasses.mutedText : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
-                      </div>
-                      </div>
-                    );
-                  })}
-                </div>
+          {/* Message de bienvenue */}
+          {conversation.length === 0 && (
+            <div className="relative w-full max-w-screen-lg mx-auto px-3 md:px-6">
+              {/* Image d'Ernest positionnée à ~25% de la gauche */}
+              <div className="absolute left-[25%] -translate-x-1/2 top-0 z-10">
+                <img 
+                  src={ernestImage} 
+                  alt="Ernest" 
+                  className="h-[60vh] w-auto object-contain"
+                />
+              </div>
+              {/* Bulle de dialogue avec queue pointant vers l'image */}
+              <div 
+                className="relative ml-[32%] mt-8 bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-2xl px-5 md:px-7 py-4 md:py-5 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 shadow-lg max-w-[65%] before:content-[''] before:absolute before:-left-4 before:bottom-3 before:w-0 before:h-0 before:border-t-[14px] before:border-t-transparent before:border-b-[14px] before:border-b-transparent before:border-r-[14px] before:border-r-gray-100 dark:before:border-r-gray-800 after:content-[''] after:absolute after:-left-4.5 after:bottom-2.5 after:w-0 after:h-0 after:border-t-[15px] after:border-t-transparent after:border-b-[15px] after:border-b-transparent after:border-r-[15px] after:border-r-gray-200 dark:after:border-r-gray-700" 
+                style={{
+                  animation: 'bubbleAppear 0.6s ease-out',
+                  transformOrigin: 'left center'
+                }}
+              >
+                <p className="text-[15px] md:text-[18px] leading-relaxed">
+                  Bonjour ! Je suis <span style={{ color: '#3B82F6', fontWeight: 'bold' }}>Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
+                </p>
               </div>
             </div>
           )}
-          <AnimatePresence initial={false}>
-            {showMobileIntentGrid && (
-              <MobileIntentCarousel
-                key="mobile-intents-chat"
-                intents={ALL_INTENTS}
-                onSelect={handleSelectIntent}
-                className="w-full"
-                highContrast={highContrastMode}
-              />
-            )}
-          </AnimatePresence>
-          {/* Safety banner */}
-          <AnimatePresence initial={false}>
-            {showBannerUrl && (
-              <motion.div
-                key="safety-banner"
-                initial={{ opacity: 0, height: 0, scale: 0.97 }}
-                animate={{ opacity: 1, height: "auto", scale: 1 }}
-                exit={{ opacity: 0, height: 0, scale: 0.97 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="mx-auto w-full max-w-[1800px] overflow-hidden rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200"
-              >
-                <div className="mb-2 md:mb-3 font-semibold text-[16px] md:text-[18px]">
-                  Pour votre sécurité, utilisez les canaux officiels.
-                </div>
-                <a
-                  href={showBannerUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-[44px] md:min-h-[48px] items-center justify-center rounded-lg bg-amber-600 px-4 md:px-5 py-2 md:py-2.5 text-[16px] md:text-[18px] text-white hover:bg-amber-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
-                >
-                  Ouvrir le site officiel
-                </a>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {(currentSteps?.[stepIndex]) && (
-            <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-3 md:gap-4">
-              <Bubble role="assistant" className={`text-sm md:text-base ${largeLineHeight ? "leading-[1.8]" : "leading-snug"}`} largeLineHeight={largeLineHeight}>
-                {currentSteps![stepIndex]!.question}
-              </Bubble>
-              <ChoiceGroup step={stepIndex + 1} choices={currentSteps![stepIndex]!.choices} onSelect={handleChoiceSelect} highContrast={highContrastMode} largeClickTargets={largeClickTargets} enhancedFocus={enhancedFocus} />
-            </div>
-          )}
-
-            <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
-            <AnimatePresence initial={false}>
-              {conversation.map((m, idx) => {
-                const filesForMessage = m.role === "user" ? messageFiles[m.ts] : undefined;
-                if (m.role === "user") {
-                  console.log('Message utilisateur:', m.ts, 'texte:', m.text, 'fichiers trouvés:', filesForMessage ? filesForMessage.length : 0);
-                  if (filesForMessage && filesForMessage.length > 0) {
-                    console.log('✅ Fichiers pour ce message:', filesForMessage);
-                  } else {
-                    console.log('❌ Aucun fichier trouvé pour ce message. Objet complet:', messageFiles);
-                  }
+          
+          <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-2.5 md:gap-4 px-3 md:px-6" role="log" aria-live="polite" aria-relevant="additions">
+            {(() => {
+              console.log('Rendu de la conversation - messageFiles state:', messageFiles);
+              return null;
+            })()}
+            {conversation.map((m, idx) => {
+              const filesForMessage = m.role === "user" ? messageFiles[m.ts] : undefined;
+              if (m.role === "user") {
+                console.log('Message utilisateur:', m.ts, 'texte:', m.text, 'fichiers trouvés:', filesForMessage ? filesForMessage.length : 0);
+                if (filesForMessage && filesForMessage.length > 0) {
+                  console.log('✅ Fichiers pour ce message:', filesForMessage);
+                } else {
+                  console.log('❌ Aucun fichier trouvé pour ce message. Objet complet:', messageFiles);
                 }
-                const profileImage = typeof window !== 'undefined' ? localStorage.getItem('user_profile_image') : undefined;
-                const userName = typeof window !== 'undefined' ? localStorage.getItem('user_name') || 'U' : 'U';
-                const stackLayer = Math.max(0, Math.min(3, conversation.length - idx - 1));
-                const stackShift = m.role === "user" ? stackLayer * 6 : -stackLayer * 4;
-                
-                return (
-                  <motion.div
-                    key={idx + m.ts}
-                    layout="position"
-                    variants={bubbleVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    custom={stackShift}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
-                    className="flex w-full"
-                    style={{ zIndex: 1000 - idx, transformOrigin: m.role === "user" ? "bottom right" : "bottom left" }}
-                  >
-                    <Bubble 
-                      role={m.role} 
-                      attachedFiles={filesForMessage}
-                      showAvatar={m.role === "user"}
-                      profileImage={m.role === "user" ? profileImage || undefined : undefined}
-                      userName={m.role === "user" ? userName : undefined}
-                      className={m.role === "user" ? `${userBubbleClass} transition-all duration-200` : assistantBubbleClass}
-                      largeLineHeight={largeLineHeight}
-                    >
-                      {m.text}
-                    </Bubble>
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
+              }
+              // Récupérer l'image de profil depuis localStorage si disponible
+              const profileImage = typeof window !== 'undefined' ? localStorage.getItem('user_profile_image') : undefined;
+              const userName = typeof window !== 'undefined' ? localStorage.getItem('user_name') || 'U' : 'U';
+              
+              return (
+                <Bubble 
+                  key={idx + m.ts} 
+                  role={m.role} 
+                  attachedFiles={filesForMessage}
+                  showAvatar={m.role === "user"}
+                  profileImage={m.role === "user" ? profileImage || undefined : undefined}
+                  userName={m.role === "user" ? userName : undefined}
+                >
+                  {m.text}
+                </Bubble>
+              );
+            })}
             <ErnestThinkingIndicator
               isThinking={loading}
-              tone={highContrastMode ? "dark" : "light"}
-              className="mr-auto w-full max-w-md"
-              borderClassName={highContrastMode ? `ring-1 ring-inset ring-[#3B4450]` : "ring-1 ring-inset ring-gray-200"}
+              tone="light"
+              className="mr-auto w-full max-w-lg"
+              borderClassName="ring-1 ring-inset ring-gray-200"
             />
             {error && (
-              <div className={`mr-auto rounded-2xl px-4 md:px-5 py-3 md:py-3.5 text-[16px] md:text-[18px] ring-1 ring-inset ${
-                highContrastMode ? highContrastTokens.errorBubble : "bg-red-50 text-red-800 ring-red-200"
-              }`}>
+              <div className="mr-auto rounded-2xl bg-red-50 px-4 md:px-5 py-3 md:py-3.5 text-red-800 text-[16px] md:text-[18px] ring-1 ring-inset ring-red-200">
                 {error} <button onClick={clearError} className="ml-2 underline">OK</button>
               </div>
             )}
             <div ref={bottomRef} />
           </div>
-            </div>
-          </div>
-        ) : (
-          <div
-            ref={scrollAreaRef}
-            className={`flex-1 w-full overflow-y-auto scroll-smooth ${highContrastMode ? highContrastClasses.background : "bg-slate-50"}`}
-          >
-            <div className="flex flex-col pb-24 md:pb-28 min-h-full">
-            {isMobile && !shouldShowMobileComposer && screen === "home" && (
-              <div className="flex w-full flex-1 items-center justify-center py-10 md:hidden">
-                <div className="grid w-full max-w-lg grid-cols-2 gap-4">
-                  {quickActions.map((action, index) => {
-                    const toneKey = action.tone ?? action.key;
-                    const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
-                    return (
-                      <motion.button
-                        key={action.key}
-                        type="button"
-                        onClick={() => handleQuickAction(action.key)}
-                        className={`group flex flex-col items-center justify-center gap-3 rounded-3xl px-10 py-10 text-lg font-semibold transition-all duration-200 ${
-                          highContrastMode
-                            ? `${highContrastTokens.quickAction}`
-                            : `${colorTokens.gradient} text-gray-900 ${colorTokens.ring}`
-                        }`}
-                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 300, 
-                          damping: 20,
-                          delay: index * 0.1,
-                          scale: { duration: 0.15 }
-                        }}
-                      >
-                        <motion.span
-                          className={`grid h-16 w-16 place-items-center rounded-full transition-all duration-200 ${
-                            highContrastMode
-                              ? `${highContrastTokens.quickActionBadge}`
-                              : `${colorTokens.circle} ${colorTokens.groupHover}`
-                          }`}
-                          aria-hidden
-                          whileTap={{ scale: 0.9 }}
-                          transition={{ duration: 0.15 }}
-                        >
-                          <span className={`text-2xl ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{action.icon}</span>
-                        </motion.span>
-                        <span className={`text-lg font-semibold ${highContrastMode ? "text-[#E8ECF2]" : "text-gray-800"}`}>{action.label}</span>
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {!isMobile && screen === "home" && (
-              <div className="flex w-full flex-1 items-center justify-center py-10">
-                <div className="mx-auto w-full max-w-[1100px]">
-                  <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-2">
-                    {instructionCards.map((card) => {
-                      const toneKey = card.tone ?? card.key;
-                      const colorTokens = QUICK_ACTION_COLOR_MAP[toneKey] ?? QUICK_ACTION_COLOR_MAP.default;
-                      return (
-                        <div
-                        key={card.key}
-                        className={`flex items-start gap-3 rounded-2xl px-4 py-4 ring-1 ring-inset transition-colors ${
-                          highContrastMode 
-                            ? `${highContrastTokens.quickAction} hover:bg-[#2A313D]` 
-                            : "bg-white text-gray-900 ring-slate-200"
-                        }`}
-                      >
-                        <div
-                          className={`grid h-10 w-10 aspect-square place-items-center rounded-full transition-colors duration-200 ${
-                            highContrastMode
-                              ? `${highContrastTokens.quickActionBadge}`
-                              : `${colorTokens.circle} ${colorTokens.hover} focus:outline-none active:outline-none`
-                          }`}
-                          aria-hidden
-                          tabIndex={-1}
-                          onMouseDown={(e) => e.preventDefault()}
-                        >
-                          <span className={highContrastMode ? "text-[#E8ECF2]" : ""}>{card.icon}</span>
-                        </div>
-                        <div className="text-left">
-                          <p className={`text-base font-semibold ${highContrastMode ? "text-[#E8ECF2]" : ""}`}>{card.title}</p>
-                          <p className={`text-sm ${highContrastMode ? highContrastClasses.mutedText : "text-gray-600 dark:text-gray-300"}`}>{card.description}</p>
-                        </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-            <AnimatePresence initial={false}>
-              {showMobileIntentGrid && (
-                <MobileIntentCarousel
-                  key="mobile-intents-home"
-                  intents={ALL_INTENTS}
-                  onSelect={handleSelectIntent}
-                  className="w-full px-4 pb-4"
-                  highContrast={highContrastMode}
-                />
-              )}
-            </AnimatePresence>
-            </div>
-          </div>
-        )}
+        </div>
 
-        {scrollControlsVisible && (
-          <div className="pointer-events-none absolute bottom-32 right-4 z-30 flex flex-col gap-3 sm:right-5 md:bottom-36 lg:bottom-40">
-            <button
-              type="button"
-              onClick={() => handleScrollControl("top")}
-              disabled={!canScrollUp}
-              aria-label="Revenir en haut de la conversation"
-              className={`pointer-events-auto inline-flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-4 ${
-                highContrastMode ? "focus-visible:ring-[#2EC1B2]/70" : "focus-visible:ring-blue-300"
-              } ${scrollButtonBase} ${
-                canScrollUp ? "opacity-100 hover:-translate-y-0.5" : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              <ChevronUp className="h-5 w-5" strokeWidth={2.2} aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleScrollControl("bottom")}
-              disabled={!canScrollDown}
-              aria-label="Aller au dernier message"
-              className={`pointer-events-auto inline-flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-4 ${
-                highContrastMode ? "focus-visible:ring-[#2EC1B2]/70" : "focus-visible:ring-blue-300"
-              } ${scrollButtonBase} ${
-                canScrollDown ? "opacity-100 hover:translate-y-0.5" : "opacity-40 cursor-not-allowed"
-              }`}
-            >
-              <ChevronDown className="h-5 w-5" strokeWidth={2.2} aria-hidden />
-            </button>
-          </div>
-        )}
-
-        {/* Boutons juste au-dessus de l'input (bas de page) */}
-        <div className="hidden md:block px-3 md:px-6 lg:px-8 relative z-10">
-        {!isMobile && showPrimaryIntents && composerText.length === 0 && conversation.length === 0 && attachedFiles.length === 0 && (
-          <div className="mx-auto mb-4 mt-10 w-full max-w-[1200px]">
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-6">
-              {ALL_INTENTS.map((i, index) => (
-                <motion.button
-                  key={i.key}
+      {/* Boutons juste au-dessus de l'input (bas de page) */}
+      <div className="px-3 md:px-6">
+        {screen === "sos" && (
+          <div className="mx-auto mb-2 md:mb-3 w-full max-w-screen-sm md:max-w-screen-md">
+            <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
+              {SOS_OPTIONS.map((o) => (
+                <button
+                  key={o.key}
                   type="button"
-                  onClick={() => handleSelectIntent(i.key)}
-                  className={`relative inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl px-3 md:px-4 lg:px-5 py-1.5 md:py-2 text-center text-[14px] md:text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 overflow-hidden ${
-                    highContrastMode
-                      ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
-                      : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
-                  }`}
-                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  whileTap={{ scale: 0.95 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 300, 
-                    damping: 20,
-                    delay: index * 0.04,
-                    scale: { duration: 0.15 }
-                  }}
+                  onClick={() => handleSelectSubIntent(o.key)}
+                  className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl bg-white px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
                 >
-                  <motion.span
-                    className="absolute inset-0 bg-blue-200/40 rounded-full pointer-events-none"
-                    initial={{ scale: 0, opacity: 0.6 }}
-                    whileTap={{ scale: 2.5, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  />
-                  <span className="relative leading-snug z-10 md:whitespace-nowrap lg:whitespace-normal">{i.label}</span>
-                </motion.button>
+                  {o.label}
+                </button>
               ))}
             </div>
           </div>
         )}
-        <AnimatePresence>
-          {showSosSubButtons && !isMobile && (
-            <motion.div
-              key="sos-sub-buttons"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="mx-auto mb-2 md:mb-3 w-full max-w-[1000px] text-center"
-            >
-              <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
-                {SOS_OPTIONS.map((o, index) => (
-                  <motion.button
-                    key={o.key}
-                    type="button"
-                    onClick={() => handleSelectSubIntent(o.key)}
-                    className={`relative inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-2xl px-3 md:px-4 py-1.5 md:py-2 text-[14px] md:text-[15px] font-semibold shadow-sm ring-1 ring-inset transition focus:outline-none focus-visible:ring-4 overflow-hidden ${
-                      highContrastMode
-                        ? `${highContrastTokens.choiceButton} hover:bg-[#232834] text-[#E8ECF2] focus-visible:ring-[#2EC1B2]/70`
-                        : "bg-white text-gray-800 ring-gray-200 hover:bg-gray-50 focus-visible:ring-blue-300"
-                    }`}
-                    initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.03, y: -1 }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 300, 
-                      damping: 20,
-                      delay: index * 0.05,
-                      scale: { duration: 0.15 }
-                    }}
-                  >
-                    <motion.span
-                      className="absolute inset-0 bg-blue-200/40 rounded-full pointer-events-none"
-                      initial={{ scale: 0, opacity: 0.6 }}
-                      whileTap={{ scale: 2.5, opacity: 0 }}
-                      transition={{ duration: 0.4 }}
-                    />
-                    <span className="relative z-10">{o.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        </div>
-        {/* Bottom composer present on all screens */}
-        <motion.div
-          className={`sticky bottom-0 left-0 right-0 z-20 border-t ${
-            highContrastMode ? highContrastTokens.composerBar : "border-gray-100 bg-white/90"
-          } backdrop-blur-xl`}
-          animate={{ boxShadow: composerShadow, y: composerLift }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-        >
-          <Composer
-            value={composerText}
-            onChange={(v) => setComposerText(v)}
-            onSend={async () => {
+      </div>
+
+      {/* Bottom composer present on all screens */}
+      <Composer
+        value={composerText}
+        onChange={(v) => setComposerText(v)}
+        onSend={async () => {
           const msg = composerText.replace(/\s*\[.*\]$/, "").trim();
           if (!msg && attachedFiles.length === 0) return;
           
@@ -3878,8 +2556,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             // Nettoyer
             setAttachedFiles([]);
             setComposerText("");
-            setScreen("chat");
-            setHasStartedFlow(true);
             return;
           }
           
@@ -3890,66 +2566,45 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           const effectiveStep = stepIndex > 0 ? stepIndex : 1;
           sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: effectiveStep, text: msg });
           setComposerText("");
-          setScreen("chat");
-          setHasStartedFlow(true);
-            }}
-            onVoice={() => {
-          // Envoyer un message au parent (WeWeb) pour demander la permission micro
-          // Le parent gérera la permission et renverra "open_voice_mode" à React
-          console.log("Demande de permission micro envoyée au parent (WeWeb)");
-          setMobileIntentsVisible(false);
-          setMobileComposerVisible(true);
-          setIsInputFocused(true);
+        }}
+        onVoice={() => {
+          // Ouvrir directement le mode voix
+          // getUserMedia fonctionnera si allow="microphone" est configuré sur l'iframe
+          const isInIframe = window.parent && window.parent !== window;
           
-          try {
-            // Essayer d'envoyer au parent
-            if (window.parent && window.parent !== window) {
+          if (isInIframe) {
+            console.log("Ouverture du mode voix dans l'iframe");
+            // Optionnel : notifier le parent (pour tracking/compatibilité)
+            try {
               window.parent.postMessage(
                 { type: "request_mic_permission" },
                 "*"
               );
-            } else {
-              // Si on n'est pas dans une iframe, ouvrir directement le mode voix
-              console.log("Pas dans une iframe, ouverture directe du mode voix");
-              setVoiceMode(true);
-              emitTelemetry({ 
-                type: "voice_open", 
-                intent: intent || undefined, 
-                subIntent: subIntent || undefined, 
-                step: stepIndex 
-              });
+            } catch (e) {
+              console.log("Impossible d'envoyer un message au parent:", e);
             }
-          } catch (e) {
-            console.error("Erreur lors de l'envoi du message au parent:", e);
-            // Fallback : ouvrir directement le mode voix
-            setVoiceMode(true);
-            emitTelemetry({ 
-              type: "voice_open", 
-              intent: intent || undefined, 
-              subIntent: subIntent || undefined, 
-              step: stepIndex 
-            });
+          } else {
+            console.log("Ouverture du mode voix (mode standalone)");
           }
-            }}
-            onFileAttach={(files) => {
+          
+          setVoiceMode(true);
+          emitTelemetry({ 
+            type: "voice_open", 
+            intent: intent || undefined, 
+            subIntent: subIntent || undefined, 
+            step: stepIndex 
+          });
+        }}
+        onFileAttach={(files) => {
           setAttachedFiles((prev) => [...prev, ...files]);
-            }}
-            attachedFiles={attachedFiles}
-          onRemoveFile={(index) => {
+        }}
+        attachedFiles={attachedFiles}
+        onRemoveFile={(index) => {
           setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
-          }}
-          inputRef={messageInputRef as React.RefObject<HTMLTextAreaElement>}
-          fileInputRef={composerFileInputRef}
-          isMobile={isMobile}
-          fontSize={fontSize}
-          highContrast={highContrastMode}
-          mobileComposerVisible={mobileComposerVisible}
-          onHideKeyboard={handleHideKeyboard}
-          onFocus={handleComposerFocus}
-          onBlur={() => setIsInputFocused(false)}
-          />
-        </motion.div>
-      </div>
+        }}
+        onFocus={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+      />
+
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}
       <VoiceModeOverlay
         isOpen={voiceMode}

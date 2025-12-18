@@ -123,3 +123,33 @@ html, body {
   animation-duration: 12s;
   animation-delay: 600ms;
 }
+
+/* Animations pour la bulle de bienvenue d'Ernest */
+@keyframes bubbleAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.9);
+    filter: blur(4px);
+  }
+  60% {
+    opacity: 0.8;
+    transform: translateX(-5px) scale(0.98);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes bubbleTailAppear {
+  0% {
+    opacity: 0;
+    transform: translateX(-10px) translateY(-50%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-8px) translateY(-50%) scale(1);
+  }
+}

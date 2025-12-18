@@ -5,6 +5,10 @@ import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage,
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
 import logoErnest from './assets/logo-ernest.png';
+import logoSosCyber from './assets/logo_soscyber.png';
+import ernestAvatar from './assets/ernest_avatar.png';
+import ernestImage from './assets/ernest_image.png';
+import userProfilePic from './assets/profile_pic_user_ernest.png';
 import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
 
 // Composant VoiceModeOverlay - Mode voix amélioré avec visualisation et transcription
@@ -277,8 +281,8 @@ function VoiceModeOverlay({
             initial="hidden"
             animate="visible"
           >
-            {/* Message d'aide pour erreur iframe */}
-            {voiceStatus.includes("Iframe non autorisée") && (
+            {/* Message d'aide pour erreur iframe / Permissions Policy */}
+            {(voiceStatus.includes("Permissions Policy bloque") || voiceStatus.includes("Iframe non autorisée")) && (
               <motion.div
                 className="w-full max-w-md mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl"
                 initial={{ opacity: 0, y: -10 }}
@@ -286,12 +290,23 @@ function VoiceModeOverlay({
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-amber-900 text-[14px] md:text-[15px]">
-                  <p className="font-semibold mb-2">🔧 Configuration requise dans WeWeb :</p>
-                  <ol className="list-decimal list-inside space-y-1 text-[13px] md:text-[14px]">
-                    <li>Sélectionnez votre composant iframe</li>
-                    <li>Ajoutez l'attribut : <code className="bg-amber-100 px-1 rounded">allow="microphone"</code></li>
-                    <li>Rechargez la page</li>
-                  </ol>
+                  <p className="font-semibold mb-3">💡 Solution : Ouvrir dans une nouvelle fenêtre</p>
+                  <p className="mb-3 text-[13px] md:text-[14px]">
+                    Le mode voix ne peut pas fonctionner dans cette iframe à cause des restrictions de WeWeb.
+                  </p>
+                  <button
+                    onClick={() => {
+                      const url = window.location.href;
+                      const width = 800;
+                      const height = 900;
+                      const left = (window.screen.width - width) / 2;
+                      const top = (window.screen.height - height) / 2;
+                      window.open(url, 'ErnestVoice', `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,status=no,menubar=no`);
+                    }}
+                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    Ouvrir Ernest dans une nouvelle fenêtre
+                  </button>
                 </div>
               </motion.div>
             )}
@@ -750,26 +765,23 @@ function UserAvatar({
   name?: string;
 }) {
   const initial = name.charAt(0).toUpperCase();
+  const defaultImage = profileImage || userProfilePic;
   
   return (
-    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm md:text-base shadow-md ring-2 ring-white">
-      {profileImage ? (
-        <img 
-          src={profileImage} 
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Si l'image ne charge pas, on affiche l'initiale
-            e.currentTarget.style.display = 'none';
-            const parent = e.currentTarget.parentElement;
-            if (parent) {
-              parent.innerHTML = `<span class="text-white font-semibold text-sm md:text-base">${initial}</span>`;
-            }
-          }}
-        />
-      ) : (
-        <span>{initial}</span>
-      )}
+    <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm md:text-base shadow-md ring-2 ring-white">
+      <img 
+        src={defaultImage} 
+        alt={name}
+        className="h-24 w-auto object-cover"
+        onError={(e) => {
+          // Si l'image ne charge pas, on affiche l'initiale
+          e.currentTarget.style.display = 'none';
+          const parent = e.currentTarget.parentElement;
+          if (parent) {
+            parent.innerHTML = `<span class="text-white font-semibold text-sm md:text-base">${initial}</span>`;
+          }
+        }}
+      />
     </div>
   );
 }
@@ -777,31 +789,13 @@ function UserAvatar({
 // Composant Avatar pour le chatbot (Ernest)
 function BotAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-300 flex items-center justify-center shadow-md ring-2 ring-white relative">
-      <svg 
-        className="w-5 h-5 md:w-6 md:h-6" 
-        viewBox="0 0 24 24"
-        fill="none"
+    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-300 flex items-center justify-center shadow-md ring-2 ring-white relative overflow-hidden">
+      <img 
+        src={ernestAvatar}
+        alt="Ernest"
+        className="w-full h-full object-cover"
         aria-label="Ernest"
-      >
-        {/* Grande étoile centrale (4 pointes) */}
-        <path 
-          d="M12 3L13.5 9.5L20 11L13.5 12.5L12 19L10.5 12.5L4 11L10.5 9.5L12 3Z" 
-          fill="white" 
-        />
-        {/* Petite étoile en haut à droite */}
-        <path 
-          d="M17 5L17.3 6.5L18.5 7L17.3 7.5L17 9L16.7 7.5L15.5 7L16.7 6.5L17 5Z" 
-          fill="white" 
-          opacity="0.6"
-        />
-        {/* Petite étoile en bas à gauche */}
-        <path 
-          d="M7 17L7.3 18.5L8.5 19L7.3 19.5L7 21L6.7 19.5L5.5 19L6.7 18.5L7 17Z" 
-          fill="white" 
-          opacity="0.6"
-        />
-      </svg>
+      />
     </div>
   );
 }
@@ -825,7 +819,7 @@ function Bubble({
 
   const bubbleContent = (
     <div
-      className={`max-w-[85%] md:max-w-[75%] whitespace-pre-wrap rounded-2xl px-3 md:px-5 py-2 md:py-4 ${
+      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px] whitespace-pre-wrap rounded-2xl px-3 md:px-5 py-2 md:py-4 ${
         isUser
           ? "bg-white text-gray-900 shadow-lg"
           : "bg-gray-100 text-gray-900 ring-1 ring-inset ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700"
@@ -920,7 +914,7 @@ function Bubble({
   // Si c'est un message utilisateur et qu'on doit afficher l'avatar, on l'enveloppe
   if (isUser && showAvatar) {
     return (
-      <div className="flex items-end gap-2 md:gap-3 ml-auto max-w-[85%] md:max-w-[75%]">
+      <div className="flex items-end gap-2 md:gap-3 ml-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
         {bubbleContent}
         <UserAvatar profileImage={profileImage} name={userName} />
       </div>
@@ -930,7 +924,7 @@ function Bubble({
   // Si c'est un message assistant, on affiche l'avatar du bot
   if (!isUser) {
     return (
-      <div className="flex items-end gap-2 md:gap-3 mr-auto max-w-[85%] md:max-w-[75%]">
+      <div className="flex items-end gap-2 md:gap-3 mr-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
         <BotAvatar />
         {bubbleContent}
       </div>
@@ -974,40 +968,6 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
 function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () => void; onReset: () => void }) {
   return (
     <header className="relative flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-gray-100 text-gray-700 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
-        aria-label="Retour"
-      >
-        <span aria-hidden className="text-base md:text-xl">←</span>
-      </button>
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center">
-        <img 
-          src={logoErnest} 
-          alt="Ernest" 
-          className="h-6 md:h-8 w-auto"
-        />
-      </div>
-      <div className="flex items-center gap-2 md:gap-3">
-        <button
-          type="button"
-          onClick={onReset}
-          className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-red-50 text-red-600 ring-1 ring-red-200 shadow-sm transition hover:bg-red-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-300"
-          aria-label="Effacer la conversation"
-          title="Effacer la conversation"
-        >
-          <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />
-        </button>
-        <button
-          type="button"
-          onClick={onMenu}
-          className="grid h-9 w-9 md:h-12 md:w-12 place-items-center rounded-full bg-gray-100 text-gray-700 shadow-sm focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
-          aria-label="Menu"
-        >
-          <span aria-hidden className="text-base md:text-xl">≡</span>
-        </button>
-      </div>
     </header>
   );
 }
@@ -1200,7 +1160,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
+      <div className="mx-auto flex w-[70%] items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -1229,34 +1189,6 @@ function Composer({
             }
           }}
         />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className={`relative grid h-10 w-10 md:h-12 md:w-12 flex-shrink-0 place-items-center rounded-full bg-gray-100 text-gray-900 shadow-md ring-1 ring-gray-200 transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 ${
-            attachedFiles.length > 0 ? 'ring-2 ring-blue-300' : ''
-          }`}
-          aria-label="Joindre des fichiers"
-          title={attachedFiles.length > 0 ? `${attachedFiles.length} fichier(s) joint(s)` : "Joindre des fichiers"}
-        >
-          <svg className="h-6 w-6 md:h-7 md:w-7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          {attachedFiles.length > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 md:h-6 md:w-6 rounded-full bg-blue-700 text-white text-[10px] md:text-[11px] font-bold flex items-center justify-center shadow-md ring-2 ring-white">
-              {attachedFiles.length > 9 ? '9+' : attachedFiles.length}
-            </span>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={onVoice}
-          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-blue-100 text-blue-800 ring-1 ring-blue-200 shadow-md transition hover:bg-blue-200 disabled:opacity-50"
-          aria-label="Mode Voix"
-        >
-          <SendWavesIcon className="h-6 w-6 md:h-9 md:w-9" />
-        </button>
         <button
           type="button"
           onClick={onSend}
@@ -1961,18 +1893,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       // Vérifier si on est dans une iframe (WeWeb)
       const isInIframe = window.self !== window.top;
       
-      // Si on est dans une iframe, on NE DOIT PAS utiliser getUserMedia ici
-      // La permission doit être gérée par le parent (WeWeb)
+      // Note : getUserMedia fonctionne dans une iframe si l'attribut allow="microphone" 
+      // est correctement configuré sur l'iframe dans WeWeb
       if (isInIframe) {
-        console.log("⚠️ Détection iframe : on ne peut pas utiliser getUserMedia dans l'iframe");
-        console.log("ℹ️ La permission micro doit être gérée par WeWeb (parent)");
-        setVoiceStatus("⚠️ Mode voix dans iframe : la permission micro doit être gérée par WeWeb");
-        setRecording(false);
-        return;
+        console.log("ℹ️ Détection iframe : tentative d'utilisation de getUserMedia dans l'iframe");
+        console.log("ℹ️ Assurez-vous que l'iframe a l'attribut allow='microphone' dans WeWeb");
+      } else {
+        console.log("✅ Mode standalone : utilisation normale de getUserMedia");
       }
-      
-      // Si on n'est PAS dans une iframe (app standalone), on peut utiliser getUserMedia normalement
-      console.log("✅ Mode standalone : utilisation normale de getUserMedia");
       
       // Détecter Safari
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
@@ -2005,11 +1933,16 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         console.log("ℹ️ API Permissions non disponible, on continue avec getUserMedia...");
       }
       
-      // Demander l'accès au microphone (seulement en mode standalone)
+      // Demander l'accès au microphone
+      // Fonctionne dans une iframe si allow="microphone" est configuré
       let stream: MediaStream;
       
       try {
-        console.log("🎤 Demande d'accès au microphone (mode standalone)...");
+        if (isInIframe) {
+          console.log("🎤 Demande d'accès au microphone dans l'iframe...");
+        } else {
+          console.log("🎤 Demande d'accès au microphone (mode standalone)...");
+        }
         
         // Essayer d'abord avec les contraintes optimisées
         try {
@@ -2038,6 +1971,13 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         console.log("📊 Stream tracks:", stream.getTracks().length);
       } catch (e: any) {
         console.error("❌ Erreur lors de l'obtention du stream:", e);
+        
+        // Diagnostic complet
+        const isInIframe = window.self !== window.top;
+        const isSecureContext = window.isSecureContext;
+        const currentUrl = window.location.href;
+        const isLocalhost = currentUrl.startsWith('http://localhost') || currentUrl.startsWith('http://127.0.0.1');
+        
         console.error("📋 Détails de l'erreur:", {
           name: e.name,
           message: e.message,
@@ -2045,28 +1985,57 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           stack: e.stack
         });
         
+        console.error("🔍 Diagnostic environnement:", {
+          isInIframe,
+          isSecureContext,
+          currentUrl,
+          isLocalhost,
+          userAgent: navigator.userAgent,
+          mediaDevicesAvailable: !!navigator.mediaDevices,
+          getUserMediaAvailable: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        });
+        
         // Gérer les différents types d'erreurs avec des messages plus clairs
         if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") {
           // Message plus détaillé pour aider l'utilisateur
-          const isInIframe = window.self !== window.top;
           const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
                            (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'));
           
           console.error("🚫 Permission refusée - isInIframe:", isInIframe, "isSafari:", isSafari);
           
           // Vérifier si c'est une erreur de Permissions Policy
+          // Note: Chrome affiche "[Violation] Permissions policy violation" dans la console
+          // mais le message d'erreur peut juste être "Permission denied"
           const isPermissionsPolicyError = e.message?.includes("Permissions policy") || 
                                           e.message?.includes("not allowed in this document") ||
-                                          e.message?.includes("Feature Policy");
+                                          e.message?.includes("Feature Policy") ||
+                                          e.message?.includes("feature is not allowed") ||
+                                          e.message?.includes("policy violation");
           
-          if (isPermissionsPolicyError || (isInIframe && e.message?.includes("Permission denied"))) {
-            // Erreur de Permissions Policy - l'attribut allow="microphone" n'est pas correctement configuré
+          // Si on est dans une iframe avec "Permission denied" et que l'API Permissions dit "denied",
+          // c'est très probablement une erreur de Permissions Policy (allow="microphone" manquant ou mal configuré)
+          // Note: On vérifie aussi si permissionStatus est null car l'API peut ne pas être disponible
+          const likelyPermissionsPolicyError = isInIframe && 
+                                               e.message === "Permission denied" && 
+                                               (permissionStatus === "denied" || permissionStatus === null);
+          
+          console.error("🔍 Erreur Permissions Policy détectée:", isPermissionsPolicyError || likelyPermissionsPolicyError);
+          console.error("🔍 Message d'erreur complet:", e.message);
+          console.error("🔍 Permission status:", permissionStatus);
+          console.error("🔍 Likely Permissions Policy error:", likelyPermissionsPolicyError);
+          
+          if (isPermissionsPolicyError || likelyPermissionsPolicyError) {
+            // Erreur de Permissions Policy - WeWeb bloque probablement les permissions microphone dans les iframes
             let policyMessage = "⚠️ Permissions Policy bloque l'accès au microphone.\n\n";
-            policyMessage += "Dans WeWeb, vérifiez que l'iframe a bien :\n";
-            policyMessage += "• allow='microphone'\n";
-            policyMessage += "• Ou allow='microphone *'\n";
-            policyMessage += "• Dans les attributs HTML de l'iframe\n\n";
-            policyMessage += "Si c'est déjà configuré, rechargez la page.";
+            policyMessage += "Le problème vient probablement de WeWeb qui bloque les permissions microphone dans les iframes, même si allow='microphone' est configuré.\n\n";
+            policyMessage += "🔧 Solutions possibles :\n\n";
+            policyMessage += "1. Ouvrir dans une nouvelle fenêtre :\n";
+            policyMessage += "   Cliquez sur le lien ci-dessous pour ouvrir Ernest dans une nouvelle fenêtre\n\n";
+            policyMessage += "2. Contacter WeWeb :\n";
+            policyMessage += "   Demander à WeWeb de permettre le microphone dans les iframes\n\n";
+            policyMessage += "3. Utiliser l'application directement :\n";
+            policyMessage += "   Ouvrez l'URL de l'application sans passer par WeWeb\n\n";
+            policyMessage += "💡 Note : C'est une limitation de sécurité imposée par WeWeb, pas un bug de votre code.";
             
             setVoiceStatus(policyMessage);
             setRecording(false);
@@ -2105,9 +2074,29 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           setVoiceStatus("Microphone déjà utilisé par une autre application. Fermez les autres applications qui utilisent le micro.");
           setRecording(false);
           return;
+        } else if (e.message?.includes("secure context") || (!isSecureContext && !isLocalhost)) {
+          // Erreur de contexte sécurisé (nécessite HTTPS sauf localhost)
+          let secureContextMessage = "⚠️ Le microphone nécessite un contexte sécurisé (HTTPS).\n\n";
+          if (isInIframe) {
+            secureContextMessage += "Votre iframe est chargée depuis une URL non sécurisée.\n";
+            secureContextMessage += "Assurez-vous que l'URL de l'iframe utilise HTTPS\n";
+            secureContextMessage += "(localhost est une exception qui devrait fonctionner).";
+          } else {
+            secureContextMessage += "Veuillez utiliser HTTPS ou localhost.";
+          }
+          setVoiceStatus(secureContextMessage);
+          setRecording(false);
+          return;
         } else {
-          // Autre erreur
-          setVoiceStatus(`Erreur d'accès au microphone: ${e.message || e.name}`);
+          // Autre erreur - afficher le message détaillé
+          let errorDetails = `Erreur d'accès au microphone: ${e.name}`;
+          if (e.message) {
+            errorDetails += `\n\nDétails: ${e.message}`;
+          }
+          if (isInIframe) {
+            errorDetails += `\n\nVous êtes dans une iframe. Vérifiez que allow="microphone" est bien configuré dans WeWeb.`;
+          }
+          setVoiceStatus(errorDetails);
           setRecording(false);
           return;
         }
@@ -2285,7 +2274,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="flex h-screen w-full flex-col bg-sky-50 text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="flex h-screen w-full flex-col bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}
@@ -2316,78 +2305,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       {false && screen === "sos" && <div />}
 
       {/* Conversation area - toujours visible */}
-      <div className="flex flex-1 flex-col gap-3 md:gap-5 px-3 md:px-6 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
-          {/* Message central d'accueil */}
-          {showHelperTips && conversation.length === 0 && (
-            <div className="flex w-full flex-1 items-center justify-center pt-8 md:pt-12">
-              <div className="w-full max-w-screen-sm md:max-w-screen-md space-y-4 text-gray-900 text-[15px] md:text-[18px] font-medium">
-                {[
-                  {
-                    key: "attach",
-                    icon: (
-                      <svg
-                        className="h-6 w-6 md:h-7 md:w-7"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                      </svg>
-                    ),
-                    text: "Joindre un fichier pour ajouter une photo ou un document.",
-                    bgClass: "bg-gray-100 ring-gray-200",
-                    iconBg: "bg-gray-200 text-gray-700",
-                  },
-                  {
-                    key: "voice",
-                    icon: <SendWavesIcon className="h-6 w-6 md:h-7 md:w-7" />,
-                    text: "Mode voix pour parler à Ernest au lieu d'écrire.",
-                    bgClass: "bg-blue-50 ring-blue-100",
-                    iconBg: "bg-blue-100 text-blue-700",
-                  },
-                  {
-                    key: "send",
-                    icon: (
-                      <svg
-                        className="h-5 w-5 md:h-6 md:w-6"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        viewBox="0 0 24 24"
-                      >
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                    ),
-                    text: "Envoyer pour transmettre instantanément votre demande.",
-                    bgClass: "bg-green-50 ring-green-100",
-                    iconBg: "bg-green-100 text-green-700",
-                  },
-                  {
-                    key: "trash",
-                    icon: <TrashIcon className="h-5 w-5 md:h-6 md:w-6" />,
-                    text: "Effacer pour relancer une nouvelle conversation propre.",
-                    bgClass: "bg-red-50 ring-red-100",
-                    iconBg: "bg-red-100 text-red-700",
-                  },
-                ].map((item) => (
-                  <div key={item.key} className={`flex items-center gap-4 rounded-xl px-4 py-3 ring-1 ring-inset ${item.bgClass}`}>
-                    <div className={`grid h-10 w-10 place-items-center rounded-full ${item.iconBg}`}>
-                      {item.icon}
-                    </div>
-                    <span className="text-left leading-relaxed">{item.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      <div className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
           {/* Safety banner */}
           {showBannerUrl && (
             <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
@@ -2410,7 +2328,33 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             </div>
           )}
 
-          <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-2.5 md:gap-4" role="log" aria-live="polite" aria-relevant="additions">
+          {/* Message de bienvenue */}
+          {conversation.length === 0 && (
+            <div className="relative w-full max-w-screen-lg mx-auto px-3 md:px-6">
+              {/* Image d'Ernest positionnée à ~25% de la gauche */}
+              <div className="absolute left-[25%] -translate-x-1/2 top-0 z-10">
+                <img 
+                  src={ernestImage} 
+                  alt="Ernest" 
+                  className="h-[60vh] w-auto object-contain"
+                />
+              </div>
+              {/* Bulle de dialogue avec queue pointant vers l'image */}
+              <div 
+                className="relative ml-[32%] mt-8 bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-2xl px-5 md:px-7 py-4 md:py-5 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 shadow-lg max-w-[65%] before:content-[''] before:absolute before:-left-4 before:bottom-3 before:w-0 before:h-0 before:border-t-[14px] before:border-t-transparent before:border-b-[14px] before:border-b-transparent before:border-r-[14px] before:border-r-gray-100 dark:before:border-r-gray-800 after:content-[''] after:absolute after:-left-4.5 after:bottom-2.5 after:w-0 after:h-0 after:border-t-[15px] after:border-t-transparent after:border-b-[15px] after:border-b-transparent after:border-r-[15px] after:border-r-gray-200 dark:after:border-r-gray-700" 
+                style={{
+                  animation: 'bubbleAppear 0.6s ease-out',
+                  transformOrigin: 'left center'
+                }}
+              >
+                <p className="text-[15px] md:text-[18px] leading-relaxed">
+                  Bonjour ! Je suis <span style={{ color: '#3B82F6', fontWeight: 'bold' }}>Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-2.5 md:gap-4 px-3 md:px-6" role="log" aria-live="polite" aria-relevant="additions">
             {(() => {
               console.log('Rendu de la conversation - messageFiles state:', messageFiles);
               return null;
@@ -2445,7 +2389,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             <ErnestThinkingIndicator
               isThinking={loading}
               tone="light"
-              className="mr-auto w-full max-w-md"
+              className="mr-auto w-full max-w-lg"
               borderClassName="ring-1 ring-inset ring-gray-200"
             />
             {error && (
@@ -2459,22 +2403,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
 
       {/* Boutons juste au-dessus de l'input (bas de page) */}
       <div className="px-3 md:px-6">
-        {screen === "home" && composerText.length === 0 && conversation.length === 0 && attachedFiles.length === 0 && (
-          <div className="mx-auto mb-2 md:mb-3 mt-16 md:mt-20 w-full max-w-screen-sm md:max-w-screen-md">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-2.5">
-              {ALL_INTENTS.map((i) => (
-                <button
-                  key={i.key}
-                  type="button"
-                  onClick={() => handleSelectIntent(i.key)}
-                  className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-2.5 md:px-3 py-1.5 md:py-2 text-[14px] md:text-[15px] text-gray-800 shadow-sm ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
-                >
-                  {i.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
         {screen === "sos" && (
           <div className="mx-auto mb-2 md:mb-3 w-full max-w-screen-sm md:max-w-screen-md">
             <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
@@ -2640,39 +2568,32 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           setComposerText("");
         }}
         onVoice={() => {
-          // Envoyer un message au parent (WeWeb) pour demander la permission micro
-          // Le parent gérera la permission et renverra "open_voice_mode" à React
-          console.log("Demande de permission micro envoyée au parent (WeWeb)");
+          // Ouvrir directement le mode voix
+          // getUserMedia fonctionnera si allow="microphone" est configuré sur l'iframe
+          const isInIframe = window.parent && window.parent !== window;
           
-          try {
-            // Essayer d'envoyer au parent
-            if (window.parent && window.parent !== window) {
+          if (isInIframe) {
+            console.log("Ouverture du mode voix dans l'iframe");
+            // Optionnel : notifier le parent (pour tracking/compatibilité)
+            try {
               window.parent.postMessage(
                 { type: "request_mic_permission" },
                 "*"
               );
-            } else {
-              // Si on n'est pas dans une iframe, ouvrir directement le mode voix
-              console.log("Pas dans une iframe, ouverture directe du mode voix");
-              setVoiceMode(true);
-              emitTelemetry({ 
-                type: "voice_open", 
-                intent: intent || undefined, 
-                subIntent: subIntent || undefined, 
-                step: stepIndex 
-              });
+            } catch (e) {
+              console.log("Impossible d'envoyer un message au parent:", e);
             }
-          } catch (e) {
-            console.error("Erreur lors de l'envoi du message au parent:", e);
-            // Fallback : ouvrir directement le mode voix
-            setVoiceMode(true);
-            emitTelemetry({ 
-              type: "voice_open", 
-              intent: intent || undefined, 
-              subIntent: subIntent || undefined, 
-              step: stepIndex 
-            });
+          } else {
+            console.log("Ouverture du mode voix (mode standalone)");
           }
+          
+          setVoiceMode(true);
+          emitTelemetry({ 
+            type: "voice_open", 
+            intent: intent || undefined, 
+            subIntent: subIntent || undefined, 
+            step: stepIndex 
+          });
         }}
         onFileAttach={(files) => {
           setAttachedFiles((prev) => [...prev, ...files]);

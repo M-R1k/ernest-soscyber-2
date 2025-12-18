@@ -768,7 +768,7 @@ function UserAvatar({
   const defaultImage = profileImage || userProfilePic;
   
   return (
-    <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm md:text-base shadow-md ring-2 ring-white">
+    <div className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs md:text-sm">
       <img 
         src={defaultImage} 
         alt={name}
@@ -789,7 +789,7 @@ function UserAvatar({
 // Composant Avatar pour le chatbot (Ernest)
 function BotAvatar() {
   return (
-    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-300 flex items-center justify-center shadow-md ring-2 ring-white relative overflow-hidden">
+    <div className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center relative overflow-hidden">
       <img 
         src={ernestAvatar}
         alt="Ernest"
@@ -819,10 +819,10 @@ function Bubble({
 
   const bubbleContent = (
     <div
-      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px] whitespace-pre-wrap rounded-2xl px-3 md:px-5 py-2 md:py-4 ${
+      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px] whitespace-pre-wrap rounded-2xl px-4 md:px-5 py-3 md:py-4 ${
         isUser
-          ? "bg-white text-gray-900 shadow-lg"
-          : "bg-gray-100 text-gray-900 ring-1 ring-inset ring-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:ring-gray-700"
+          ? "bg-blue-50 text-gray-900 border border-blue-100"
+          : "bg-gray-50 text-gray-900 border border-gray-200"
       }`}
       aria-live={isUser ? undefined : "polite"}
     >
@@ -914,7 +914,7 @@ function Bubble({
   // Si c'est un message utilisateur et qu'on doit afficher l'avatar, on l'enveloppe
   if (isUser && showAvatar) {
     return (
-      <div className="flex items-end gap-2 md:gap-3 ml-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
+      <div className="flex items-end gap-2.5 md:gap-3 ml-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
         {bubbleContent}
         <UserAvatar profileImage={profileImage} name={userName} />
       </div>
@@ -924,7 +924,7 @@ function Bubble({
   // Si c'est un message assistant, on affiche l'avatar du bot
   if (!isUser) {
     return (
-      <div className="flex items-end gap-2 md:gap-3 mr-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
+      <div className="flex items-end gap-2.5 md:gap-3 mr-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
         <BotAvatar />
         {bubbleContent}
       </div>
@@ -947,7 +947,7 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
           key={c.value}
           type="button"
           onClick={() => onSelect(c.value, c.label)}
-          className="inline-flex min-h-[36px] md:min-h-[40px] items-center justify-center rounded-xl bg-white px-4 md:px-5 py-2.5 text-[14px] md:text-[15px] font-semibold text-gray-800 ring-1 ring-inset ring-gray-200 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+          className="inline-flex min-h-[40px] md:min-h-[44px] items-center justify-center rounded-xl bg-white px-5 md:px-6 py-2.5 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           aria-label={c.label}
         >
           {c.label}
@@ -974,22 +974,26 @@ function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () =>
 
 function StickyBar({ onBack, onHome, onContact, onReminder }: { onBack: () => void; onHome: () => void; onContact: () => void; onReminder: () => void }) {
   return (
-    <div className="sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white/95 px-4 md:px-6 py-3 md:py-4 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
+    <div className="sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white px-4 md:px-6 py-3 md:py-4">
       <div className="mx-auto flex max-w-screen-lg items-center justify-between gap-2 md:gap-3">
         <div className="flex items-center gap-2 md:gap-3">
-          <button type="button" onClick={onBack} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
-            ↩️ Retour
+          <button type="button" onClick={onBack} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-gray-50 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>Retour</span>
           </button>
-          <button type="button" onClick={onHome} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-gray-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-gray-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">
-            🏠 Menu
+          <button type="button" onClick={onHome} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-gray-50 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <HomeIcon className="h-4 w-4" />
+            <span>Menu</span>
           </button>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
-          <a href="tel:3018" onClick={onContact} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-green-600 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-300">
-            📞 Contact
+          <a href="tel:3018" onClick={onContact} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-blue-600 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <PhoneIcon className="h-4 w-4" />
+            <span>Contact</span>
           </a>
-          <button type="button" onClick={onReminder} className="min-h-[48px] md:min-h-[52px] rounded-xl bg-amber-100 px-4 md:px-5 py-3 md:py-3.5 text-[18px] md:text-[19px] font-semibold shadow-sm transition hover:bg-amber-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300">
-            🔔 Rappel
+          <button type="button" onClick={onReminder} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-gray-50 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+            <BellIcon className="h-4 w-4" />
+            <span>Rappel</span>
           </button>
         </div>
       </div>
@@ -1003,6 +1007,40 @@ function TrashIcon({ className }: { className?: string }) {
       <path d="M3 6h18" />
       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </svg>
+  );
+}
+
+function ArrowLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} role="img" aria-label="Retour">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+  );
+}
+
+function HomeIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} role="img" aria-label="Menu">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+function PhoneIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} role="img" aria-label="Contact">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
+function BellIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} role="img" aria-label="Rappel">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
   );
 }
@@ -1160,7 +1198,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-[70%] items-center gap-2.5 md:gap-4 rounded-full bg-gray-100 px-3 md:px-5 py-2 md:py-3.5 text-gray-700">
+      <div className="mx-auto flex w-[90%] md:w-[70%] items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -1170,7 +1208,7 @@ function Composer({
           }}
           placeholder="Posez votre question"
           aria-label="Posez votre question"
-          className="flex-1 bg-transparent text-[15px] md:text-[18px] outline-none placeholder:text-gray-500"
+          className="flex-1 bg-transparent text-[15px] md:text-[18px] outline-none placeholder:text-gray-400 text-gray-900"
         />
         <input
           ref={fileInputRef}
@@ -1193,10 +1231,10 @@ function Composer({
           type="button"
           onClick={onSend}
           disabled={!value.trim() && attachedFiles.length === 0}
-          className="grid h-10 w-10 md:h-14 md:w-14 flex-shrink-0 place-items-center rounded-full bg-green-100 text-green-800 ring-1 ring-green-200 shadow-md transition hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="grid h-9 w-9 md:h-10 md:w-10 flex-shrink-0 place-items-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label="Envoyer"
         >
-          <svg className="h-6 w-6 md:h-9 md:w-9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
             <line x1="22" y1="2" x2="11" y2="13" />
             <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
@@ -2274,7 +2312,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="flex h-screen w-full flex-col bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}
@@ -2308,13 +2346,13 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       <div className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
           {/* Safety banner */}
           {showBannerUrl && (
-            <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 ring-1 ring-inset ring-amber-200">
-              <div className="mb-2 md:mb-3 font-semibold text-[16px] md:text-[18px]">Pour votre sécurité, utilisez les canaux officiels.</div>
+            <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 border border-amber-200">
+              <div className="mb-3 md:mb-4 font-medium text-[16px] md:text-[17px]">Pour votre sécurité, utilisez les canaux officiels.</div>
               <a
                 href={showBannerUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex min-h-[44px] md:min-h-[48px] items-center justify-center rounded-lg bg-amber-600 px-4 md:px-5 py-2 md:py-2.5 text-[16px] md:text-[18px] text-white hover:bg-amber-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+                className="inline-flex min-h-[44px] md:min-h-[48px] items-center justify-center rounded-xl bg-amber-600 px-5 md:px-6 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-white transition hover:bg-amber-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
               >
                 Ouvrir le site officiel
               </a>
@@ -2331,25 +2369,52 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           {/* Message de bienvenue */}
           {conversation.length === 0 && (
             <div className="relative w-full max-w-screen-lg mx-auto px-3 md:px-6">
-              {/* Image d'Ernest positionnée à ~25% de la gauche */}
-              <div className="absolute left-[25%] -translate-x-1/2 top-0 z-10">
-                <img 
-                  src={ernestImage} 
-                  alt="Ernest" 
-                  className="h-[60vh] w-auto object-contain"
-                />
+              {/* Layout mobile : vertical centré - optimisé pour seniors */}
+              <div className="flex flex-col items-center gap-8 md:hidden pt-6 pb-4">
+                {/* Image d'Ernest centrée - taille optimale pour visibilité */}
+                <div className="flex justify-center w-full">
+                  <img 
+                    src={ernestImage} 
+                    alt="Ernest, votre compagnon en cybersécurité" 
+                    className="h-[40vh] max-h-[320px] min-h-[200px] w-full max-w-[90%] object-contain"
+                  />
+                </div>
+                {/* Bulle de dialogue centrée en dessous - design épuré */}
+                <div 
+                  className="w-full max-w-[92%] bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200" 
+                  style={{
+                    animation: 'bubbleAppear 0.6s ease-out',
+                    transformOrigin: 'center center'
+                  }}
+                >
+                  <p className="text-[18px] md:text-[17px] leading-[1.6] text-center">
+                    Bonjour ! Je suis <span className="text-blue-600 font-semibold">Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
+                  </p>
+                </div>
               </div>
-              {/* Bulle de dialogue avec queue pointant vers l'image */}
-              <div 
-                className="relative ml-[32%] mt-8 bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100 rounded-2xl px-5 md:px-7 py-4 md:py-5 ring-1 ring-inset ring-gray-200 dark:ring-gray-700 shadow-lg max-w-[65%] before:content-[''] before:absolute before:-left-4 before:bottom-3 before:w-0 before:h-0 before:border-t-[14px] before:border-t-transparent before:border-b-[14px] before:border-b-transparent before:border-r-[14px] before:border-r-gray-100 dark:before:border-r-gray-800 after:content-[''] after:absolute after:-left-4.5 after:bottom-2.5 after:w-0 after:h-0 after:border-t-[15px] after:border-t-transparent after:border-b-[15px] after:border-b-transparent after:border-r-[15px] after:border-r-gray-200 dark:after:border-r-gray-700" 
-                style={{
-                  animation: 'bubbleAppear 0.6s ease-out',
-                  transformOrigin: 'left center'
-                }}
-              >
-                <p className="text-[15px] md:text-[18px] leading-relaxed">
-                  Bonjour ! Je suis <span style={{ color: '#3B82F6', fontWeight: 'bold' }}>Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
-                </p>
+
+              {/* Layout desktop : horizontal avec image à gauche et bulle à droite */}
+              <div className="hidden md:block relative">
+                {/* Image d'Ernest positionnée à ~25% de la gauche */}
+                <div className="absolute left-[25%] -translate-x-1/2 top-0 z-10">
+                  <img 
+                    src={ernestImage} 
+                    alt="Ernest" 
+                    className="h-[60vh] w-auto object-contain"
+                  />
+                </div>
+                {/* Bulle de dialogue avec queue pointant vers l'image */}
+                <div 
+                  className="relative ml-[32%] mt-8 bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200 max-w-[65%] before:content-[''] before:absolute before:-left-3 before:bottom-4 before:w-0 before:h-0 before:border-t-[12px] before:border-t-transparent before:border-b-[12px] before:border-b-transparent before:border-r-[12px] before:border-r-gray-50" 
+                  style={{
+                    animation: 'bubbleAppear 0.6s ease-out',
+                    transformOrigin: 'left center'
+                  }}
+                >
+                  <p className="text-[17px] leading-relaxed">
+                    Bonjour ! Je suis <span className="text-blue-600 font-semibold">Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
+                  </p>
+                </div>
               </div>
             </div>
           )}

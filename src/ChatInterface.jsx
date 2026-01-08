@@ -4,7 +4,9 @@ import { highContrastClasses } from './theme/highContrastPalette'
 import ErnestThinkingIndicator from './components/ErnestThinkingIndicator'
 
 // Configuration de l'API N8N
-const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook/ernest/voice'
+// const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook/ernest/voice'
+// const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook-test/dev-soscyber'
+const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook/dev-soscyber'
 const N8N_WEBHOOK = import.meta.env.VITE_N8N_WEBHOOK || DEFAULT_N8N_WEBHOOK
 
 // Message de bienvenue

@@ -4,6 +4,7 @@ import useErnest from "./hooks/useErnest";
 import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage, SosSubIntent } from "./types";
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
+import { MessageSquare, Link, Phone, ArrowLeft, RotateCw } from "lucide-react";
 import logoErnest from './assets/logo-ernest.png';
 import logoSosCyber from './assets/logo_soscyber.png';
 import ernestAvatar from './assets/ernest_avatar.png';
@@ -819,7 +820,7 @@ function Bubble({
 
   const bubbleContent = (
     <div
-      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px] whitespace-pre-wrap rounded-2xl px-4 md:px-5 py-3 md:py-4 ${
+      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[900px] whitespace-pre-wrap rounded-2xl px-4 md:px-5 py-3 md:py-4 ${
         isUser
           ? "bg-blue-50 text-gray-900 border border-blue-100"
           : "bg-gray-50 text-gray-900 border border-gray-200"
@@ -900,8 +901,8 @@ function Bubble({
               p: ({ children }) => <p className="mb-2">{children}</p>,
               strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
               ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-5 mb-2">{children}</ol>,
-              li: ({ children }) => <li className="mb-1">{children}</li>,
+              ol: ({ children }) => <ol className="list-decimal list-outside pl-6 mb-2">{children}</ol>,
+              li: ({ children }) => <li className="mb-1 pl-1 leading-relaxed">{children}</li>,
             }}
           >
             {String(children)}
@@ -914,7 +915,7 @@ function Bubble({
   // Si c'est un message utilisateur et qu'on doit afficher l'avatar, on l'enveloppe
   if (isUser && showAvatar) {
     return (
-      <div className="flex items-end gap-2.5 md:gap-3 ml-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
+      <div className="flex items-end gap-2.5 md:gap-3 ml-auto max-w-[90%] sm:max-w-[85%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[900px]">
         {bubbleContent}
         <UserAvatar profileImage={profileImage} name={userName} />
       </div>
@@ -924,7 +925,7 @@ function Bubble({
   // Si c'est un message assistant, on affiche l'avatar du bot
   if (!isUser) {
     return (
-      <div className="flex items-end gap-2.5 md:gap-3 mr-auto max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] xl:max-w-[600px]">
+      <div className="flex items-end gap-2.5 md:gap-3 mr-auto max-w-[90%] sm:max-w-[85%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[900px]">
         <BotAvatar />
         {bubbleContent}
       </div>
@@ -1198,7 +1199,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-[90%] md:w-[70%] items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
+      <div className="mx-auto flex w-[80%] max-w-screen-lg items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -2336,11 +2337,148 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         }}
       />
 
-      {/* Home screen top section supprimée pour placer les boutons en bas */}
-      {false && screen === "home" && <div />}
+      {/* Header avec boutons retour, titre dynamique et refresh */}
+      {(() => {
+        // Fonction pour générer un titre basé sur l'intention du message
+        const generateTitleFromMessage = (text: string): string => {
+          const t = text.toLowerCase();
+          
+          // SMS / Message suspect
+          if (t.includes("sms") || t.includes("message") || (t.includes("reçu") && (t.includes("bizarre") || t.includes("suspect") || t.includes("étrange")))) {
+            return "SMS suspect";
+          }
+          
+          // Email suspect
+          if (t.includes("email") || t.includes("e-mail") || t.includes("mail") || (t.includes("courriel") && (t.includes("suspect") || t.includes("bizarre")))) {
+            return "Email suspect";
+          }
+          
+          // Lien / URL suspect
+          if (t.includes("lien") || t.includes("lien") || t.includes("url") || t.includes("cliquer") || t.includes("lien") || (t.includes("site") && (t.includes("suspect") || t.includes("fiable")))) {
+            return "Vérification de lien";
+          }
+          
+          // Appel suspect
+          if (t.includes("appel") || t.includes("téléphone") || t.includes("numéro") || (t.includes("reçu") && t.includes("appel"))) {
+            return "Appel suspect";
+          }
+          
+          // Mot de passe
+          if (t.includes("mot de passe") || t.includes("password") || t.includes("mdp")) {
+            if (t.includes("créer") || t.includes("générer") || t.includes("nouveau")) {
+              return "Création de mot de passe";
+            }
+            if (t.includes("oublié") || t.includes("perdu")) {
+              return "Mot de passe oublié";
+            }
+            return "Sécurité des mots de passe";
+          }
+          
+          // Double authentification
+          if (t.includes("2fa") || t.includes("double") || t.includes("authentification") || t.includes("vérification")) {
+            return "Double authentification";
+          }
+          
+          // Compte piraté / Sécurité compte
+          if (t.includes("piraté") || t.includes("hacké") || t.includes("compte") || t.includes("sécurité")) {
+            return "Sécurité du compte";
+          }
+          
+          // Site web / Navigation
+          if (t.includes("site") || t.includes("internet") || t.includes("navigateur") || t.includes("web")) {
+            return "Sécurité web";
+          }
+          
+          // Arnaque / Phishing
+          if (t.includes("arnaque") || t.includes("phishing") || t.includes("hameçonnage") || t.includes("escroquerie")) {
+            return "Détection d'arnaque";
+          }
+          
+          // Paiement / Transaction
+          if (t.includes("paiement") || t.includes("carte") || t.includes("banque") || t.includes("transaction")) {
+            return "Sécurité des paiements";
+          }
+          
+          // Remboursement
+          if (t.includes("remboursement") || t.includes("rembourser")) {
+            return "Remboursement";
+          }
+          
+          // Si le message est court et clair, l'utiliser tel quel (max 30 caractères)
+          if (text.length <= 30) {
+            return text;
+          }
+          
+          // Sinon, tronquer intelligemment
+          return text.substring(0, 35) + "...";
+        };
+        
+        const firstUserMessage = messages.find(m => m.role === "user");
+        const conversationTitle = firstUserMessage
+          ? generateTitleFromMessage(firstUserMessage.text)
+          : "Nouvelle discussion";
+        
+        return (
+          <div className="sticky top-0 z-20 w-full border-b border-gray-200 bg-white">
+            <div className="mx-auto flex w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6 py-3 md:py-3.5">
+              {/* Bouton retour */}
+              <button
+                type="button"
+                onClick={() => {
+                  reset();
+                  setScreen("home");
+                  setIntent(null);
+                  setSubIntent(null);
+                  setStepIndex(0);
+                  setShowBannerUrl(null);
+                  setAttachedFiles([]);
+                  setComposerText("");
+                  setMessageFiles({});
+                  pendingFilesRef.current = null;
+                  setVoiceMode(false);
+                  setVoiceTranscription("");
+                  setFinalTranscription("");
+                  emitTelemetry({ type: "header_back" });
+                }}
+                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                aria-label="Retour"
+              >
+                <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
 
-      {/* SOS submenu top section supprimée pour placer les boutons en bas */}
-      {false && screen === "sos" && <div />}
+              {/* Titre dynamique */}
+              <h1 className="flex-1 text-center text-[16px] md:text-[18px] font-medium text-gray-900 truncate px-2">
+                {conversationTitle}
+              </h1>
+
+              {/* Bouton refresh */}
+              <button
+                type="button"
+                onClick={() => {
+                  reset();
+                  setScreen("home");
+                  setIntent(null);
+                  setSubIntent(null);
+                  setStepIndex(0);
+                  setShowBannerUrl(null);
+                  setAttachedFiles([]);
+                  setComposerText("");
+                  setMessageFiles({});
+                  pendingFilesRef.current = null;
+                  setVoiceMode(false);
+                  setVoiceTranscription("");
+                  setFinalTranscription("");
+                  emitTelemetry({ type: "header_refresh" });
+                }}
+                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                aria-label="Nouvelle discussion"
+              >
+                <RotateCw className="h-5 w-5 md:h-6 md:w-6" />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Conversation area - toujours visible */}
       <div className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
@@ -2370,50 +2508,207 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           {conversation.length === 0 && (
             <div className="relative w-full max-w-screen-lg mx-auto px-3 md:px-6">
               {/* Layout mobile : vertical centré - optimisé pour seniors */}
-              <div className="flex flex-col items-center gap-8 md:hidden pt-6 pb-4">
+              <div className="flex flex-col items-center gap-5 md:hidden pt-4 pb-4">
                 {/* Image d'Ernest centrée - taille optimale pour visibilité */}
                 <div className="flex justify-center w-full">
                   <img 
                     src={ernestImage} 
                     alt="Ernest, votre compagnon en cybersécurité" 
-                    className="h-[40vh] max-h-[320px] min-h-[200px] w-full max-w-[90%] object-contain"
+                    className="h-[35vh] max-h-[280px] min-h-[180px] w-full max-w-[90%] object-contain"
                   />
                 </div>
                 {/* Bulle de dialogue centrée en dessous - design épuré */}
                 <div 
-                  className="w-full max-w-[92%] bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200" 
+                  className="relative w-full max-w-[92%] bg-gray-50 text-gray-900 rounded-2xl px-5 md:px-6 py-4 md:py-5 border border-gray-200 before:content-[''] before:absolute before:top-[-13px] before:left-1/2 before:-translate-x-1/2 before:w-0 before:h-0 before:border-l-[13px] before:border-l-transparent before:border-r-[13px] before:border-r-transparent before:border-b-[13px] before:border-b-gray-200 after:content-[''] after:absolute after:top-[-12px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-0 after:border-l-[12px] after:border-l-transparent after:border-r-[12px] after:border-r-transparent after:border-b-[12px] after:border-b-gray-50" 
                   style={{
                     animation: 'bubbleAppear 0.6s ease-out',
                     transformOrigin: 'center center'
                   }}
                 >
                   <p className="text-[18px] md:text-[17px] leading-[1.6] text-center">
-                    Bonjour ! Je suis <span className="text-blue-600 font-semibold">Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
+                    Bonjour, je suis <span className="font-semibold text-blue-500">Ernest</span> ! 
+                    <br />
+                    Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.
                   </p>
+                </div>
+                
+                {/* Boutons de questions pré-définies */}
+                <div className="w-full max-w-[92%] flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-6">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const questionText = "J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?";
+                      emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
+                      const mapped = mapTextToMeta(questionText);
+                      const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
+                      const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
+                      await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: 1, text: questionText });
+                    }}
+                    disabled={loading}
+                    aria-label="Demander de l'aide concernant un SMS suspect"
+                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    style={{
+                      animation: 'bubbleAppear 0.6s ease-out',
+                      transformOrigin: 'center center'
+                    }}
+                  >
+                    <span className="inline-flex items-start gap-3">
+                      <MessageSquare className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?</span>
+                    </span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const questionText = "Puis-je cliquer sur ce lien sans danger ?";
+                      emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
+                      const mapped = mapTextToMeta(questionText);
+                      const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
+                      const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
+                      await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: 1, text: questionText });
+                    }}
+                    disabled={loading}
+                    aria-label="Vérifier la sécurité d'un lien"
+                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    style={{
+                      animation: 'bubbleAppear 0.6s ease-out 0.1s backwards',
+                      transformOrigin: 'center center'
+                    }}
+                  >
+                    <span className="inline-flex items-start gap-3">
+                      <Link className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Puis-je cliquer sur ce lien sans danger ?</span>
+                    </span>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const questionText = "Je m'interroge sur un appel suspect";
+                      emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
+                      const mapped = mapTextToMeta(questionText);
+                      const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
+                      const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
+                      await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: 1, text: questionText });
+                    }}
+                    disabled={loading}
+                    aria-label="Signaler un appel suspect"
+                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    style={{
+                      animation: 'bubbleAppear 0.6s ease-out 0.2s backwards',
+                      transformOrigin: 'center center'
+                    }}
+                  >
+                    <span className="inline-flex items-start gap-3">
+                      <Phone className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Je m'interroge sur un appel suspect</span>
+                    </span>
+                  </button>
                 </div>
               </div>
 
               {/* Layout desktop : horizontal avec image à gauche et bulle à droite */}
-              <div className="hidden md:block relative">
+              <div className="hidden md:flex relative items-center min-h-[60vh]">
                 {/* Image d'Ernest positionnée à ~25% de la gauche */}
-                <div className="absolute left-[25%] -translate-x-1/2 top-0 z-10">
+                <div className="absolute left-[25%] -translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
                   <img 
                     src={ernestImage} 
                     alt="Ernest" 
                     className="h-[60vh] w-auto object-contain"
                   />
                 </div>
-                {/* Bulle de dialogue avec queue pointant vers l'image */}
-                <div 
-                  className="relative ml-[32%] mt-8 bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200 max-w-[65%] before:content-[''] before:absolute before:-left-3 before:bottom-4 before:w-0 before:h-0 before:border-t-[12px] before:border-t-transparent before:border-b-[12px] before:border-b-transparent before:border-r-[12px] before:border-r-gray-50" 
-                  style={{
-                    animation: 'bubbleAppear 0.6s ease-out',
-                    transformOrigin: 'left center'
-                  }}
-                >
-                  <p className="text-[17px] leading-relaxed">
-                    Bonjour ! Je suis <span className="text-blue-600 font-semibold">Ernest</span>, votre compagnon en cybersécurité. Comment puis-je vous aider aujourd'hui ?
-                  </p>
+                {/* Conteneur pour bulle et boutons centrés verticalement */}
+                <div className="ml-[40%] flex flex-col gap-6 max-w-[55%]">
+                  {/* Bulle de dialogue avec queue pointant vers l'image */}
+                  <div 
+                    className="relative bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
+                    style={{
+                      animation: 'bubbleAppear 0.6s ease-out',
+                      transformOrigin: 'left center'
+                    }}
+                  >
+                    <p className="text-[17px] leading-relaxed">
+                      Bonjour, je suis <span className="font-semibold text-blue-500">Ernest</span> ! 
+                      <br />
+                      Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.
+                    </p>
+                  </div>
+                  
+                  {/* Boutons de questions pré-définies - Desktop */}
+                  <div className="flex flex-col gap-3 lg:gap-4 max-w-[450px] mx-auto">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const questionText = "J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?";
+                        emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
+                        const mapped = mapTextToMeta(questionText);
+                        const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
+                        const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
+                        await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: 1, text: questionText });
+                      }}
+                      disabled={loading}
+                      aria-label="Demander de l'aide concernant un SMS suspect"
+                      className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      style={{
+                        animation: 'bubbleAppear 0.6s ease-out',
+                        transformOrigin: 'center center'
+                      }}
+                    >
+                      <span className="inline-flex items-start gap-3">
+                        <MessageSquare className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?</span>
+                      </span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const questionText = "Puis-je cliquer sur ce lien sans danger ?";
+                        emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
+                        const mapped = mapTextToMeta(questionText);
+                        const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
+                        const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
+                        await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: 1, text: questionText });
+                      }}
+                      disabled={loading}
+                      aria-label="Vérifier la sécurité d'un lien"
+                      className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      style={{
+                        animation: 'bubbleAppear 0.6s ease-out 0.1s backwards',
+                        transformOrigin: 'center center'
+                      }}
+                    >
+                      <span className="inline-flex items-start gap-3">
+                        <Link className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Puis-je cliquer sur ce lien sans danger ?</span>
+                      </span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const questionText = "Je m'interroge sur un appel suspect";
+                        emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
+                        const mapped = mapTextToMeta(questionText);
+                        const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
+                        const effectiveSub: Exclude<SubIntent, null> | undefined = mapped?.subIntent || undefined;
+                        await sendAction({ intent: effectiveIntent, subIntent: effectiveSub, step: 1, text: questionText });
+                      }}
+                      disabled={loading}
+                      aria-label="Signaler un appel suspect"
+                      className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      style={{
+                        animation: 'bubbleAppear 0.6s ease-out 0.2s backwards',
+                        transformOrigin: 'center center'
+                      }}
+                    >
+                      <span className="inline-flex items-start gap-3">
+                        <Phone className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Je m'interroge sur un appel suspect</span>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2454,7 +2749,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             <ErnestThinkingIndicator
               isThinking={loading}
               tone="light"
-              className="mr-auto w-full max-w-lg"
+              className="mr-auto w-[95%] max-w-[95%]"
               borderClassName="ring-1 ring-inset ring-gray-200"
             />
             {error && (

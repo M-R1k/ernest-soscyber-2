@@ -1181,7 +1181,7 @@ function Composer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="w-full px-3 md:px-6 py-2.5 md:py-4">
+    <div className="flex-shrink-0 w-full px-3 md:px-6 py-2.5 md:py-4">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
         <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
@@ -2324,7 +2324,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="ernest-widget-short-viewport flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}
@@ -2797,7 +2797,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         </div>
 
       {/* Boutons juste au-dessus de l'input (bas de page) */}
-      <div className="px-3 md:px-6">
+      <div className="flex-shrink-0 px-3 md:px-6">
         {screen === "sos" && (
           <div className="mx-auto mb-2 md:mb-3 w-full max-w-screen-sm md:max-w-screen-md">
             <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">

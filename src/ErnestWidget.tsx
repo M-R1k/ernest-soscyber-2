@@ -4,7 +4,7 @@ import useErnest from "./hooks/useErnest";
 import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage, SosSubIntent } from "./types";
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
-import { MessageSquare, Link, Phone, ArrowLeft, RotateCw } from "lucide-react";
+import { Lock, Package, ShieldCheck, Phone, ArrowLeft, RotateCw } from "lucide-react";
 import logoErnest from './assets/logo-ernest.png';
 import logoSosCyber from './assets/logo_soscyber.png';
 import ernestAvatar from './assets/ernest_avatar.png';
@@ -1278,6 +1278,8 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const dataArrayRef = useRef<Float32Array | null>(null);
   const intentRef = useRef<Intent | null>(null);
   const subIntentRef = useRef<Exclude<SubIntent, null> | null>(null);
+  // Évite que l'iframe fasse défiler automatiquement vers le bas au tout premier rendu
+  const hasDoneInitialAutoScrollRef = useRef(false);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
   const [showHelperTips, setShowHelperTips] = useState(true);
@@ -1310,10 +1312,18 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }
 
   useEffect(() => {
+    // Ne pas forcer le focus (et donc le scroll) au tout premier rendu,
+    // pour éviter que l'iframe WeWeb « glisse » automatiquement vers le bas.
+    if (!hasDoneInitialAutoScrollRef.current) {
+      hasDoneInitialAutoScrollRef.current = true;
+      return;
+    }
     if (containerRef.current) focusFirstInteractive(containerRef.current);
   }, [screen]);
 
   useEffect(() => {
+    // Même logique : on évite le scroll automatique complet au premier rendu.
+    if (!hasDoneInitialAutoScrollRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, stepIndex, screen]);
 
@@ -1324,6 +1334,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, [messages]);
 
   useEffect(() => {
+    if (!hasDoneInitialAutoScrollRef.current) return;
     if (composerText.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [composerText]);
 
@@ -2528,7 +2539,19 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   <p className="text-[18px] md:text-[17px] leading-[1.6] text-center">
                     Bonjour, je suis <span className="font-semibold text-blue-500">Ernest</span> ! 
                     <br />
-                    Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.
+                    Vous pouvez me poser toutes vos questions sur la sécurité en ligne, choisir un bouton ci-dessous,
+                    {" "}
+                    ou
+                    {" "}
+                    <a
+                      href="https://demo.mon-compagnon-ernest.fr/verif-v2"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline text-blue-600"
+                    >
+                      vérifier un contenu suspect
+                    </a>
+                    .
                   </p>
                 </div>
                 
@@ -2537,7 +2560,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?";
+                      const questionText = "Comment je sécurise mes comptes en ligne ?";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2553,15 +2576,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <MessageSquare className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?</span>
+                      <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                     </span>
                   </button>
                   
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "Puis-je cliquer sur ce lien sans danger ?";
+                      const questionText = "J'attends un colis Amazon.";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2577,15 +2600,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Link className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">Puis-je cliquer sur ce lien sans danger ?</span>
+                      <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">J'attends un colis Amazon.</span>
                     </span>
                   </button>
                   
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "Je m'interroge sur un appel suspect";
+                      const questionText = "Qu'est-ce que la double authentification ?";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2601,8 +2624,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Phone className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">Je m'interroge sur un appel suspect</span>
+                      <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                     </span>
                   </button>
                 </div>
@@ -2631,7 +2654,19 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     <p className="text-[17px] leading-relaxed">
                       Bonjour, je suis <span className="font-semibold text-blue-500">Ernest</span> ! 
                       <br />
-                      Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.
+                      Vous pouvez me poser toutes vos questions sur la sécurité en ligne, choisir un bouton ci-dessous,
+                      {" "}
+                      ou
+                      {" "}
+                      <a
+                        href="https://demo.mon-compagnon-ernest.fr/verif-v2"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline text-blue-600"
+                      >
+                        vérifier un contenu suspect
+                      </a>
+                      .
                     </p>
                   </div>
                   
@@ -2640,7 +2675,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?";
+                        const questionText = "Comment je sécurise mes comptes en ligne ?";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2656,15 +2691,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <MessageSquare className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?</span>
+                        <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                       </span>
                     </button>
                     
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "Puis-je cliquer sur ce lien sans danger ?";
+                        const questionText = "J'attends un colis Amazon.";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2680,15 +2715,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Link className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">Puis-je cliquer sur ce lien sans danger ?</span>
+                        <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">J'attends un colis Amazon.</span>
                       </span>
                     </button>
                     
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "Je m'interroge sur un appel suspect";
+                        const questionText = "Qu'est-ce que la double authentification ?";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2704,8 +2739,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Phone className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">Je m'interroge sur un appel suspect</span>
+                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                       </span>
                     </button>
                   </div>

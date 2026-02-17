@@ -2584,7 +2584,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "J'attends un colis Amazon.";
+                      const questionText = "Un courrier me précise de payer pour recevoir une livraison de colis manquée";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2601,7 +2601,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   >
                     <span className="inline-flex items-start gap-3">
                       <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">J'attends un colis Amazon.</span>
+                      <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                     </span>
                   </button>
                   
@@ -2699,7 +2699,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "J'attends un colis Amazon.";
+                        const questionText = "Un courrier me précise de payer pour recevoir une livraison de colis manquée";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2716,7 +2716,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     >
                       <span className="inline-flex items-start gap-3">
                         <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">J'attends un colis Amazon.</span>
+                        <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                       </span>
                     </button>
                     

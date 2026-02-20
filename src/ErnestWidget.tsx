@@ -2544,7 +2544,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     ou
                     {" "}
                     <a
-                      href="https://demo.mon-compagnon-ernest.fr/verification_v2"
+                      href="https://demo.mon-compagnon-ernest.fr/verification_v2/"
                       target="_blank"
                       rel="noreferrer"
                       className="underline text-blue-600"
@@ -2659,7 +2659,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       ou
                       {" "}
                       <a
-                        href="https://demo.mon-compagnon-ernest.fr/verif-v2"
+                        href="https://demo.mon-compagnon-ernest.fr/verification_v2/"
                         target="_blank"
                         rel="noreferrer"
                         className="underline text-blue-600"

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useErnest from "./hooks/useErnest";
 import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage, SosSubIntent } from "./types";
@@ -1270,6 +1270,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const mrRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const meterRafRef = useRef<number | null>(null);
   const meterStreamRef = useRef<MediaStream | null>(null);
@@ -1280,6 +1281,12 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const subIntentRef = useRef<Exclude<SubIntent, null> | null>(null);
   // Évite que l'iframe fasse défiler automatiquement vers le bas au tout premier rendu
   const hasDoneInitialAutoScrollRef = useRef(false);
+
+  // À l'arrivée sur la page (home, pas de conversation), garder le scroll en haut
+  useLayoutEffect(() => {
+    if (screen !== "home" || messages.length > 0) return;
+    scrollAreaRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [screen, messages.length]);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
   const [showHelperTips, setShowHelperTips] = useState(true);
@@ -2492,7 +2499,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       })()}
 
       {/* Conversation area - toujours visible */}
-      <div className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
+      <div ref={scrollAreaRef} className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
           {/* Safety banner */}
           {showBannerUrl && (
             <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 border border-amber-200">

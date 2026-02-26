@@ -1282,11 +1282,11 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   // Évite que l'iframe fasse défiler automatiquement vers le bas au tout premier rendu
   const hasDoneInitialAutoScrollRef = useRef(false);
 
-  // À l'arrivée sur la page (home, pas de conversation), garder le scroll en haut
+  // À l'arrivée sur l'écran d'accueil, garder la zone de conversation en haut
   useLayoutEffect(() => {
-    if (screen !== "home" || messages.length > 0) return;
+    if (screen !== "home") return;
     scrollAreaRef.current?.scrollTo({ top: 0, behavior: "auto" });
-  }, [screen, messages.length]);
+  }, [screen]);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
   const [showHelperTips, setShowHelperTips] = useState(true);
@@ -1331,6 +1331,9 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   useEffect(() => {
     // Même logique : on évite le scroll automatique complet au premier rendu.
     if (!hasDoneInitialAutoScrollRef.current) return;
+    // Tant qu'aucun message n'a été échangé sur l'écran d'accueil,
+    // on ne force pas le scroll en bas (on veut rester sur le haut).
+    if (screen === "home" && messages.length === 0) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, stepIndex, screen]);
 
@@ -1342,8 +1345,9 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
 
   useEffect(() => {
     if (!hasDoneInitialAutoScrollRef.current) return;
+    if (screen === "home" && messages.length === 0) return;
     if (composerText.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [composerText]);
+  }, [composerText, screen, messages.length]);
 
   // Écouter les messages depuis WeWeb pour ouvrir le mode voix (Option B)
   useEffect(() => {
@@ -3004,7 +3008,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         onRemoveFile={(index) => {
           setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
         }}
-        onFocus={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        onFocus={() => {
+          // Sur l'écran d'accueil sans conversation, on garde le scroll en haut
+          if (screen === "home" && messages.length === 0) {
+            scrollAreaRef.current?.scrollTo({ top: 0, behavior: "auto" });
+            return;
+          }
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }}
       />
 
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}

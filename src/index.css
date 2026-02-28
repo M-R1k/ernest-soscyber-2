@@ -124,17 +124,17 @@ html, body {
   animation-delay: 600ms;
 }
 
-/* Animations pour la bulle de bienvenue d'Ernest */
+/* Animations pour la bulle de bienvenue d'Ernest - apparition progressive */
 @keyframes bubbleAppear {
   0% {
     opacity: 0;
-    transform: translateX(-20px) scale(0.9);
-    filter: blur(4px);
+    transform: translateX(-16px) scale(0.92);
+    filter: blur(6px);
   }
-  60% {
-    opacity: 0.8;
-    transform: translateX(-5px) scale(0.98);
-    filter: blur(1px);
+  40% {
+    opacity: 0.5;
+    transform: translateX(-8px) scale(0.96);
+    filter: blur(2px);
   }
   100% {
     opacity: 1;

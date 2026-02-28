@@ -940,6 +940,50 @@ function Bubble({
   );
 }
 
+// Texte d'accueil complet pour l'animation typewriter (un seul flux pour éviter le décalage du "V" de "Vous")
+const WELCOME_FULL_TEXT = "Bonjour, je suis Ernest ! Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.";
+const WELCOME_ERNEST_START = 17;
+const WELCOME_ERNEST_END = 23;
+// Durée du typewriter (32 ms par caractère) → les boutons apparaissent après que le texte soit entièrement tapé
+const WELCOME_TYPEWRITER_DURATION_S = (WELCOME_FULL_TEXT.length * 32) / 1000;
+
+function TypewriterWelcome({ className }: { className?: string }) {
+  const [len, setLen] = useState(0);
+
+  useEffect(() => {
+    if (len >= WELCOME_FULL_TEXT.length) return;
+    const t = setTimeout(() => setLen((l) => Math.min(l + 1, WELCOME_FULL_TEXT.length)), 32);
+    return () => clearTimeout(t);
+  }, [len]);
+
+  const isComplete = len >= WELCOME_FULL_TEXT.length;
+
+  const content =
+    len <= WELCOME_ERNEST_START ? (
+      WELCOME_FULL_TEXT.slice(0, len)
+    ) : len <= WELCOME_ERNEST_END ? (
+      <>
+        {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
+        <span className="font-semibold text-blue-500">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, len)}</span>
+      </>
+    ) : (
+      <>
+        {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
+        <span className="font-semibold text-blue-500">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, WELCOME_ERNEST_END)}</span>
+        {WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, len)}
+      </>
+    );
+
+  return (
+    <p className={className}>
+      {len === 0 ? "\u00A0" : content}
+      {!isComplete && len > 0 && (
+        <span className="inline-block w-0.5 h-[1em] bg-blue-500 align-baseline animate-pulse" style={{ marginLeft: "2px" }} aria-hidden />
+      )}
+    </p>
+  );
+}
+
 function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choice[]; onSelect: (value: string, label?: string) => void }) {
   return (
     <div role="group" aria-label={`Choix étape ${step}`} className="flex flex-wrap gap-2 md:gap-3">
@@ -2521,15 +2565,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 <div 
                   className="relative w-full max-w-[92%] bg-gray-50 text-gray-900 rounded-2xl px-5 md:px-6 py-4 md:py-5 border border-gray-200 before:content-[''] before:absolute before:top-[-13px] before:left-1/2 before:-translate-x-1/2 before:w-0 before:h-0 before:border-l-[13px] before:border-l-transparent before:border-r-[13px] before:border-r-transparent before:border-b-[13px] before:border-b-gray-200 after:content-[''] after:absolute after:top-[-12px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-0 after:border-l-[12px] after:border-l-transparent after:border-r-[12px] after:border-r-transparent after:border-b-[12px] after:border-b-gray-50" 
                   style={{
-                    animation: 'bubbleAppear 0.6s ease-out',
+                    animation: 'bubbleAppear 0.8s ease-out',
                     transformOrigin: 'center center'
                   }}
                 >
-                  <p className="text-[18px] md:text-[17px] leading-[1.6] text-center">
-                    Bonjour, je suis <span className="font-semibold text-blue-500">Ernest</span> ! 
-                    <br />
-                    Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.
-                  </p>
+                  <TypewriterWelcome className="text-[18px] md:text-[17px] leading-[1.6] text-center" />
                 </div>
                 
                 {/* Boutons de questions pré-définies */}
@@ -2548,7 +2588,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     aria-label="Demander de l'aide concernant un SMS suspect"
                     className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
-                      animation: 'bubbleAppear 0.6s ease-out',
+                      animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S}s backwards`,
                       transformOrigin: 'center center'
                     }}
                   >
@@ -2572,7 +2612,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     aria-label="Vérifier la sécurité d'un lien"
                     className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
-                      animation: 'bubbleAppear 0.6s ease-out 0.1s backwards',
+                      animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 0.6}s backwards`,
                       transformOrigin: 'center center'
                     }}
                   >
@@ -2596,7 +2636,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     aria-label="Signaler un appel suspect"
                     className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
-                      animation: 'bubbleAppear 0.6s ease-out 0.2s backwards',
+                      animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 1.2}s backwards`,
                       transformOrigin: 'center center'
                     }}
                   >
@@ -2624,15 +2664,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   <div 
                     className="relative bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
                     style={{
-                      animation: 'bubbleAppear 0.6s ease-out',
+                      animation: 'bubbleAppear 0.8s ease-out',
                       transformOrigin: 'left center'
                     }}
                   >
-                    <p className="text-[17px] leading-relaxed">
-                      Bonjour, je suis <span className="font-semibold text-blue-500">Ernest</span> ! 
-                      <br />
-                      Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.
-                    </p>
+                    <TypewriterWelcome className="text-[17px] leading-relaxed" />
                   </div>
                   
                   {/* Boutons de questions pré-définies - Desktop */}
@@ -2651,7 +2687,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       aria-label="Demander de l'aide concernant un SMS suspect"
                       className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                       style={{
-                        animation: 'bubbleAppear 0.6s ease-out',
+                        animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S}s backwards`,
                         transformOrigin: 'center center'
                       }}
                     >
@@ -2675,7 +2711,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       aria-label="Vérifier la sécurité d'un lien"
                       className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                       style={{
-                        animation: 'bubbleAppear 0.6s ease-out 0.1s backwards',
+                        animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 0.6}s backwards`,
                         transformOrigin: 'center center'
                       }}
                     >
@@ -2699,7 +2735,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       aria-label="Signaler un appel suspect"
                       className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                       style={{
-                        animation: 'bubbleAppear 0.6s ease-out 0.2s backwards',
+                        animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 1.2}s backwards`,
                         transformOrigin: 'center center'
                       }}
                     >

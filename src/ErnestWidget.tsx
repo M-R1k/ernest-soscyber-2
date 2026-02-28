@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useErnest from "./hooks/useErnest";
 import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage, SosSubIntent } from "./types";
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
-import { MessageSquare, Link, Phone, ArrowLeft, RotateCw } from "lucide-react";
+import { Lock, Package, ShieldCheck, Phone, ArrowLeft, RotateCw } from "lucide-react";
 import logoErnest from './assets/logo-ernest.png';
 import logoSosCyber from './assets/logo_soscyber.png';
 import ernestAvatar from './assets/ernest_avatar.png';
@@ -1225,7 +1225,7 @@ function Composer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="w-full px-3 md:px-6 py-2.5 md:py-4">
+    <div className="flex-shrink-0 w-full px-3 md:px-6 py-2.5 md:py-4">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
         <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
@@ -1314,6 +1314,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const mrRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const meterRafRef = useRef<number | null>(null);
   const meterStreamRef = useRef<MediaStream | null>(null);
@@ -1322,6 +1323,14 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const dataArrayRef = useRef<Float32Array | null>(null);
   const intentRef = useRef<Intent | null>(null);
   const subIntentRef = useRef<Exclude<SubIntent, null> | null>(null);
+  // Évite que l'iframe fasse défiler automatiquement vers le bas au tout premier rendu
+  const hasDoneInitialAutoScrollRef = useRef(false);
+
+  // À l'arrivée sur l'écran d'accueil, garder la zone de conversation en haut
+  useLayoutEffect(() => {
+    if (screen !== "home") return;
+    scrollAreaRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [screen]);
   const stepIndexRef = useRef<number>(0);
   const permissionGrantedRef = useRef<boolean>(false); // Indicateur que WeWeb a déjà accordé la permission
   const [showHelperTips, setShowHelperTips] = useState(true);
@@ -1354,10 +1363,21 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }
 
   useEffect(() => {
+    // Ne pas forcer le focus (et donc le scroll) au tout premier rendu,
+    // pour éviter que l'iframe WeWeb « glisse » automatiquement vers le bas.
+    if (!hasDoneInitialAutoScrollRef.current) {
+      hasDoneInitialAutoScrollRef.current = true;
+      return;
+    }
     if (containerRef.current) focusFirstInteractive(containerRef.current);
   }, [screen]);
 
   useEffect(() => {
+    // Même logique : on évite le scroll automatique complet au premier rendu.
+    if (!hasDoneInitialAutoScrollRef.current) return;
+    // Tant qu'aucun message n'a été échangé sur l'écran d'accueil,
+    // on ne force pas le scroll en bas (on veut rester sur le haut).
+    if (screen === "home" && messages.length === 0) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, stepIndex, screen]);
 
@@ -1368,8 +1388,10 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   }, [messages]);
 
   useEffect(() => {
+    if (!hasDoneInitialAutoScrollRef.current) return;
+    if (screen === "home" && messages.length === 0) return;
     if (composerText.length > 0) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [composerText]);
+  }, [composerText, screen, messages.length]);
 
   // Écouter les messages depuis WeWeb pour ouvrir le mode voix (Option B)
   useEffect(() => {
@@ -2357,7 +2379,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="ernest-widget-short-viewport flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}
@@ -2525,7 +2547,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       })()}
 
       {/* Conversation area - toujours visible */}
-      <div className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
+      <div ref={scrollAreaRef} className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
           {/* Safety banner */}
           {showBannerUrl && (
             <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 border border-amber-200">
@@ -2552,18 +2574,18 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           {conversation.length === 0 && (
             <div className="relative w-full max-w-screen-lg mx-auto px-3 md:px-6">
               {/* Layout mobile : vertical centré - optimisé pour seniors */}
-              <div className="flex flex-col items-center gap-5 md:hidden pt-4 pb-4">
-                {/* Image d'Ernest centrée - taille optimale pour visibilité */}
+              <div className="flex flex-col items-center gap-4 md:hidden pt-3 pb-3">
+                {/* Image d'Ernest centrée - taille réduite */}
                 <div className="flex justify-center w-full">
                   <img 
                     src={ernestImage} 
                     alt="Ernest, votre compagnon en cybersécurité" 
-                    className="h-[35vh] max-h-[280px] min-h-[180px] w-full max-w-[90%] object-contain"
+                    className="h-[22vh] max-h-[180px] min-h-[120px] w-full max-w-[80%] object-contain"
                   />
                 </div>
                 {/* Bulle de dialogue centrée en dessous - design épuré */}
                 <div 
-                  className="relative w-full max-w-[92%] bg-gray-50 text-gray-900 rounded-2xl px-5 md:px-6 py-4 md:py-5 border border-gray-200 before:content-[''] before:absolute before:top-[-13px] before:left-1/2 before:-translate-x-1/2 before:w-0 before:h-0 before:border-l-[13px] before:border-l-transparent before:border-r-[13px] before:border-r-transparent before:border-b-[13px] before:border-b-gray-200 after:content-[''] after:absolute after:top-[-12px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-0 after:border-l-[12px] after:border-l-transparent after:border-r-[12px] after:border-r-transparent after:border-b-[12px] after:border-b-gray-50" 
+                  className="relative w-full max-w-[85%] bg-gray-50 text-gray-900 rounded-2xl px-4 md:px-5 py-3 md:py-4 border border-gray-200 before:content-[''] before:absolute before:top-[-13px] before:left-1/2 before:-translate-x-1/2 before:w-0 before:h-0 before:border-l-[13px] before:border-l-transparent before:border-r-[13px] before:border-r-transparent before:border-b-[13px] before:border-b-gray-200 after:content-[''] after:absolute after:top-[-12px] after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-0 after:border-l-[12px] after:border-l-transparent after:border-r-[12px] after:border-r-transparent after:border-b-[12px] after:border-b-gray-50" 
                   style={{
                     animation: 'bubbleAppear 0.8s ease-out',
                     transformOrigin: 'center center'
@@ -2573,11 +2595,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 </div>
                 
                 {/* Boutons de questions pré-définies */}
-                <div className="w-full max-w-[92%] flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-4 mt-3 md:mt-6">
+                <div className="w-full max-w-[85%] flex flex-col md:grid md:grid-cols-2 gap-3 md:gap-4 mt-2 md:mt-6">
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?";
+                      const questionText = "Comment je sécurise mes comptes en ligne ?";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2593,15 +2615,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <MessageSquare className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?</span>
+                      <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                     </span>
                   </button>
                   
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "Puis-je cliquer sur ce lien sans danger ?";
+                      const questionText = "Un courrier me précise de payer pour recevoir une livraison de colis manquée";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2617,15 +2639,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Link className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">Puis-je cliquer sur ce lien sans danger ?</span>
+                      <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                     </span>
                   </button>
                   
                   <button
                     type="button"
                     onClick={async () => {
-                      const questionText = "Je m'interroge sur un appel suspect";
+                      const questionText = "Qu'est-ce que la double authentification ?";
                       emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                       const mapped = mapTextToMeta(questionText);
                       const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2641,28 +2663,28 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Phone className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                      <span className="flex-1">Je m'interroge sur un appel suspect</span>
+                      <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                     </span>
                   </button>
                 </div>
               </div>
 
               {/* Layout desktop : horizontal avec image à gauche et bulle à droite */}
-              <div className="hidden md:flex relative items-center min-h-[60vh]">
+              <div className="hidden md:flex relative items-center min-h-[45vh]">
                 {/* Image d'Ernest positionnée à ~25% de la gauche */}
                 <div className="absolute left-[25%] -translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
                   <img 
                     src={ernestImage} 
                     alt="Ernest" 
-                    className="h-[60vh] w-auto object-contain"
+                    className="h-[40vh] max-h-[320px] w-auto object-contain"
                   />
                 </div>
                 {/* Conteneur pour bulle et boutons centrés verticalement */}
                 <div className="ml-[40%] flex flex-col gap-6 max-w-[55%]">
                   {/* Bulle de dialogue avec queue pointant vers l'image */}
                   <div 
-                    className="relative bg-gray-50 text-gray-900 rounded-2xl px-6 py-5 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
+                    className="relative bg-gray-50 text-gray-900 rounded-2xl px-5 py-4 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
                     style={{
                       animation: 'bubbleAppear 0.8s ease-out',
                       transformOrigin: 'left center'
@@ -2676,7 +2698,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?";
+                        const questionText = "Comment je sécurise mes comptes en ligne ?";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2692,15 +2714,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <MessageSquare className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">J'ai reçu un SMS bizarre. S'agit-il d'une arnaque ?</span>
+                        <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                       </span>
                     </button>
                     
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "Puis-je cliquer sur ce lien sans danger ?";
+                        const questionText = "Un courrier me précise de payer pour recevoir une livraison de colis manquée";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2716,15 +2738,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Link className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">Puis-je cliquer sur ce lien sans danger ?</span>
+                        <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                       </span>
                     </button>
                     
                     <button
                       type="button"
                       onClick={async () => {
-                        const questionText = "Je m'interroge sur un appel suspect";
+                        const questionText = "Qu'est-ce que la double authentification ?";
                         emitTelemetry({ type: "quick_action", intent: "CHECK_SCAM", subIntent: undefined, step: 0 });
                         const mapped = mapTextToMeta(questionText);
                         const effectiveIntent: Intent = mapped?.intent || ("CHECK_SCAM" as Intent);
@@ -2740,8 +2762,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Phone className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
-                        <span className="flex-1">Je m'interroge sur un appel suspect</span>
+                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                       </span>
                     </button>
                   </div>
@@ -2798,7 +2820,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         </div>
 
       {/* Boutons juste au-dessus de l'input (bas de page) */}
-      <div className="px-3 md:px-6">
+      <div className="flex-shrink-0 px-3 md:px-6">
         {screen === "sos" && (
           <div className="mx-auto mb-2 md:mb-3 w-full max-w-screen-sm md:max-w-screen-md">
             <div className="grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-2.5">
@@ -2998,7 +3020,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
         onRemoveFile={(index) => {
           setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
         }}
-        onFocus={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        onFocus={() => {
+          // Sur l'écran d'accueil sans conversation, on garde le scroll en haut
+          if (screen === "home" && messages.length === 0) {
+            scrollAreaRef.current?.scrollTo({ top: 0, behavior: "auto" });
+            return;
+          }
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }}
       />
 
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}

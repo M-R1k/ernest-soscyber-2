@@ -153,3 +153,13 @@ html, body {
     transform: translateX(-8px) translateY(-50%) scale(1);
   }
 }
+
+/* Réserver de la place en bas sur les écrans très courts (navbar mobile) */
+@media (max-height: 370px) {
+  .ernest-widget-short-viewport {
+    padding-bottom: 56px;
+    min-height: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
+}

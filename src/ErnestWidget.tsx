@@ -964,12 +964,12 @@ function TypewriterWelcome({ className }: { className?: string }) {
     ) : len <= WELCOME_ERNEST_END ? (
       <>
         {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
-        <span className="font-semibold text-blue-500">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, len)}</span>
+        <span className="font-semibold text-[#3B82F6]">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, len)}</span>
       </>
     ) : (
       <>
         {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
-        <span className="font-semibold text-blue-500">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, WELCOME_ERNEST_END)}</span>
+        <span className="font-semibold text-[#3B82F6]">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, WELCOME_ERNEST_END)}</span>
         {WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, len)}
       </>
     );
@@ -1012,7 +1012,7 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
 
 function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () => void; onReset: () => void }) {
   return (
-    <header className="relative flex items-center justify-between px-3 md:px-6 py-2.5 md:py-4">
+    <header className="relative flex items-center justify-between px-3 md:px-6 bg-[#3B82F6]">
     </header>
   );
 }
@@ -2485,8 +2485,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           : "Nouvelle discussion";
         
         return (
-          <div className="sticky top-0 z-20 w-full border-b border-gray-200 bg-white">
-            <div className="mx-auto flex w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6 py-3 md:py-3.5">
+          <div className="sticky top-0 z-20 w-full h-[100px] border-b border-gray-200 bg-[#3B82F6]">
+            <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
               {/* Bouton retour */}
               <button
                 type="button"
@@ -2513,7 +2513,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               </button>
 
               {/* Titre dynamique */}
-              <h1 className="flex-1 text-center text-[16px] md:text-[18px] font-medium text-gray-900 truncate px-2">
+              <h1 className="flex-1 text-center text-[20px] font-medium text-white truncate px-2">
                 {conversationTitle}
               </h1>
 
@@ -2615,7 +2615,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
                       <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                     </span>
                   </button>
@@ -2639,7 +2639,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
                       <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                     </span>
                   </button>
@@ -2663,7 +2663,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                      <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
                       <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                     </span>
                   </button>
@@ -2714,7 +2714,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
                         <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                       </span>
                     </button>
@@ -2738,7 +2738,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
                         <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                       </span>
                     </button>
@@ -2762,7 +2762,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-500" />
+                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
                         <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                       </span>
                     </button>

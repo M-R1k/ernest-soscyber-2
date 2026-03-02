@@ -1043,7 +1043,7 @@ function StickyBar({ onBack, onHome, onContact, onReminder }: { onBack: () => vo
       <div className="mx-auto flex max-w-screen-lg items-center justify-between gap-2 md:gap-3">
         <div className="flex items-center gap-2 md:gap-3">
           <button type="button" onClick={onBack} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-gray-50 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-            <ArrowLeftIcon className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" />
             <span>Retour</span>
           </button>
           <button type="button" onClick={onHome} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-gray-50 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
@@ -1072,14 +1072,6 @@ function TrashIcon({ className }: { className?: string }) {
       <path d="M3 6h18" />
       <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
       <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} role="img" aria-label="Retour">
-      <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
   );
 }
@@ -2533,7 +2525,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               </button>
 
               {/* Titre dynamique */}
-              <h1 className="flex-1 text-center text-[20px] font-medium text-white truncate px-2">
+              <h1 className="flex-1 text-center text-[18px] font-medium text-white truncate px-2">
                 {conversationTitle}
               </h1>
 

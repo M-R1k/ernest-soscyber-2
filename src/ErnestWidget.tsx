@@ -941,9 +941,13 @@ function Bubble({
 }
 
 // Texte d'accueil complet pour l'animation typewriter (un seul flux pour éviter le décalage du "V" de "Vous")
-const WELCOME_FULL_TEXT = "Bonjour, je suis Ernest ! Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou bien choisir un bouton ci-dessous.";
+const WELCOME_FULL_TEXT = "Bonjour, je suis Ernest ! Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou être redirigé vers le centre de vérification. Vous pouvez aussi choisir un bouton ci-dessous.";
 const WELCOME_ERNEST_START = 17;
 const WELCOME_ERNEST_END = 23;
+const WELCOME_VERIFICATION_URL = "https://demo.mon-compagnon-ernest.fr/verification_v2/";
+const WELCOME_LINK_TEXT = "centre de vérification";
+const WELCOME_LINK_START = WELCOME_FULL_TEXT.indexOf(WELCOME_LINK_TEXT);
+const WELCOME_LINK_END = WELCOME_LINK_START + WELCOME_LINK_TEXT.length;
 // Durée du typewriter (32 ms par caractère) → les boutons apparaissent après que le texte soit entièrement tapé
 const WELCOME_TYPEWRITER_DURATION_S = (WELCOME_FULL_TEXT.length * 32) / 1000;
 
@@ -958,6 +962,22 @@ function TypewriterWelcome({ className }: { className?: string }) {
 
   const isComplete = len >= WELCOME_FULL_TEXT.length;
 
+  const renderAfterErnest = () => {
+    if (len <= WELCOME_LINK_START) return WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, len);
+    const parts = [];
+    if (WELCOME_ERNEST_END < WELCOME_LINK_START) parts.push(WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, WELCOME_LINK_START));
+    if (len > WELCOME_LINK_START) {
+      const linkEnd = Math.min(len, WELCOME_LINK_END);
+      parts.push(
+        <a key="verification" href={WELCOME_VERIFICATION_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#3B82F6] underline underline-offset-2 hover:text-blue-700">
+          {WELCOME_FULL_TEXT.slice(WELCOME_LINK_START, linkEnd)}
+        </a>
+      );
+    }
+    if (len > WELCOME_LINK_END) parts.push(WELCOME_FULL_TEXT.slice(WELCOME_LINK_END, len));
+    return parts;
+  };
+
   const content =
     len <= WELCOME_ERNEST_START ? (
       WELCOME_FULL_TEXT.slice(0, len)
@@ -970,7 +990,7 @@ function TypewriterWelcome({ className }: { className?: string }) {
       <>
         {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
         <span className="font-semibold text-[#3B82F6]">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, WELCOME_ERNEST_END)}</span>
-        {WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, len)}
+        {renderAfterErnest()}
       </>
     );
 
@@ -1243,7 +1263,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-[80%] max-w-screen-lg items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
+      <div className="mx-auto flex w-full max-w-screen-lg items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -2506,7 +2526,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_back" });
                 }}
-                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                 aria-label="Retour"
               >
                 <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
@@ -2536,7 +2556,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_refresh" });
                 }}
-                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                 aria-label="Nouvelle discussion"
               >
                 <RotateCw className="h-5 w-5 md:h-6 md:w-6" />

@@ -944,15 +944,15 @@ function Bubble({
 const WELCOME_FULL_TEXT = "Bonjour, je suis Ernest, votre compagnon anti-arnaques du numérique !\n\nTapez votre question ou cliquez sur un des boutons suivants :";
 const WELCOME_ERNEST_START = 17;
 const WELCOME_ERNEST_END = 23;
-// Durée du typewriter (32 ms par caractère) → les boutons apparaissent après que le texte soit entièrement tapé
-const WELCOME_TYPEWRITER_DURATION_S = (WELCOME_FULL_TEXT.length * 32) / 1000;
+// Durée du typewriter (16 ms par caractère) → les boutons apparaissent après que le texte soit entièrement tapé
+const WELCOME_TYPEWRITER_DURATION_S = (WELCOME_FULL_TEXT.length * 16) / 1000;
 
 function TypewriterWelcome({ className }: { className?: string }) {
   const [len, setLen] = useState(0);
 
   useEffect(() => {
     if (len >= WELCOME_FULL_TEXT.length) return;
-    const t = setTimeout(() => setLen((l) => Math.min(l + 1, WELCOME_FULL_TEXT.length)), 32);
+    const t = setTimeout(() => setLen((l) => Math.min(l + 1, WELCOME_FULL_TEXT.length)), 16);
     return () => clearTimeout(t);
   }, [len]);
 

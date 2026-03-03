@@ -941,13 +941,9 @@ function Bubble({
 }
 
 // Texte d'accueil complet pour l'animation typewriter (un seul flux pour éviter le décalage du "V" de "Vous")
-const WELCOME_FULL_TEXT = "Bonjour, je suis Ernest ! Vous pouvez me poser toutes vos questions sur la sécurité sur Internet, ou être redirigé vers le centre de vérification. Vous pouvez aussi choisir un bouton ci-dessous.";
+const WELCOME_FULL_TEXT = "Bonjour, je suis Ernest, votre compagnon anti-arnaques du numérique !\n\nTapez votre question ou cliquez sur un des boutons suivants :";
 const WELCOME_ERNEST_START = 17;
 const WELCOME_ERNEST_END = 23;
-const WELCOME_VERIFICATION_URL = "https://demo.mon-compagnon-ernest.fr/verification_v2/";
-const WELCOME_LINK_TEXT = "centre de vérification";
-const WELCOME_LINK_START = WELCOME_FULL_TEXT.indexOf(WELCOME_LINK_TEXT);
-const WELCOME_LINK_END = WELCOME_LINK_START + WELCOME_LINK_TEXT.length;
 // Durée du typewriter (32 ms par caractère) → les boutons apparaissent après que le texte soit entièrement tapé
 const WELCOME_TYPEWRITER_DURATION_S = (WELCOME_FULL_TEXT.length * 32) / 1000;
 
@@ -962,21 +958,7 @@ function TypewriterWelcome({ className }: { className?: string }) {
 
   const isComplete = len >= WELCOME_FULL_TEXT.length;
 
-  const renderAfterErnest = () => {
-    if (len <= WELCOME_LINK_START) return WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, len);
-    const parts = [];
-    if (WELCOME_ERNEST_END < WELCOME_LINK_START) parts.push(WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, WELCOME_LINK_START));
-    if (len > WELCOME_LINK_START) {
-      const linkEnd = Math.min(len, WELCOME_LINK_END);
-      parts.push(
-        <a key="verification" href={WELCOME_VERIFICATION_URL} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#3B82F6] underline underline-offset-2 hover:text-blue-700">
-          {WELCOME_FULL_TEXT.slice(WELCOME_LINK_START, linkEnd)}
-        </a>
-      );
-    }
-    if (len > WELCOME_LINK_END) parts.push(WELCOME_FULL_TEXT.slice(WELCOME_LINK_END, len));
-    return parts;
-  };
+  const renderAfterErnest = () => WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_END, len);
 
   const content =
     len <= WELCOME_ERNEST_START ? (

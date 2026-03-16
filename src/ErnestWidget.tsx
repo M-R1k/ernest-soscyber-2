@@ -2507,7 +2507,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               </button>
 
               {/* Titre dynamique */}
-              <h1 className="flex-1 text-center text-[18px] font-medium text-white truncate px-2">
+              <h1 className="flex-1 text-center text-[15px] md:text-[18px] font-medium text-white truncate px-2">
                 {conversationTitle}
               </h1>
 
@@ -2585,7 +2585,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     transformOrigin: 'center center'
                   }}
                 >
-                  <TypewriterWelcome className="text-[18px] md:text-[17px] leading-[1.6] text-center" />
+                  <TypewriterWelcome className="text-[14px] leading-[1.6] text-center md:text-[17px]" />
                 </div>
                 
                 {/* Boutons de questions pré-définies */}
@@ -2602,7 +2602,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                     disabled={loading}
                     aria-label="Demander de l'aide concernant un SMS suspect"
-                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
                       animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S}s backwards`,
                       transformOrigin: 'center center'
@@ -2626,7 +2626,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                     disabled={loading}
                     aria-label="Vérifier la sécurité d'un lien"
-                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
                       animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 0.6}s backwards`,
                       transformOrigin: 'center center'
@@ -2650,7 +2650,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                     disabled={loading}
                     aria-label="Signaler un appel suspect"
-                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[16px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
                       animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 1.2}s backwards`,
                       transformOrigin: 'center center'

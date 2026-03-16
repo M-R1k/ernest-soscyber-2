@@ -2479,7 +2479,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           : "Nouvelle discussion";
         
         return (
-          <div className="sticky top-0 z-20 w-full h-[100px] border-b border-gray-200 bg-[#3B82F6]">
+          <div className="sticky top-0 z-20 w-full h-[60px] bg-[#3B82F6]">
             <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
               {/* Bouton retour */}
               <button

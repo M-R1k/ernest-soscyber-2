@@ -163,3 +163,273 @@ html, body {
     height: 100dvh;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Tenant theming: Klésia                                                     */
+/* -------------------------------------------------------------------------- */
+.tenant-demo {
+  --demo-blue-primary: #3b82f6;
+  --demo-blue-700: #1d4ed8;
+  --demo-blue-500: #60a5fa;
+  --demo-blue-300: #93c5fd;
+  --demo-blue-100: #eff6ff;
+  --demo-text-on-primary: #ffffff;
+}
+
+.tenant-demo .bg-blue-700 { background-color: var(--demo-blue-700) !important; }
+.tenant-demo .bg-blue-600 { background-color: var(--demo-blue-primary) !important; }
+.tenant-demo .bg-blue-500 { background-color: var(--demo-blue-500) !important; }
+.tenant-demo .bg-blue-400 { background-color: var(--demo-blue-500) !important; }
+.tenant-demo .bg-blue-300 { background-color: var(--demo-blue-300) !important; }
+.tenant-demo .bg-blue-200 { background-color: color-mix(in srgb, var(--demo-blue-primary) 22%, white) !important; }
+.tenant-demo .bg-blue-100 { background-color: color-mix(in srgb, var(--demo-blue-primary) 14%, white) !important; }
+.tenant-demo .bg-blue-50 { background-color: var(--demo-blue-100) !important; }
+
+.tenant-demo .text-blue-900 { color: #1e3a8a !important; }
+.tenant-demo .text-blue-800 { color: #1e40af !important; }
+.tenant-demo .text-blue-700 { color: #1d4ed8 !important; }
+.tenant-demo .text-blue-600 { color: var(--demo-blue-primary) !important; }
+.tenant-demo .text-blue-500 { color: var(--demo-blue-500) !important; }
+.tenant-demo .text-blue-400 { color: var(--demo-blue-500) !important; }
+
+.tenant-demo .border-blue-500 { border-color: var(--demo-blue-primary) !important; }
+.tenant-demo .border-blue-300 { border-color: #93c5fd !important; }
+.tenant-demo .border-blue-200 { border-color: #bfdbfe !important; }
+.tenant-demo .border-blue-100 { border-color: #dbeafe !important; }
+
+.tenant-demo .ring-blue-500 { --tw-ring-color: var(--demo-blue-primary) !important; }
+.tenant-demo .ring-blue-400 { --tw-ring-color: var(--demo-blue-500) !important; }
+.tenant-demo .ring-blue-300 { --tw-ring-color: var(--demo-blue-300) !important; }
+
+.tenant-demo .from-blue-500 { --tw-gradient-from: var(--demo-blue-500) var(--tw-gradient-from-position) !important; }
+.tenant-demo .to-blue-600 { --tw-gradient-to: var(--demo-blue-primary) var(--tw-gradient-to-position) !important; }
+
+.tenant-demo .bg-blue-700,
+.tenant-demo .bg-blue-600,
+.tenant-demo .bg-blue-500 {
+  color: var(--demo-text-on-primary);
+}
+
+.tenant-demo .klesia-stickybar {
+  background: #ffffff;
+  border-top-color: #bfdbfe !important;
+}
+
+.tenant-demo .klesia-contact-cta {
+  background-color: var(--demo-blue-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 14px -8px rgba(59, 130, 246, 0.55);
+}
+.tenant-demo .klesia-contact-cta:hover {
+  background-color: var(--demo-blue-700) !important;
+}
+
+.tenant-demo .klesia-composer-shell {
+  border-color: #bfdbfe !important;
+  box-shadow: 0 6px 24px -18px rgba(59, 130, 246, 0.55);
+}
+
+.tenant-demo .klesia-send-button {
+  background-color: var(--demo-blue-primary) !important;
+}
+.tenant-demo .klesia-send-button:hover {
+  background-color: var(--demo-blue-700) !important;
+}
+
+.tenant-demo .klesia-user-bubble {
+  background: linear-gradient(180deg, #eff6ff 0%, #ffffff 100%) !important;
+  border-color: #dbeafe !important;
+  box-shadow: inset 4px 0 0 0 #93c5fd;
+}
+
+.tenant-demo .klesia-voice-overlay-header {
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 70%, #60a5fa 100%);
+  border-bottom-color: #bfdbfe !important;
+}
+.tenant-demo .klesia-voice-overlay-header,
+.tenant-demo .klesia-voice-overlay-header * {
+  color: #ffffff !important;
+}
+
+.tenant-demo .klesia-voice-send-transcription {
+  background-color: var(--demo-blue-primary) !important;
+  color: #ffffff !important;
+}
+.tenant-demo .klesia-voice-send-transcription:hover {
+  background-color: var(--demo-blue-700) !important;
+}
+
+.tenant-demo .klesia-welcome-bubble {
+  background-color: #eff6ff !important;
+  border-color: #bfdbfe !important;
+}
+.tenant-demo .klesia-welcome-bubble::before {
+  border-bottom-color: #bfdbfe !important;
+  border-right-color: #bfdbfe !important;
+}
+.tenant-demo .klesia-welcome-bubble::after {
+  border-bottom-color: #eff6ff !important;
+  border-right-color: #eff6ff !important;
+}
+
+.tenant-demo .klesia-choice-button {
+  border-color: #bfdbfe !important;
+}
+.tenant-demo .klesia-choice-button:hover {
+  background-color: #eff6ff !important;
+  border-color: var(--demo-blue-primary) !important;
+}
+.tenant-demo .klesia-choice-button:focus-visible {
+  --tw-ring-color: var(--demo-blue-primary) !important;
+}
+
+.tenant-klesia {
+  --klesia-blue-primary: #213067;
+  --klesia-blue-secondary: #798ac8;
+  --klesia-blue-700: #1a2551;
+  --klesia-blue-500: #4f62a8;
+  --klesia-blue-300: #a8b4df;
+  --klesia-blue-100: #e9edfb;
+  --klesia-orange: #d57a36;
+  --klesia-orange-700: #b86428;
+  --klesia-orange-100: #fdf0e6;
+  --klesia-text-on-primary: #ffffff;
+}
+
+/* Primary blues mapped to Kl?sia brand blue */
+.tenant-klesia .bg-blue-700 { background-color: var(--klesia-blue-700) !important; }
+.tenant-klesia .bg-blue-600 { background-color: var(--klesia-blue-primary) !important; }
+.tenant-klesia .bg-blue-500 { background-color: var(--klesia-blue-500) !important; }
+.tenant-klesia .bg-blue-400 { background-color: var(--klesia-blue-secondary) !important; }
+.tenant-klesia .bg-blue-300 { background-color: var(--klesia-blue-300) !important; }
+.tenant-klesia .bg-blue-200 { background-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important; }
+.tenant-klesia .bg-blue-100 { background-color: color-mix(in srgb, var(--klesia-blue-secondary) 22%, white) !important; }
+.tenant-klesia .bg-blue-50 { background-color: var(--klesia-blue-100) !important; }
+
+.tenant-klesia .text-blue-900 { color: var(--klesia-blue-primary) !important; }
+.tenant-klesia .text-blue-800 { color: color-mix(in srgb, var(--klesia-blue-primary) 85%, black) !important; }
+.tenant-klesia .text-blue-700 { color: color-mix(in srgb, var(--klesia-blue-primary) 78%, black) !important; }
+.tenant-klesia .text-blue-600 { color: var(--klesia-blue-secondary) !important; }
+.tenant-klesia .text-blue-500 { color: var(--klesia-blue-500) !important; }
+.tenant-klesia .text-blue-400 { color: var(--klesia-blue-secondary) !important; }
+
+.tenant-klesia .border-blue-500 { border-color: var(--klesia-blue-500) !important; }
+.tenant-klesia .border-blue-300 { border-color: color-mix(in srgb, var(--klesia-blue-secondary) 50%, white) !important; }
+.tenant-klesia .border-blue-200 { border-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important; }
+.tenant-klesia .border-blue-100 { border-color: color-mix(in srgb, var(--klesia-blue-secondary) 25%, white) !important; }
+
+.tenant-klesia .ring-blue-500 { --tw-ring-color: var(--klesia-blue-primary) !important; }
+.tenant-klesia .ring-blue-400 { --tw-ring-color: var(--klesia-blue-500) !important; }
+.tenant-klesia .ring-blue-300 { --tw-ring-color: var(--klesia-blue-300) !important; }
+
+/* Gradient utilities used in avatars/buttons */
+.tenant-klesia .from-blue-500 { --tw-gradient-from: var(--klesia-blue-500) var(--tw-gradient-from-position) !important; }
+.tenant-klesia .to-blue-600 { --tw-gradient-to: var(--klesia-blue-primary) var(--tw-gradient-to-position) !important; }
+
+/* Keep good contrast for text on blue backgrounds */
+.tenant-klesia .bg-blue-700,
+.tenant-klesia .bg-blue-600,
+.tenant-klesia .bg-blue-500 {
+  color: var(--klesia-text-on-primary);
+}
+
+/* Orange accent for secondary/action highlights */
+.tenant-klesia .bg-amber-50 { background-color: var(--klesia-orange-100) !important; }
+.tenant-klesia .border-amber-200 { border-color: color-mix(in srgb, var(--klesia-orange) 35%, white) !important; }
+.tenant-klesia .text-amber-900 { color: color-mix(in srgb, var(--klesia-orange) 60%, black) !important; }
+.tenant-klesia .bg-yellow-100 { background-color: var(--klesia-orange-100) !important; }
+.tenant-klesia .text-yellow-800 { color: color-mix(in srgb, var(--klesia-orange) 72%, black) !important; }
+.tenant-klesia .bg-amber-100 { background-color: var(--klesia-orange-100) !important; }
+.tenant-klesia .text-amber-800 { color: color-mix(in srgb, var(--klesia-orange) 74%, black) !important; }
+.tenant-klesia .hover\:bg-amber-100:hover { background-color: color-mix(in srgb, var(--klesia-orange) 18%, white) !important; }
+.tenant-klesia .hover\:bg-amber-200:hover { background-color: color-mix(in srgb, var(--klesia-orange) 28%, white) !important; }
+
+/* Subtle orange CTA for "version" accents and selectable states */
+.tenant-klesia .text-\[\#D57A36\] { color: var(--klesia-orange) !important; }
+
+/* Pixel-perfect touches on key widget elements */
+.tenant-klesia .klesia-stickybar {
+  background: #ffffff;
+  border-top-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important;
+}
+
+.tenant-klesia .klesia-contact-cta {
+  background-color: var(--klesia-orange) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 14px -8px color-mix(in srgb, var(--klesia-orange) 60%, black);
+}
+.tenant-klesia .klesia-contact-cta:hover {
+  background-color: var(--klesia-orange-700) !important;
+}
+
+.tenant-klesia .klesia-composer-shell {
+  border-color: color-mix(in srgb, var(--klesia-blue-secondary) 38%, white) !important;
+  box-shadow: 0 6px 24px -18px color-mix(in srgb, var(--klesia-blue-primary) 55%, black);
+}
+
+.tenant-klesia .klesia-send-button {
+  background-color: var(--klesia-blue-primary) !important;
+}
+.tenant-klesia .klesia-send-button:hover {
+  background-color: var(--klesia-blue-700) !important;
+}
+
+.tenant-klesia .klesia-user-bubble {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--klesia-blue-secondary) 14%, white) 0%,
+    #ffffff 100%
+  ) !important;
+  border-color: color-mix(in srgb, var(--klesia-blue-secondary) 34%, white) !important;
+  box-shadow: inset 4px 0 0 0 color-mix(in srgb, var(--klesia-orange) 75%, white);
+}
+
+.tenant-klesia .klesia-voice-overlay-header {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--klesia-blue-primary) 95%, black) 0%,
+    var(--klesia-blue-primary) 62%,
+    color-mix(in srgb, var(--klesia-blue-secondary) 72%, var(--klesia-blue-primary)) 100%
+  );
+  border-bottom-color: color-mix(in srgb, var(--klesia-blue-secondary) 30%, white) !important;
+}
+.tenant-klesia .klesia-voice-overlay-header,
+.tenant-klesia .klesia-voice-overlay-header * {
+  color: #ffffff !important;
+}
+
+.tenant-klesia .klesia-voice-send-transcription {
+  background-color: var(--klesia-orange) !important;
+  color: #ffffff !important;
+}
+.tenant-klesia .klesia-voice-send-transcription:hover {
+  background-color: var(--klesia-orange-700) !important;
+}
+
+.tenant-klesia .klesia-welcome-bubble {
+  background-color: color-mix(in srgb, var(--klesia-blue-secondary) 14%, white) !important;
+  border-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important;
+}
+
+.tenant-klesia .klesia-welcome-bubble::before {
+  border-bottom-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important;
+  border-right-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important;
+}
+
+.tenant-klesia .klesia-welcome-bubble::after {
+  border-bottom-color: color-mix(in srgb, var(--klesia-blue-secondary) 14%, white) !important;
+  border-right-color: color-mix(in srgb, var(--klesia-blue-secondary) 14%, white) !important;
+}
+
+.tenant-klesia .klesia-choice-button {
+  border-color: color-mix(in srgb, var(--klesia-blue-secondary) 30%, white) !important;
+}
+
+.tenant-klesia .klesia-choice-button:hover {
+  background-color: color-mix(in srgb, var(--klesia-blue-secondary) 10%, white) !important;
+  border-color: var(--klesia-orange) !important;
+}
+
+.tenant-klesia .klesia-choice-button:focus-visible {
+  --tw-ring-color: var(--klesia-orange) !important;
+}

@@ -255,7 +255,7 @@ function VoiceModeOverlay({
         >
           {/* En-tête compact */}
           <motion.div
-            className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200"
+            className="klesia-voice-overlay-header flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-200"
             variants={contentVariants}
             initial="hidden"
             animate="visible"
@@ -406,7 +406,7 @@ function VoiceModeOverlay({
                   <button
                     type="button"
                     onClick={onSendTranscription}
-                    className="w-full rounded-xl bg-blue-600 px-6 py-3 md:py-4 text-white text-[16px] md:text-[18px] font-semibold shadow-md hover:bg-blue-700 transition-all duration-[120ms] ease-in-out focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
+                    className="klesia-voice-send-transcription w-full rounded-xl bg-blue-600 px-6 py-3 md:py-4 text-white text-[16px] md:text-[18px] font-semibold shadow-md hover:bg-blue-700 transition-all duration-[120ms] ease-in-out focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300"
                     aria-label="Envoyer la transcription"
                   >
                     Envoyer
@@ -822,7 +822,7 @@ function Bubble({
     <div
       className={`max-w-[90%] sm:max-w-[85%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[900px] whitespace-pre-wrap rounded-2xl px-4 md:px-5 py-3 md:py-4 ${
         isUser
-          ? "bg-blue-50 text-gray-900 border border-blue-100"
+          ? "klesia-user-bubble bg-blue-50 text-gray-900 border border-blue-100"
           : "bg-gray-50 text-gray-900 border border-gray-200"
       }`}
       aria-live={isUser ? undefined : "polite"}
@@ -966,12 +966,12 @@ function TypewriterWelcome({ className }: { className?: string }) {
     ) : len <= WELCOME_ERNEST_END ? (
       <>
         {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
-        <span className="font-semibold text-[#3B82F6]">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, len)}</span>
+        <span className="font-semibold text-blue-600">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, len)}</span>
       </>
     ) : (
       <>
         {WELCOME_FULL_TEXT.slice(0, WELCOME_ERNEST_START)}
-        <span className="font-semibold text-[#3B82F6]">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, WELCOME_ERNEST_END)}</span>
+        <span className="font-semibold text-blue-600">{WELCOME_FULL_TEXT.slice(WELCOME_ERNEST_START, WELCOME_ERNEST_END)}</span>
         {renderAfterErnest()}
       </>
     );
@@ -1014,14 +1014,14 @@ function ChoiceGroup({ step, choices, onSelect }: { step: number; choices: Choic
 
 function TopBar({ onBack, onMenu, onReset }: { onBack: () => void; onMenu: () => void; onReset: () => void }) {
   return (
-    <header className="relative flex items-center justify-between px-3 md:px-6 bg-[#3B82F6]">
+    <header className="relative flex items-center justify-between px-3 md:px-6 bg-blue-600">
     </header>
   );
 }
 
 function StickyBar({ onBack, onHome, onContact, onReminder }: { onBack: () => void; onHome: () => void; onContact: () => void; onReminder: () => void }) {
   return (
-    <div className="sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white px-4 md:px-6 py-3 md:py-4">
+    <div className="klesia-stickybar sticky bottom-0 z-10 w-full border-t border-gray-200 bg-white px-4 md:px-6 py-3 md:py-4">
       <div className="mx-auto flex max-w-screen-lg items-center justify-between gap-2 md:gap-3">
         <div className="flex items-center gap-2 md:gap-3">
           <button type="button" onClick={onBack} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-gray-50 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-gray-700 border border-gray-200 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
@@ -1034,7 +1034,7 @@ function StickyBar({ onBack, onHome, onContact, onReminder }: { onBack: () => vo
           </button>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
-          <a href="tel:3018" onClick={onContact} className="flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-blue-600 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+          <a href="tel:3018" onClick={onContact} className="klesia-contact-cta flex items-center gap-2 min-h-[44px] md:min-h-[48px] rounded-xl bg-blue-600 px-4 md:px-5 py-2.5 md:py-3 text-[15px] md:text-[16px] font-medium text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
             <PhoneIcon className="h-4 w-4" />
             <span>Contact</span>
           </a>
@@ -1237,7 +1237,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="mx-auto flex w-full max-w-screen-lg items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
+      <div className="klesia-composer-shell mx-auto flex w-full max-w-screen-lg items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -1270,7 +1270,7 @@ function Composer({
           type="button"
           onClick={onSend}
           disabled={!value.trim() && attachedFiles.length === 0}
-          className="grid h-9 w-9 md:h-10 md:w-10 flex-shrink-0 place-items-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="klesia-send-button grid h-9 w-9 md:h-10 md:w-10 flex-shrink-0 place-items-center rounded-xl bg-blue-600 text-white transition hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label="Envoyer"
         >
           <svg className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
@@ -2479,7 +2479,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           : "Nouvelle discussion";
         
         return (
-          <div className="sticky top-0 z-20 w-full h-[60px] bg-[#3B82F6]">
+          <div className="sticky top-0 z-20 w-full h-[60px] bg-blue-600">
             <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
               {/* Bouton retour */}
               <button
@@ -2574,7 +2574,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   <img 
                     src={ernestImage} 
                     alt="Ernest, votre compagnon en cybersécurité" 
-                    className="h-[22vh] max-h-[180px] min-h-[120px] w-full max-w-[80%] object-contain"
+                    className="h-[28vh] max-h-[230px] min-h-[150px] w-full max-w-[88%] object-contain"
                   />
                 </div>
                 {/* Bulle de dialogue centrée en dessous - design épuré */}
@@ -2602,14 +2602,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                     disabled={loading}
                     aria-label="Demander de l'aide concernant un SMS suspect"
-                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    className="klesia-choice-button w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
                       animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S}s backwards`,
                       transformOrigin: 'center center'
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
+                      <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-600" />
                       <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                     </span>
                   </button>
@@ -2626,14 +2626,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                     disabled={loading}
                     aria-label="Vérifier la sécurité d'un lien"
-                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    className="klesia-choice-button w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
                       animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 0.6}s backwards`,
                       transformOrigin: 'center center'
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
+                      <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-600" />
                       <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                     </span>
                   </button>
@@ -2650,14 +2650,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                     }}
                     disabled={loading}
                     aria-label="Signaler un appel suspect"
-                    className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    className="klesia-choice-button w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[14px] md:text-[17px] leading-[1.6] min-h-[60px] md:min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                     style={{
                       animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 1.2}s backwards`,
                       transformOrigin: 'center center'
                     }}
                   >
                     <span className="inline-flex items-start gap-3">
-                      <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
+                      <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-600" />
                       <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                     </span>
                   </button>
@@ -2667,11 +2667,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               {/* Layout desktop : horizontal avec image à gauche et bulle à droite */}
               <div className="hidden md:flex relative items-center min-h-[45vh]">
                 {/* Image d'Ernest positionnée à ~25% de la gauche */}
-                <div className="absolute left-[25%] -translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
+                <div className="absolute left-[25%] -translate-x-1/2 top-[38%] -translate-y-1/2 z-10">
                   <img 
                     src={ernestImage} 
                     alt="Ernest" 
-                    className="h-[40vh] max-h-[320px] w-auto object-contain"
+                    className="h-[60vh] max-h-[440px] w-auto object-contain"
                   />
                 </div>
                 {/* Conteneur pour bulle et boutons centrés verticalement */}
@@ -2701,14 +2701,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                       disabled={loading}
                       aria-label="Demander de l'aide concernant un SMS suspect"
-                      className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      className="klesia-choice-button w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                       style={{
                         animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S}s backwards`,
                         transformOrigin: 'center center'
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
+                        <Lock className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-600" />
                         <span className="flex-1">Comment je sécurise mes comptes en ligne ?</span>
                       </span>
                     </button>
@@ -2725,14 +2725,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                       disabled={loading}
                       aria-label="Vérifier la sécurité d'un lien"
-                      className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      className="klesia-choice-button w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                       style={{
                         animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 0.6}s backwards`,
                         transformOrigin: 'center center'
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
+                        <Package className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-600" />
                         <span className="flex-1">Un courrier me précise de payer pour recevoir une livraison de colis manquée</span>
                       </span>
                     </button>
@@ -2749,14 +2749,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       }}
                       disabled={loading}
                       aria-label="Signaler un appel suspect"
-                      className="w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      className="klesia-choice-button w-full text-left rounded-2xl bg-white text-gray-900 border border-gray-200 px-4 md:px-5 py-3 md:py-4 text-[17px] leading-relaxed min-h-[68px] transition hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
                       style={{
                         animation: `bubbleAppear 0.6s ease-out ${WELCOME_TYPEWRITER_DURATION_S + 1.2}s backwards`,
                         transformOrigin: 'center center'
                       }}
                     >
                       <span className="inline-flex items-start gap-3">
-                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-[#3B82F6]" />
+                        <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0 mt-0.5 text-blue-600" />
                         <span className="flex-1">Qu'est-ce que la double authentification ?</span>
                       </span>
                     </button>

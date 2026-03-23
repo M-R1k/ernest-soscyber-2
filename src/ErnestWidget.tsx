@@ -2373,7 +2373,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="ernest-widget-short-viewport flex h-screen md:h-[calc(100dvh-56px)] w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="ernest-widget-short-viewport flex h-full w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}

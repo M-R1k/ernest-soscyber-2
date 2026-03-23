@@ -1219,7 +1219,7 @@ function Composer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex-shrink-0 w-full px-3 md:px-6 py-2.5 md:py-4">
+    <div className="flex-shrink-0 w-full px-3 md:px-6 py-2.5 md:py-2">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
         <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
@@ -2373,7 +2373,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
   }
 
   return (
-    <section ref={containerRef} className="ernest-widget-short-viewport flex h-screen w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
+    <section ref={containerRef} className="ernest-widget-short-viewport flex h-screen md:h-[calc(100dvh-56px)] w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
         onBack={handleBack}
         onMenu={() => { /* menu plus tard */ }}
@@ -2479,7 +2479,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           : "Nouvelle discussion";
         
         return (
-          <div className="sticky top-0 z-20 w-full h-[60px] bg-blue-600">
+          <div className="sticky top-0 z-20 w-full h-[60px] md:h-[48px] bg-blue-600">
             <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
               {/* Bouton retour */}
               <button
@@ -2500,14 +2500,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_back" });
                 }}
-                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                 aria-label="Retour"
               >
-                <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
+                <ArrowLeft className="h-5 w-5 md:h-5 md:w-5" />
               </button>
 
               {/* Titre dynamique */}
-              <h1 className="flex-1 text-center text-[15px] md:text-[18px] font-medium text-white truncate px-2">
+              <h1 className="flex-1 text-center text-[15px] md:text-[16px] font-medium text-white truncate px-2">
                 {conversationTitle}
               </h1>
 
@@ -2530,10 +2530,10 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_refresh" });
                 }}
-                className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-full bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-white text-gray-700 hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                 aria-label="Nouvelle discussion"
               >
-                <RotateCw className="h-5 w-5 md:h-6 md:w-6" />
+                <RotateCw className="h-5 w-5 md:h-5 md:w-5" />
               </button>
             </div>
           </div>
@@ -2541,7 +2541,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       })()}
 
       {/* Conversation area - toujours visible */}
-      <div ref={scrollAreaRef} className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-3 overflow-y-auto min-h-0 pb-8 md:pb-4">
+      <div ref={scrollAreaRef} className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-2 overflow-y-auto min-h-0 pb-8 md:pb-3">
           {/* Safety banner */}
           {showBannerUrl && (
             <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 border border-amber-200">

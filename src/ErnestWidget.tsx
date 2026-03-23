@@ -1219,7 +1219,7 @@ function Composer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex-shrink-0 w-full px-3 md:px-6 py-2.5 md:py-2">
+    <div className="sticky bottom-0 z-20 flex-shrink-0 w-full bg-white/95 px-3 md:px-6 pt-1.5 pb-0 md:pt-1 md:pb-0 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
         <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
@@ -2541,7 +2541,12 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       })()}
 
       {/* Conversation area - toujours visible */}
-      <div ref={scrollAreaRef} className="flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-2 overflow-y-auto min-h-0 pb-8 md:pb-3">
+      <div
+        ref={scrollAreaRef}
+        className={`flex flex-1 flex-col gap-3 md:gap-5 py-4 md:py-2 overflow-y-auto min-h-0 ${
+          conversation.length === 0 ? "pb-3 md:pb-3" : "pb-28 md:pb-24"
+        }`}
+      >
           {/* Safety banner */}
           {showBannerUrl && (
             <div className="mx-auto w-full max-w-screen-sm md:max-w-screen-md rounded-xl bg-amber-50 p-4 md:p-5 text-amber-900 border border-amber-200">

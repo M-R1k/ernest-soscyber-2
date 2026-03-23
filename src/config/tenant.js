@@ -3,7 +3,7 @@ const TENANT_CONFIGS = {
     id: 'demo',
     label: 'Demo',
     appShellClassName: 'bg-blue-50 text-blue-900 dark:bg-[#0f172a] dark:text-blue-100',
-    cardClassName: 'rounded-2xl bg-white shadow-lg ring-2 ring-blue-200/70 dark:bg-gray-950 dark:ring-blue-500/30',
+    cardClassName: 'rounded-none bg-white shadow-lg ring-2 ring-blue-200/70 dark:bg-gray-950 dark:ring-blue-500/30',
     badgeClassName: 'text-blue-600 dark:text-blue-300',
     webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/test/dev-soscyber',
   },
@@ -12,7 +12,7 @@ const TENANT_CONFIGS = {
     label: 'Klesia',
     appShellClassName: 'bg-[#798AC8]/10 text-[#213067] dark:bg-[#213067] dark:text-[#EAF2FF]',
     cardClassName:
-      'rounded-2xl bg-white shadow-lg ring-2 ring-[#798AC8]/45 dark:bg-[#2A3D80] dark:ring-[#D57A36]/40',
+      'rounded-none bg-white shadow-lg ring-2 ring-[#798AC8]/45 dark:bg-[#2A3D80] dark:ring-[#D57A36]/40',
     badgeClassName: 'text-[#D57A36] dark:text-[#FFD2AE]',
     webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/test/dev-soscyber',
   },

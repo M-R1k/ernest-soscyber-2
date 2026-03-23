@@ -1219,7 +1219,7 @@ function Composer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="sticky bottom-0 z-20 flex-shrink-0 w-full bg-white/95 px-3 md:px-6 pt-1.5 pb-0 md:pt-1 md:pb-0 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+    <div className="sticky bottom-0 z-20 mb-2 md:mb-2 flex-shrink-0 w-full bg-white/95 px-3 md:px-6 pt-1.5 pb-0 md:pt-1 md:pb-0 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       {/* Affichage des fichiers joints */}
       {attachedFiles.length > 0 && (
         <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">

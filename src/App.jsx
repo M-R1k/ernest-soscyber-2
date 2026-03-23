@@ -16,11 +16,6 @@ export default function App() {
 
       <main id="contenu" className="flex h-full w-full flex-col">
         <div className={tenantConfig.cardClassName}>
-          <div
-            className={`flex justify-end px-3 pt-3 text-xs font-semibold uppercase tracking-wide ${tenantConfig.badgeClassName}`}
-          >
-            Version: {tenantConfig.label}
-          </div>
           {/* <ErnestWidget webhookUrl="https://clic-et-moi.app.n8n.cloud/webhook-test/dev-soscyber" /> */}
           {/* <ErnestWidget webhookUrl={tenantConfig.webhookUrl} /> */}
           <ErnestWidget webhookUrl="https://clic-et-moi.app.n8n.cloud/webhook/dev-soscyber" />

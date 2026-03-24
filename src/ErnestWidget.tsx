@@ -2670,7 +2670,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               </div>
 
               {/* Layout desktop : horizontal avec image à gauche et bulle à droite */}
-              <div className="hidden md:flex relative items-center min-h-[45vh]">
+              <div className="hidden md:flex relative items-center min-h-[30vh] lg:min-h-[34vh]">
                 {/* Image d'Ernest positionnée à ~25% de la gauche */}
                 <div className="absolute left-[25%] -translate-x-1/2 top-[38%] -translate-y-1/2 z-10">
                   <img 

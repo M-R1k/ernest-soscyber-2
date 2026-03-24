@@ -1237,7 +1237,7 @@ function Composer({
       )}
 
       {/* Zone de saisie et boutons */}
-      <div className="klesia-composer-shell mx-auto flex w-full max-w-screen-lg items-center gap-3 md:gap-4 rounded-2xl border border-gray-200 bg-white px-4 md:px-5 py-3 md:py-4 shadow-sm">
+      <div className="klesia-composer-shell mx-auto flex w-full max-w-screen-sm lg:max-w-[820px] xl:max-w-[900px] items-center gap-3 md:gap-3 rounded-2xl border border-gray-200 bg-white px-4 md:px-4 py-3 md:py-2.5 shadow-sm">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}

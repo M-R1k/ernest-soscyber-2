@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import { Lock, Package, ShieldCheck, Phone, ArrowLeft, RotateCw } from "lucide-react";
 import logoErnest from './assets/logo-ernest.png';
 import logoSosCyber from './assets/logo_soscyber.png';
-import ernestAvatar from './assets/ernest_avatar.png';
+import ernestAvatar from './assets/2.png';
 import ernestImage from './assets/ernest_image.png';
 import userProfilePic from './assets/profile_pic_user_ernest.png';
 import ErnestThinkingIndicator from "./components/ErnestThinkingIndicator";
@@ -790,11 +790,11 @@ function UserAvatar({
 // Composant Avatar pour le chatbot (Ernest)
 function BotAvatar() {
   return (
-    <div className="flex-shrink-0 w-7 h-7 md:w-8 md:h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center relative overflow-hidden">
+    <div className="flex-shrink-0 w-8 h-8 md:w-11 md:h-11 rounded-full bg-blue-600 border border-blue-300 shadow-sm flex items-center justify-center relative overflow-hidden">
       <img 
         src={ernestAvatar}
         alt="Ernest"
-        className="w-full h-full object-cover"
+        className="w-[100%] h-[100%] rounded-full object-cover"
         aria-label="Ernest"
       />
     </div>
@@ -977,7 +977,7 @@ function TypewriterWelcome({ className }: { className?: string }) {
     );
 
   return (
-    <p className={className}>
+    <p className={`m-0 ${className || ""}`.trim()}>
       {len === 0 ? "\u00A0" : content}
       {!isComplete && len > 0 && (
         <span className="inline-block w-0.5 h-[1em] bg-blue-500 align-baseline animate-pulse" style={{ marginLeft: "2px" }} aria-hidden />
@@ -2683,7 +2683,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 <div className="ml-[42%] flex flex-col gap-5 max-w-[52%]">
                   {/* Bulle de dialogue avec queue pointant vers l'image */}
                   <div 
-                    className="relative w-[440px] max-w-full h-[116px] lg:h-[124px] overflow-hidden bg-gray-50 text-gray-900 rounded-2xl px-5 py-4 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
+                    className="relative w-[440px] max-w-full min-h-[96px] lg:min-h-[104px] bg-gray-50 text-gray-900 rounded-2xl px-5 py-3 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
                     style={{
                       animation: 'bubbleAppear 0.8s ease-out',
                       transformOrigin: 'left center'

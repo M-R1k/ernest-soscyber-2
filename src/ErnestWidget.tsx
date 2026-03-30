@@ -2669,27 +2669,27 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 </div>
               </div>
 
-              {/* Layout desktop : horizontal avec image à gauche et bulle à droite */}
-              <div className="hidden md:flex relative items-center min-h-[30vh] lg:min-h-[34vh]">
+              {/* Layout desktop : horizontal avec image à gauche et bulle à droite (positions fixes) */}
+              <div className="hidden md:flex relative items-center h-[430px] lg:h-[460px] overflow-hidden">
                 {/* Image d'Ernest positionnée à ~25% de la gauche */}
-                <div className="absolute left-[25%] -translate-x-1/2 top-[38%] -translate-y-1/2 z-10">
+                <div className="absolute left-[26%] -translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
                   <img 
                     src={ernestImage} 
                     alt="Ernest" 
-                    className="h-[60vh] max-h-[440px] w-auto object-contain"
+                    className="h-[300px] lg:h-[340px] w-auto object-contain"
                   />
                 </div>
                 {/* Conteneur pour bulle et boutons centrés verticalement */}
-                <div className="ml-[40%] flex flex-col gap-6 max-w-[55%]">
+                <div className="ml-[42%] flex flex-col gap-5 max-w-[52%]">
                   {/* Bulle de dialogue avec queue pointant vers l'image */}
                   <div 
-                    className="relative bg-gray-50 text-gray-900 rounded-2xl px-5 py-4 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
+                    className="relative w-[440px] max-w-full h-[116px] lg:h-[124px] overflow-hidden bg-gray-50 text-gray-900 rounded-2xl px-5 py-4 border border-gray-200 before:content-[''] before:absolute before:-left-[13px] before:bottom-[15px] before:w-0 before:h-0 before:border-t-[13px] before:border-t-transparent before:border-b-[13px] before:border-b-transparent before:border-r-[13px] before:border-r-gray-200 after:content-[''] after:absolute after:-left-[12px] after:bottom-[16px] after:w-0 after:h-0 after:border-t-[12px] after:border-t-transparent after:border-b-[12px] after:border-b-transparent after:border-r-[12px] after:border-r-gray-50" 
                     style={{
                       animation: 'bubbleAppear 0.8s ease-out',
                       transformOrigin: 'left center'
                     }}
                   >
-                    <TypewriterWelcome className="text-[17px] leading-relaxed" />
+                    <TypewriterWelcome className="text-[16px] leading-[1.45] break-words" />
                   </div>
                   
                   {/* Boutons de questions pré-définies - Desktop */}

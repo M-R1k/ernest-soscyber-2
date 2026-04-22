@@ -2479,7 +2479,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           : "Nouvelle discussion";
         
         return (
-          <div className="sticky top-0 z-20 w-full h-[60px] md:h-[48px] bg-[#F8FAFC] border-b border-[#213067]">
+          <div className="sticky top-0 z-20 w-full h-[60px] md:h-[48px] bg-[#213067] text-[#F8FAFC] border-b border-[#213067]">
             <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
               {/* Bouton retour */}
               <button
@@ -2500,14 +2500,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_back" });
                 }}
-                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-[#213067] text-[#F8FAFC] hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-[#F8FAFC] text-[#213067] hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                 aria-label="Retour"
               >
                 <ArrowLeft className="h-5 w-5 md:h-5 md:w-5" />
               </button>
 
               {/* Titre dynamique */}
-              <h1 className="flex-1 text-center text-[15px] md:text-[16px] font-medium text-[#213067] truncate px-2">
+              <h1 className="flex-1 text-center text-[15px] md:text-[16px] font-medium text-[#F8FAFC] truncate px-2">
                 {conversationTitle}
               </h1>
 
@@ -2530,7 +2530,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_refresh" });
                 }}
-                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-[#213067] text-[#F8FAFC] hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-[#F8FAFC] text-[#213067] hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                 aria-label="Nouvelle discussion"
               >
                 <RotateCw className="h-5 w-5 md:h-5 md:w-5" />

@@ -1,0 +1,2417 @@
+{
+  "name": "(TEST) SOS Cyber",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c4c09480-bab9-44c7-926f-ac15988af344",
+              "name": "chatInput",
+              "value": "={{ $json.body.chatInput || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "cb167f36-208a-4826-8785-93e8f643df11",
+              "name": "chatFiles",
+              "value": "={{ 'J’ai reçu une pièce jointe :\\n' +\n   '• Nom : ' + ($binary.data.fileName || 'fichier') + '\\n' +\n   '• Type : ' + ($binary.data.mimeType || 'inconnu') + '\\n' +\n   '• Taille : ' + (($binary.data.fileSize || '?') + ' octets') + '\\n\\n' +\n   'Dis-moi ce que tu veux que j’en fasse (analyse, vérification de sécurité, etc.).'\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3408,
+        400
+      ],
+      "id": "de6845a5-f1d3-4141-9e3e-da2852af2b6f",
+      "name": "Set text"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-dev-soscyber",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "binaryPropertyName": "=files"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4432,
+        400
+      ],
+      "id": "82033c81-87fb-4a4f-b7d7-e2e89c422c7e",
+      "name": "Webhook",
+      "webhookId": "f4092449-46ed-412c-b0d4-af4cd736edd5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bae3cb34-9006-4123-9757-bd156e398acc",
+              "name": "session_id",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4048,
+        400
+      ],
+      "id": "7233e06b-676f-4e0a-8650-5b543c447242",
+      "name": "Set sessionId"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bae3cb34-9006-4123-9757-bd156e398acc",
+              "name": "session_id",
+              "value": "={{ $('Set sessionId').item.json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "c1b2411c-dd56-49c7-bd9a-19a3639138e9",
+              "name": "transcript",
+              "value": "={{ $json.chatInput || $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "b409381a-0c74-4ef8-bfcc-902a3fcec79d",
+              "name": "chatFiles",
+              "value": "={{ $json.chatFiles }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2992,
+        400
+      ],
+      "id": "a48f9d47-e04d-4fd2-bd52-2e09d6959c4a",
+      "name": "Set chatInput & sessionId"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Set chatInput & sessionId').item.json.session_id }}",
+        "contextWindowLength": 8
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        496
+      ],
+      "id": "e1ff0986-b74e-4b98-9ded-ed50884992a4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  transcript: $('Set chatInput & sessionId').item.json.transcript,\n  answer: $json.output ?? $json.response ?? $json.text ?? $json.answer ?? \"\",\n  sessionId: $('Set chatInput & sessionId').item.json.session_id\n} }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        736,
+        320
+      ],
+      "id": "e1cef021-8d7a-4d70-9cc1-4de6666661c2",
+      "name": "Respond to Webhook",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mode: Run Once For All Items\n// Normalise les fichiers: files, files0, files1... -> binary.data\n// et conserve le JSON (dont sessionId)\n\nconst src = items[0] || { json: {}, binary: {} };\nconst bin = src.binary || {};\nconst baseJson = src.json || {};\n\nconst out = [];\n\nfor (const [k, v] of Object.entries(bin)) {\n  // ne garder que les clés \"files\", \"files0\", \"files1\", ...\n  if (/^files(\\d+)?$/.test(k)) {\n    out.push({\n      json: { ...baseJson, fileKey: k },\n      binary: { data: v }, // <- clé stable pour la suite\n    });\n  }\n}\n\n// Si rien trouvé, tu peux retourner [] (pas d'items) ou l'item d'origine.\n// Comme tu es sur la branche \"has files ? = true\", en principe out.length > 0.\nreturn out.length ? out : [];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3296,
+        -352
+      ],
+      "id": "a4dc94a3-b2f1-4be3-ba4a-839a17fa6c7d",
+      "name": "files0 -> data"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$binary.data.mimeType}}",
+                    "rightValue": "audio/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "6fc3ff5c-419a-4e53-8f9c-31552160bc4b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0ff044ec-cf4d-4b1e-ba3b-0552d4cfbcb3",
+                    "leftValue": "={{$binary.data.mimeType}}",
+                    "rightValue": "image/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "30b4d93c-b0ab-4da3-8357-003e5d560632",
+                    "leftValue": "={{$binary.data.mimeType}}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b08f746d-4860-4978-a083-6228e3fa07d5",
+                    "leftValue": "={{$binary.data.mimeType}}",
+                    "rightValue": "application/msword",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Word"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "305fcd77-4c74-4f55-a598-6872f490cdc8",
+                    "leftValue": "={{$binary.data.mimeType}}",
+                    "rightValue": "text/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Défaut"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -3088,
+        -416
+      ],
+      "id": "3abb5b54-1a31-4785-a0a5-78387c371c6b",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "fr"
+        }
+      },
+      "id": "c96a680f-4a4f-4284-83fb-4cdd60b0c585",
+      "name": "Speech to Text",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        -2816,
+        -656
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Voici le contenu extrait d'une image (pièce jointe). Analyse-le de manière pédagogique, en pensant à un public senior qui pourrait recevoir ce message.\n\nRepère les éléments suspects, comme :\n- Tentative de phishing\n- Liens dangereux\n- Ton alarmiste ou manipulateur\n- Fausse identité\n\nExplique clairement pourquoi certains éléments sont problématiques.\n\nContenu extrait :\n{{ $json.choices[0].message.content }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2352,
+        -480
+      ],
+      "id": "e7d8f6b8-fc8d-4690-b5ea-0056190b5f43",
+      "name": "Analyze image OCR (GPT-4o)",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Voici une transcription audio provenant d'une pièce jointe. Analyse ce texte dans un langage simple et pédagogique pour un public senior. Repère tout contenu douteux ou à risque, et explique pourquoi il pourrait être problématique.\n\nVoici le texte :\n{{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2352,
+        -656
+      ],
+      "id": "d65c1531-d4f4-4f1f-af94-d27e09628477",
+      "name": "Analyse transcription (GPT-4o)",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Tu es Ernest, un expert cybersécurité spécialisé dans l’analyse de documents \npour un public senior. Tu dois répondre STRICTEMENT en JSON valide, \nsans texte avant ni après.\nNe renvoie jamais de Markdown, jamais de ```json, jamais d'explications.\nTon JSON doit toujours respecter exactement le format demandé.\n",
+              "role": "system"
+            },
+            {
+              "content": "=Voici un document et son analyse technique.\n\nTexte extrait :\n{{ $('IOC Extractor').item.json.text_extracted }}\n\nIOC :\n{{ JSON.stringify($('IOC Extractor').item.json.ioc, null, 2) }}\n\nVirusTotal :\n{{ JSON.stringify($json.vt, null, 2) }}\n\nTâche :\n1. Décris le contexte du document :\n   - de quoi il parle\n   - ton (urgent, commercial, amical, administratif)\n   - intention probable\n2. Donne une évaluation du risque (faible, moyen, élevé).\n3. Identifie les signaux suspect, incohérences, tentatives de fraude.\n\nRéponds STRICTEMENT en JSON :\n{\n  \"context_summary\": \"...\",\n  \"intent\": \"...\",\n  \"risk_signals\": [...],\n  \"global_risk_level\": \"faible | moyen | élevé\"\n}"
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1472,
+        -256
+      ],
+      "id": "7fdb3a36-5692-4d44-b5cf-73e122e71fa9",
+      "name": "Analyze Texte (GPT-4o)",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1b37745c-7ea2-40e2-b78c-d7ee67677acc",
+              "leftValue": "={{ $json.statusCode === 200 && !! $json.data?.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2512,
+        -32
+      ],
+      "id": "04b4f6ec-afdd-4b24-96a6-28a7b208f36e",
+      "name": "If VirusTotal ?",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const imageDataUrl = $('Data -> ImageUrl1').first().json.dataUrl;\n\nif (!imageDataUrl || !imageDataUrl.startsWith('data:')) {\n  throw new Error(\"Champ 'imageDataUrl' invalide ou manquant.\");\n}\n\n// Séparer le type MIME et le contenu base64\nconst matches = imageDataUrl.match(/^data:(.*?);base64,(.*)$/);\nif (!matches || matches.length !== 3) {\n  throw new Error(\"Format imageDataUrl invalide.\");\n}\n\nconst mimeType = matches[1];\nconst base64Data = matches[2];\n\n// Convertir en Buffer\nconst buffer = Buffer.from(base64Data, 'base64');\n\nreturn [{\n  json: { \n    note: \"Image base64 convertie en fichier binaire pour VirusTotal.\",\n    type: mimeType\n  },\n  binary: {\n    file: { \n      data: buffer.toString('base64'),\n      mimeType,\n      fileName: $('Data -> ImageUrl1').first().json.fileName\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2240,
+        -256
+      ],
+      "id": "486d4b2b-389d-49fd-acf1-823eb830091e",
+      "name": "binary.data -> form-data",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const stats = $json.data.attributes.stats || {};\n\nreturn [{\n  json: {\n    ...$json,\n    vt: {\n      malicious: stats.malicious || 0,\n      suspicious: stats.suspicious || 0,\n      undetected: stats.undetected || 0,\n      harmless: stats.harmless || 0\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1632,
+        -256
+      ],
+      "id": "6e93ee95-29c1-425d-87ff-f2b945250341",
+      "name": "Format Results",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"image_url\",\n          \"image_url\": {\n            \"url\": \"{{ $json.imageDataUrl }}\",\n            \"detail\": \"high\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"Voici une pièce jointe (document, image, capture d’écran ou email). Ta mission :\\n\\n1. Résume le contenu de façon claire et simple.\\n2. Indique s’il y a un risque (phishing, arnaque, virus, lien dangereux, etc.).\\n3. Donne des conseils pour savoir comment réagir (ex : supprimer, répondre, ne pas cliquer, etc.).\\n\\n❗ Important : utilise un **ton pédagogique**, explique comme si tu t’adressais à une **personne âgée non experte en informatique**. Utilise des **phrases simples**, **pas de jargon technique**, et donne des **exemples concrets si besoin**.\\n\\nRéponds en **français**.\"\n        }\n      ]\n    }\n  ],\n  \"max_tokens\": 1200\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2576,
+        -480
+      ],
+      "id": "6931156f-b524-4a11-8e8d-10bb40638590",
+      "name": "Analyse d'image - OpenAI Vision1",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e2ae82ae-e0a3-4afa-a884-45825e57d01b",
+              "leftValue": "={{ Object.keys($binary || {}).some(k => /^files(\\d+)?$/.test(k)) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3616,
+        400
+      ],
+      "id": "ad62d3eb-4863-4371-921e-b2da864bed79",
+      "name": "If has files ?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "41a15e58-9dd0-4e68-803a-bcb9170fd07c",
+              "name": "={{ $json.text || $json.message?.content || $json.choices?.[0]?.message?.content }}",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2000,
+        -656
+      ],
+      "id": "b64fd69e-85ec-4065-b5ea-f5b2ca416e25",
+      "name": "Build Transcript – Audio",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "41a15e58-9dd0-4e68-803a-bcb9170fd07c",
+              "name": "=transcript",
+              "value": "={{ $json.text || $json.message?.content || $json.choices?.[0]?.message?.content }}",
+              "type": "string"
+            },
+            {
+              "id": "d4379a28-b8b3-43b0-8fce-70947e766f28",
+              "name": "chatFiles",
+              "value": "={{ 'Analyse d’une pièce jointe image (capture, mail ou document). ' }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2000,
+        -480
+      ],
+      "id": "27fde27b-a738-449c-8513-a88ca32959c5",
+      "name": "Build Transcript – Image",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "41a15e58-9dd0-4e68-803a-bcb9170fd07c",
+              "name": "=transcript",
+              "value": "={{ $json.text || $json.message?.content || $json.choices?.[0]?.message?.content }}",
+              "type": "string"
+            },
+            {
+              "id": "d4379a28-b8b3-43b0-8fce-70947e766f28",
+              "name": "chatFiles",
+              "value": "={{ 'Analyse d’un document texte ou PDF reçu en pièce jointe. ' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        -320
+      ],
+      "id": "bdc2ea54-6d13-4d00-96ea-8a37af0d03f3",
+      "name": "Build Transcript – Document",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.virustotal.com/api/v3/files",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-apikey",
+              "value": "6dc01542645bd7d778c6cef1359c9b95907a7c5cf5af264557cc0899f373e245"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2096,
+        -256
+      ],
+      "id": "bbb50892-059c-43b1-a141-2f438bc1837b",
+      "name": "HTTP Request",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "executeOnce": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "curlImport": "",
+        "httpVariantWarning": "",
+        "method": "GET",
+        "url": "=https://www.virustotal.com/api/v3/analyses/{{ $json.data.id }}",
+        "": "",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "provideSslCertificates": false,
+        "sendQuery": false,
+        "sendHeaders": false,
+        "sendBody": false,
+        "options": {},
+        "infoMessage": ""
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1792,
+        -256
+      ],
+      "id": "097bbb20-f20b-494d-9471-0231466ee160",
+      "name": "VirusTotal Analysis",
+      "extendsCredential": "virusTotalApi",
+      "credentials": {
+        "virusTotalApi": {
+          "id": "5HRBzeAJdYUe4Hoc",
+          "name": "VirusTotal account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1952,
+        -256
+      ],
+      "id": "6e33b551-1c1f-4ed0-8783-94c89d82356e",
+      "name": "Wait",
+      "webhookId": "624d38e4-ae82-4311-855e-a52383882443",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "//-------------------------------------------------------\n// 1. Récupération de la réponse OpenAI\n//-------------------------------------------------------\nlet raw = $json.message?.content || \"\";\n\n// Nettoyage des blocs markdown\nraw = raw\n  .replace(/```json/gi, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\n// Extraction du premier JSON valide\nconst match = raw.match(/\\{[\\s\\S]*\\}/);\nif (!match) {\n  throw new Error(\"Aucun JSON détecté dans la réponse : \" + raw);\n}\n\nconst jsonString = match[0];\n\n// Parsing sûr\nlet parsed;\ntry {\n  parsed = JSON.parse(jsonString);\n} catch (e) {\n  throw new Error(\"Le JSON extrait est invalide : \" + jsonString);\n}\n\n//-------------------------------------------------------\n// 2. Extraction du texte\n//-------------------------------------------------------\nconst text = parsed.text_extracted || \"\";\n\n//-------------------------------------------------------\n// 3. IOC extraction\n//-------------------------------------------------------\nconst urls = [...new Set(text.match(/https?:\\/\\/[^\\s\"]+/gi) || [])];\nconst emails = [...new Set(text.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}/gi) || [])];\nconst phones = [...new Set(text.match(/\\+?\\d[\\d\\s().-]{7,}/gi) || [])];\n\n//-------------------------------------------------------\n// 4. Retour propre\n//-------------------------------------------------------\nreturn {\n  json: {\n    ...parsed,\n    ioc: {\n      urls,\n      emails,\n      phones\n    }\n  },\n  binary: $item.binary  // <-- le bon accès en mode \"Run Once for Each Item\"\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2400,
+        -256
+      ],
+      "id": "d1fd49a7-ac80-4154-8cb6-3b62bd4cdad0",
+      "name": "IOC Extractor",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ce node lit le binaire \"data\" depuis le disque et produit une Data URL correcte\nconst out = [];\nfor (let i = 0; i < items.length; i++) {\n  const bin = items[i].binary?.data;\n  if (!bin) throw new Error('Pas de binaire \"data\" sur l’item.');\n\n  // Récupère le buffer depuis le stockage (filesystem-v2, s3, etc.)\n  const buf = await this.helpers.getBinaryDataBuffer(i, 'data');\n\n  const mime = bin.mimeType || 'image/png';\n  const b64  = buf.toString('base64');\n\n  out.push({\n    json: { imageDataUrl: `data:${mime};base64,${b64}` }\n  });\n}\nreturn out;\nreturn [{ json: { ...$json }, binary: $binary }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2816,
+        -480
+      ],
+      "id": "0d536e0c-773c-41e1-8591-7cdc51b991d6",
+      "name": "Data -> ImageUrl",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node Code n8n — version correcte avec async/await\n\nconst results = [];\n\nfor (let i = 0; i < items.length; i++) {\n\n  const item = items[i];\n  const bin = item.binary?.data;\n\n  if (!bin) {\n    throw new Error('Pas de binaire \"data\" sur cet item.');\n  }\n\n  // Charge le buffer réel du fichier (PDF, Word, TXT…)\n  const buffer = await this.helpers.getBinaryDataBuffer(i, 'data');\n\n  const mime = bin.mimeType || 'application/octet-stream';\n  const base64 = buffer.toString('base64');\n\n  results.push({\n    json: {\n      fileBase64: base64,\n      fileName: bin.fileName,\n      mimeType: mime,\n      dataUrl: `data:${mime};base64,${base64}`\n    },\n    binary: item.binary  // On garde le binaire intact\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2816,
+        -320
+      ],
+      "id": "b5d312db-e176-4314-a47e-11e22feb7ef3",
+      "name": "Data -> ImageUrl1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": [\n        {\n          \"type\": \"input_url\",\n          \"input_file\": {\n            \"file_id\": \"{{ $json.fileBase64 }}\",\n            \"file_name\": \"{{ $json.fileName }}\",\n            \"mime_type\": \"{{ $json.mimeType }}\"\n          }\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"Voici un document (PDF, Word ou TXT). Analyse-le complètement.\\n\\nTâches :\\n1. Extrais tout le texte lisible du document.\\n2. Identifie les éléments techniques : URLs, emails, numéros de téléphone, montants, dates, noms.\\n3. Décris factuellement le contenu.\\n4. Liste les signaux potentiels de risque (sans conclure).\\n\\nRéponds uniquement en JSON avec la structure suivante :\\n{\\n  \\\"text_extracted\\\": \\\"...\\\",\\n  \\\"technical_elements\\\": {\\n    \\\"urls\\\": [],\\n    \\\"emails\\\": [],\\n    \\\"phones\\\": [],\\n    \\\"dates\\\": [],\\n    \\\"amounts\\\": [],\\n    \\\"names\\\": []\\n  },\\n  \\\"visual_signals\\\": \\\"...\\\",\\n  \\\"potential_risks\\\": []\\n}\"\n        }\n      ]\n    }\n  ],\n  \"max_tokens\": 3000\n}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2672,
+        -256
+      ],
+      "id": "f0cd6ed0-ec63-45bb-a00d-93ac9d8ce79b",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Scoring initial\nlet score = 0;\n\n// -------------------------------\n// 1. Score VirusTotal\n// -------------------------------\nconst vt = $json.vt || {};\n\nif (vt.malicious > 0) score += 60;\nif (vt.suspicious > 0) score += 40;\nif (vt.harmless === 0 && vt.undetected === 0) score += 10;\n\n// -------------------------------\n// 2. IOC techniques\n// -------------------------------\nconst ioc = $json.ioc || {};\n\nif ((ioc.urls || []).length > 0) score += 10;\nif ((ioc.emails || []).length > 0) score += 10;\nif ((ioc.phones || []).length > 0) score += 5;\n\n// -------------------------------\n// 3. Analyse contextuelle\n// -------------------------------\nif ($json.global_risk_level === \"élevé\") score += 30;\nif ($json.global_risk_level === \"moyen\") score += 15;\n\nif (($json.risk_signals || []).length >= 3) score += 15;\nelse if (($json.risk_signals || []).length > 0) score += 5;\n\n// -------------------------------\n// 4. Normalisation du score\n// -------------------------------\nif (score > 100) score = 100;\n\n// -------------------------------\n// 5. Catégorie finale\n// -------------------------------\nlet category = \"faible\";\nif (score >= 70) category = \"élevé\";\nelse if (score >= 40) category = \"moyen\";\n\n// -------------------------------\n// 6. Retour n8n\n// -------------------------------\nreturn {\n  json: {\n    ...$json,\n    risk_score: score,\n    risk_category: category\n  },\n  binary: $item.binary\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        -256
+      ],
+      "id": "d2ca6551-3980-4b46-b96e-a0bea5b26fc8",
+      "name": "Code in JavaScript",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Tu es Ernest, un expert en cybersécurité spécialisé dans l’accompagnement\ndes personnes âgées et débutantes en informatique. \n\nTon rôle :\n- expliquer simplement\n- éviter le jargon technique\n- rassurer sans minimiser\n- donner des consignes concrètes et faciles à suivre\n- être bienveillant, clair et pédagogique\n- ne jamais faire peur inutilement\n\nTu parles en français, de manière simple, avec des phrases courtes.",
+              "role": "system"
+            },
+            {
+              "content": "=Voici le résultat complet de l’analyse d’un document ou d’une pièce jointe.\n\nTexte extrait :\n{{ $('IOC Extractor').item.json.text_extracted }}\n\nÉléments techniques :\n{{ JSON.stringify($('IOC Extractor').item.json.ioc, null, 2) }}\n\nAnalyse contextuelle :\n{{ JSON.stringify($json.choices[0].message.content, null, 2) }}\n\nRésultat VirusTotal :\n{{ JSON.stringify($('Format Results').item.json.vt, null, 2) }}\n\nScore final :\n{{ $json.risk_score }} / 100  \nNiveau : {{ $json.risk_category }}\n\nTa mission :\n1. Fais un **résumé clair et simple** de ce que contient le document.\n2. Indique **s’il y a des éléments suspects** (incohérences, ton inhabituel,\n   urgence, demande financière, liens étranges, numéros bizarres, etc.).\n3. Donne une **évaluation du risque globale** :\n   - \"faible\"\n   - \"moyen\"\n   - \"élevé\"\n4. Donne des **conseils concrets** pour savoir quoi faire :\n   - vérifier une information\n   - appeler un organisme\n   - ne pas répondre\n   - ne pas payer\n   - supprimer le message\n   - transmettre à un proche si besoin\n5. Si risque faible → rassure.  \n   Si risque moyen → encourage à vérifier calmement.  \n   Si risque élevé → indique clairement les mesures à prendre.\n\nContraintes :\n- Utilise un **langage simple**, adapté à des personnes âgées peu technophiles.\n- Phrase courtes, sans jargon.\n- Pas de conclusions techniques (pas \"virus\", pas \"malware\"), mais \"élément suspect\" ou \"peut être risqué\".\n- Pas d’alarmisme inutile."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -944,
+        -256
+      ],
+      "id": "3ba1c332-ca16-40e0-a33d-3a4104aea9ee",
+      "name": "Analyze Texte (GPT-4o)1",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "Cet outil réalise une **analyse technique automatisée** d’un contenu suspect (SMS, email, lien, fichier, image). Il évalue les risques de **phishing, malware, liens piégés** ou comportements suspects, et fournit un **score de risque clair**.\n\n🛠 Il est utilisé **uniquement** quand l’utilisateur a fourni toutes les informations nécessaires (contenu exact, expéditeur, source, contexte, action).\n\n📊 Il retourne :\n- Un score de risque\n- Un niveau de prudence (ex : faible, modéré, élevé)\n- Une description technique simple\n- Des signaux détectés (urgence, lien suspect, etc.)\n- Des conseils d’action clairs et concrets\n- Une base pour le **diagnostic pondéré** final de cybersécurité\n\n⚠️ L’analyse brute de cet outil est toujours intégrée dans une réponse fragmentée, compréhensible, non alarmiste, et enrichie du contexte utilisateur et des pratiques officielles (ex : AMELI, banque, services publics).\n\nInputs requis :\n- `type` : `\"email\"`, `\"sms\"`, `\"url\"`, `\"texte\"`, `\"piece_jointe\"`\n- `content` : contenu exact fourni par l’utilisateur\n- `metadata` : expéditeur, source, contexte, action",
+        "workflowId": {
+          "__rl": true,
+          "value": "LMjpWdrvYT7e5Zu4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/LMjpWdrvYT7e5Zu4",
+          "cachedResultName": "Ernest — Ernest - Tool de vérification (URL, Tél, SMS/Message)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "type": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('type', ``, 'string') }}",
+            "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('content', ``, 'string') }}",
+            "metadata": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('metadata', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "metadata",
+              "displayName": "metadata",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        496
+      ],
+      "id": "8b8b46ee-f302-4cbb-9efc-e5cbac98a17b",
+      "name": "ernest_verification",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UP2RZH77wmOlfMts",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/UP2RZH77wmOlfMts",
+          "cachedResultName": "Ernest — Ernest - Téléphone Tool de vérification"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "type",
+              "displayName": "type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "content",
+              "displayName": "content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "metadata",
+              "displayName": "metadata",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        640
+      ],
+      "id": "56f1f2e7-1b8d-42af-a0d1-b3111630a4e8",
+      "name": "Call 'Ernest - Téléphone Tool de vérification'",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": "mistral-tiny-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -2224,
+        1200
+      ],
+      "id": "7a64385a-0482-4a31-82ef-b12d12698b08",
+      "name": "Mistral Cloud Chat Model2",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gm7kmbkktaoquN4p",
+          "name": "Mistral Cloud account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1sSc8gdtFsRwqTSUlcBxwiGUvuy9glI0tYejrz1nPRiY",
+          "mode": "list",
+          "cachedResultName": "Dashboard KPI - Ernest",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sSc8gdtFsRwqTSUlcBxwiGUvuy9glI0tYejrz1nPRiY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1793964483,
+          "mode": "list",
+          "cachedResultName": "SOS_Cyber_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1sSc8gdtFsRwqTSUlcBxwiGUvuy9glI0tYejrz1nPRiY/edit#gid=1793964483"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "session_id": "={{ $json.session_id }}",
+            "last_question": "={{ $json.question }}",
+            "last_answer": "={{ $json.answer }}",
+            "user_demand": "={{ $json.demand }}",
+            "tags": "={{ $json.tags }}",
+            "conversation_uuid": "={{ $json.conversation_uuid }}",
+            "created_at": "={{ $json.created_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date_formatted",
+              "displayName": "date_formatted",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "last_question",
+              "displayName": "last_question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "last_answer",
+              "displayName": "last_answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_demand",
+              "displayName": "user_demand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "conversation_uuid",
+              "displayName": "conversation_uuid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        864,
+        96
+      ],
+      "id": "d56e7fd7-c7dd-46c8-a869-a6032258084c",
+      "name": "Google Sheets Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XLTTMd6TpGyvhyx4",
+          "name": "Google Sheets account 3"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3184,
+        400
+      ],
+      "id": "23f99e44-1ac4-4820-9372-662c3aca42f3",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "inputText": "={{ $json.transcript }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "smishing_colis",
+              "description": "SMS parlant de colis/livraison (Chronopost, Mondial Relay, DPD, etc.)"
+            },
+            {
+              "category": "fraude_bancaire",
+              "description": "Banque, virement, carte, IBAN, code OTP, transaction"
+            },
+            {
+              "category": "phishing_email",
+              "description": "Email suspect, facture, pièce jointe, lien dans un mail"
+            },
+            {
+              "category": "lien_suspect",
+              "description": "Demande de vérifier une URL ou un lien"
+            },
+            {
+              "category": "arnaque_support_tech",
+              "description": "Faux support (Microsoft/Apple), technicien, PC bloqué, virus"
+            },
+            {
+              "category": "compte_piratage",
+              "description": "Compte piraté, mot de passe, connexion suspecte"
+            },
+            {
+              "category": "securite_generale",
+              "description": "Question générale cybersécurité / bonnes pratiques"
+            }
+          ]
+        },
+        "options": {
+          "fallback": "other",
+          "systemPromptTemplate": "Tu es un classificateur.\n\nTu dois répondre UNIQUEMENT avec un JSON valide (pas de texte autour, pas de markdown).\nLe JSON doit contenir TOUTES les catégories EXACTEMENT avec ces clés, et une valeur true/false pour chacune.\nInterdiction d'ajouter d'autres clés.\n\nSi aucune catégorie ne correspond clairement, mets false pour toutes.\n\nFormat attendu (exemple, garde exactement les mêmes clés) :\n{{\n  \"smishing_colis\": false,\n  \"fraude_bancaire\": false,\n  \"phishing_email\": false,\n  \"lien_suspect\": false,\n  \"arnaque_support_tech\": false,\n  \"compte_piratage\": false,\n  \"securite_generale\": false\n}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1.1,
+      "position": [
+        -2224,
+        832
+      ],
+      "id": "d1e5c8a5-996e-4962-9412-d8304485a53f",
+      "name": "Text Classifier",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81adb975-a8a3-4b47-9298-b0850182251e",
+              "name": "intent",
+              "value": "={{ $json.debug_rules.top.intent || 'unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "401e8371-028f-4eeb-b398-6958f5032266",
+              "name": "confidence",
+              "value": "={{ Number($json.debug_rules.top.score) }}",
+              "type": "number"
+            },
+            {
+              "id": "1ea79be3-6714-409e-a247-aaff66032450",
+              "name": "tags",
+              "value": "={{ ($json.debug_rules.top.tags || '').toString() }}",
+              "type": "string"
+            },
+            {
+              "id": "3901db2a-562d-4c12-8a8a-3120500157dd",
+              "name": "transcript",
+              "value": "={{ $json.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "b1d197ee-2b48-48c5-983d-30a253a2f2a1",
+              "name": "session_id",
+              "value": "={{ $json.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1552,
+        928
+      ],
+      "id": "2abbd716-b7ec-4469-923d-a130bb99ca90",
+      "name": "Edit Fields",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "numberInputs": 8
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1792,
+        832
+      ],
+      "id": "713ec563-044a-44a7-8265-d96395c76be8",
+      "name": "Merge1",
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1440,
+        656
+      ],
+      "id": "e6fb4816-d069-4eec-a755-08acc9f12e65",
+      "name": "Merge2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "127e2666-94cd-4e1f-8a9e-a1699d2543cd",
+              "leftValue": "={{ $json.intent_rules }}",
+              "rightValue": "unknown",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "44c33876-3b08-4ccf-9d9d-507b412d5b52",
+              "leftValue": "={{ $json.confidence_rules }}",
+              "rightValue": 0.72,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2448,
+        912
+      ],
+      "id": "185026b8-9608-441b-8cd6-887c94555e34",
+      "name": "If confidence  >= seuil",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "81adb975-a8a3-4b47-9298-b0850182251e",
+              "name": "intent",
+              "value": "={{$('Intent_Rules').item.json.debug_rules.top.intent  || 'unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "401e8371-028f-4eeb-b398-6958f5032266",
+              "name": "confidence",
+              "value": "={{ Number($('Intent_Rules').item.json.debug_rules.top.score) }}",
+              "type": "number"
+            },
+            {
+              "id": "1ea79be3-6714-409e-a247-aaff66032450",
+              "name": "tags",
+              "value": "={{ $('Intent_Rules').item.json.debug_rules.top.tags[0] || ('').toString() }}",
+              "type": "string"
+            },
+            {
+              "id": "3901db2a-562d-4c12-8a8a-3120500157dd",
+              "name": "transcript",
+              "value": "={{ $('Intent_Rules').item.json.transcript }}",
+              "type": "string"
+            },
+            {
+              "id": "b1d197ee-2b48-48c5-983d-30a253a2f2a1",
+              "name": "session_id",
+              "value": "={{ $('Intent_Rules').item.json.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2320,
+        672
+      ],
+      "id": "a53d34cf-85f3-4f3f-86ab-5135e7b22975",
+      "name": "Edit Fields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = items[0].json;\n\nfunction normalize(str = \"\") {\n  return (str + \"\")\n    .toLowerCase()\n    .normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\") // retire accents\n    .replace(/[^\\p{L}\\p{N}\\s]/gu, \" \")               // ponctuation -> espaces\n    .replace(/\\s+/g, \" \")\n    .trim();\n}\n\n// match mot entier (évite que \"cb\" match \"cbon\")\nfunction hasWord(text, w) {\n  const escaped = w.replace(/[.*+?^${}()|[\\]\\\\]/g, \"\\\\$&\");\n  const re = new RegExp(`(^|\\\\s)${escaped}(\\\\s|$)`, \"i\");\n  return re.test(text);\n}\n\n// match expression (plus permissif)\nfunction hasPhrase(text, phrase) {\n  return text.includes(phrase);\n}\n\nconst raw = item.transcript || item.chatInput || \"\";\nconst text = normalize(raw);\n\n// Signaux forts (plus discriminants)\nconst strongSignals = {\n  url: /(https?:\\/\\/|www\\.)\\S+/i.test(raw) || hasWord(text, \"http\") || hasWord(text, \"www\"),\n  iban: /\\b[a-z]{2}\\d{2}[a-z0-9]{11,30}\\b/i.test(raw) || hasWord(text, \"iban\"),\n  otp: /\\b(otp|2fa)\\b/i.test(raw) || /\\b\\d{4,8}\\b/.test(raw) && (hasWord(text, \"code\") || hasWord(text, \"verification\")),\n  colisBrand: /(chronopost|mondial\\s?relay|dpd|ups|fedex|laposte|colissimo)/i.test(raw),\n  bankWords: /(virement|transaction|paiement|carte|cb|banque)/i.test(raw),\n  emailWords: /(mail|e-mail|piece jointe|facture|pdf|document|boite mail)/i.test(text),\n  hackedWords: /(pirat|hacker|compte|mot de passe|connexion)/i.test(text),\n  techSupportWords: /(microsoft|apple|support|technicien|virus|ordinateur bloque|appel)/i.test(text),\n};\n\n// Règles améliorées : keywords + poids + signaux forts + anti-signaux optionnels\nconst rules = [\n  {\n    intent: \"fraude_bancaire\",\n    base: 0.55,\n    tags: [\"banque\"],\n    keywords: [\n      { k: \"virement\", w: 1.4 }, { k: \"iban\", w: 1.8 }, { k: \"transaction\", w: 1.2 },\n      { k: \"paiement\", w: 1.2 }, { k: \"carte\", w: 1.0 }, { k: \"cb\", w: 1.0 },\n      { k: \"banque\", w: 1.2 }, { k: \"otp\", w: 1.8 }, { k: \"code\", w: 0.7 }\n    ],\n    strong: () => (strongSignals.iban ? 0.25 : 0) + (strongSignals.bankWords ? 0.15 : 0) + (strongSignals.otp ? 0.12 : 0),\n    anti: [\"colis\", \"livraison\"],\n  },\n  {\n    intent: \"smishing_colis\",\n    base: 0.52,\n    tags: [\"sms\", \"colis\"],\n    keywords: [\n      { k: \"colis\", w: 1.6 }, { k: \"livraison\", w: 1.4 }, { k: \"sms\", w: 1.2 },\n      { k: \"suivi\", w: 1.0 }, { k: \"relais\", w: 1.0 }, { k: \"frais\", w: 0.9 }\n    ],\n    strong: () => (strongSignals.colisBrand ? 0.28 : 0) + (hasPhrase(text, \"mondial relay\") ? 0.10 : 0),\n    anti: [\"iban\", \"banque\", \"virement\"],\n  },\n  {\n    intent: \"phishing_email\",\n    base: 0.50,\n    tags: [\"email\"],\n    keywords: [\n      { k: \"mail\", w: 1.3 }, { k: \"e mail\", w: 1.3 }, { k: \"piece jointe\", w: 1.6 },\n      { k: \"facture\", w: 1.4 }, { k: \"pdf\", w: 1.2 }, { k: \"document\", w: 1.1 },\n      { k: \"boite mail\", w: 1.6 }\n    ],\n    strong: () => (strongSignals.emailWords ? 0.22 : 0) + (strongSignals.url ? 0.10 : 0),\n    anti: [\"colis\", \"livraison\"],\n  },\n  {\n    intent: \"compte_piratage\",\n    base: 0.50,\n    tags: [\"compte\"],\n    keywords: [\n      { k: \"pirate\", w: 1.6 }, { k: \"pirate\", w: 1.6 }, { k: \"pirate\", w: 1.6 },\n      { k: \"hacker\", w: 1.6 }, { k: \"compte\", w: 1.2 }, { k: \"mot de passe\", w: 1.6 },\n      { k: \"connexion\", w: 1.2 }, { k: \"code de securite\", w: 1.2 }\n    ],\n    strong: () => (strongSignals.hackedWords ? 0.25 : 0),\n    anti: [\"colis\", \"facture\"],\n  },\n  {\n    intent: \"arnaque_support_tech\",\n    base: 0.48,\n    tags: [\"support\"],\n    keywords: [\n      { k: \"microsoft\", w: 1.7 }, { k: \"apple\", w: 1.7 }, { k: \"support\", w: 1.2 },\n      { k: \"technicien\", w: 1.4 }, { k: \"virus\", w: 1.4 }, { k: \"ordinateur bloque\", w: 1.6 },\n      { k: \"appel\", w: 0.8 }\n    ],\n    strong: () => (strongSignals.techSupportWords ? 0.28 : 0),\n    anti: [\"iban\", \"virement\"],\n  },\n  {\n    intent: \"lien_suspect\",\n    base: 0.45,\n    tags: [\"lien\"],\n    keywords: [\n      { k: \"lien\", w: 1.3 }, { k: \"url\", w: 1.4 }, { k: \"clique\", w: 1.2 },\n      { k: \"site\", w: 0.9 }, { k: \"http\", w: 1.6 }, { k: \"www\", w: 1.3 }\n    ],\n    strong: () => (strongSignals.url ? 0.35 : 0),\n    anti: [],\n  }\n];\n\n// scoring\nfunction scoreRule(rule) {\n  let matched = [];\n  let hitWeight = 0;\n\n  for (const kw of rule.keywords) {\n    const kNorm = normalize(kw.k);\n    const ok = kNorm.includes(\" \") ? hasPhrase(text, kNorm) : hasWord(text, kNorm);\n    if (ok) {\n      matched.push(kw.k);\n      hitWeight += kw.w;\n    }\n  }\n\n  // anti-signaux : petite pénalité si on trouve des mots qui \"pull\" ailleurs\n  let antiPenalty = 0;\n  for (const a of (rule.anti || [])) {\n    const aNorm = normalize(a);\n    if (aNorm.includes(\" \") ? hasPhrase(text, aNorm) : hasWord(text, aNorm)) {\n      antiPenalty += 0.08;\n    }\n  }\n\n  // densité: plus il y a de hits, plus on est sûr, mais avec saturation\n  const density = Math.min(0.25, hitWeight * 0.06);\n\n  // bonus multi-indices : plusieurs mots distincts = meilleur signal\n  const multi = matched.length >= 3 ? 0.12 : matched.length === 2 ? 0.06 : 0;\n\n  const strong = rule.strong ? rule.strong() : 0;\n\n  // score brut\n  let score = rule.base + density + multi + strong - antiPenalty;\n\n  // clamp 0..0.97\n  score = Math.max(0, Math.min(0.97, score));\n\n  return { intent: rule.intent, score, tags: rule.tags, matched };\n}\n\n// compute top2 + ambiguity penalty\nconst ranked = rules.map(scoreRule).sort((a, b) => b.score - a.score);\nconst top = ranked[0];\nconst second = ranked[1];\n\n// si aucun mot matché et aucun strong signal => unknown\nconst hasAnySignal = top.matched.length > 0 || top.score > 0.65; // 0.65 couvre url/iban etc.\nlet finalIntent = hasAnySignal ? top.intent : \"unknown\";\nlet finalConfidence = hasAnySignal ? top.score : 0;\n\n// pénalité ambiguïté : si le 2e est proche, on baisse la confiance\nif (finalIntent !== \"unknown\") {\n  const gap = top.score - second.score; // 0..1\n  if (gap < 0.08) finalConfidence = Math.max(0.45, finalConfidence - 0.18);\n  else if (gap < 0.15) finalConfidence = Math.max(0.50, finalConfidence - 0.10);\n}\n\n// ajoute un petit debug utile\nreturn [{\n  json: {\n    ...item,\n    intent_rules: finalIntent,\n    confidence_rules: Number(finalConfidence.toFixed(2)),\n    tags_rules: finalIntent === \"unknown\" ? [] : top.tags,\n    debug_rules: {\n      text_used: text,\n      top: top,\n      second: second,\n      gap: Number((top.score - second.score).toFixed(2)),\n      strongSignals,\n    }\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2656,
+        912
+      ],
+      "id": "f0501142-b152-4d9f-9967-2205794b418a",
+      "name": "Intent_Rules",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://xpls-geth-5exy.p7.xano.io/api:9x7E18zP/soscyber/log_turn",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "question",
+              "value": "={{ $('Merge2').item.json.transcript || null }}"
+            },
+            {
+              "name": "answer",
+              "value": "={{ $json.output }}"
+            },
+            {
+              "name": "session_id",
+              "value": "={{ $('Merge2').item.json.session_id }}"
+            },
+            {
+              "name": "demand",
+              "value": "={{ $('Merge2').item.json.intent || null }}"
+            },
+            {
+              "name": "tags",
+              "value": "={{ $('Merge2').item.json.tags }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        592,
+        112
+      ],
+      "id": "2345bf8a-ea11-41dc-8b7f-c7e0949f859d",
+      "name": "Xano Log Turn",
+      "alwaysOutputData": true,
+      "disabled": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 300,
+          "temperature": 0.3,
+          "maxRetries": 1,
+          "topP": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -160,
+        496
+      ],
+      "id": "3a4ae1d4-25a8-4bac-a4bb-be2869d15f6e",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "bqK17YWChx48c30U",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.ernest_context }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=# Ernest — Compagnon numérique de confiance & coach cybersécurité\n\nTu es Ernest.\nTu aides les personnes à rester en sécurité dans leur vie numérique, avec un style calme, clair, rassurant et concret.\nTu t’adresses souvent à des utilisateurs francophones, parfois âgés, stressés, ou peu à l’aise avec le numérique.\n\n## Mission\nAider l’utilisateur à :\n- comprendre ce qu’il se passe,\n- faire le bon geste de sécurité,\n- reprendre le contrôle,\n- apprendre un réflexe utile sans être submergé.\n\n## Règles cœur\n- Réponds toujours en français.\n- Reste court, conversationnel, mobile-first.\n- Fais une seule étape utile à la fois.\n- Pose au plus une seule question par réponse.\n- Utilise un français simple, sans jargon inutile.\n- Ne demande jamais ni ne répète : mot de passe, code SMS, code e-mail, code de validation, numéro bancaire, code de récupération.\n- Si l’utilisateur partage une donnée sensible, demande-lui d’arrêter immédiatement et propose une action sûre.\n- Ne donne pas de verdict définitif si les informations sont insuffisantes.\n- Quand il y a un doute, la règle par défaut est :\n  “Ne cliquez pas, ne répondez pas, et passez par le site ou l’application officielle.”\n- Tu ne recommandes pas de marchands, de boutiques ou de marques.\n- Si l’utilisateur demande où acheter, recentre vers la sécurité d’achat en ligne ou propose de vérifier un site précis.\n- Ne pose une question que si elle change réellement la prochaine action utile.\n- Si tu peux déjà aider de façon sûre et concrète, réponds sans poser de question.\n- N’ajoute pas de question de relance par habitude.\n- En mode educational, safe_guidance, verdict et tool_result, la question est optionnelle, pas obligatoire.\n\n## Style\n- Ton humain, calme, précis.\n- Pas d’emojis.\n- Pas de longs paragraphes.\n- Préfère 1 à 3 phrases courtes.\n- Évite les listes sauf si elles aident vraiment à choisir.\n- Invite à continuer seulement si c’est utile.\n\n## Périmètre\nTu aides sur :\n- faux messages, faux liens, faux sites, arnaques, hameçonnage,\n- protection des comptes,\n- mots de passe, codes, double authentification,\n- vérification prudente de services numériques courants, surtout en France,\n- réflexes de sécurité numérique.\n\nSi la demande sort surtout du numérique (juridique, médical, émotionnel, financier hors sécurité numérique), reste bienveillant et recentre :\n“Je ne peux pas vous conseiller sur cet aspect, mais je peux vous aider pour la partie numérique.”\n\n## Contexte fourni par l’orchestration\nL’application peut te fournir :\n- Current mode: starter | collect_info | verdict | protect_after_click | educational | safe_guidance | tool_result | out_of_scope\n- Known facts: faits déjà connus sur la situation\n- Missing priority: information la plus utile à demander ensuite\n- Tool result: sortie d’un outil\n- Knowledge: extrait procédural ou pédagogique utile\n\nConsidère les faits fournis comme prioritaires.\nNe redemande pas une information déjà présente dans Known facts.\n\n## Politique conversationnelle par mode\n\n### 1) Mode: starter\nUtilise ce mode quand la demande est large, vague, ou hésitante.\nRéponse attendue :\n1. reconnaissance brève,\n2. 2 ou 3 options concrètes maximum,\n3. 1 question courte.\n\nPrivilégie si pertinent :\n- sécuriser ses comptes en ligne,\n- vérifier un message de colis ou de paiement suspect,\n- comprendre la double authentification.\n\nExemple de forme :\n“On peut commencer simplement :\n1. sécuriser un mot de passe important,\n2. repérer un faux message,\n3. comprendre la double authentification.\nQu’est-ce qui vous aiderait le plus ?”\n\n### 2) Mode: collect_info\nUtilise ce mode quand il manque des éléments pour aider correctement.\nRéponse attendue :\n1. dire clairement si l’info est insuffisante,\n2. donner une action sûre immédiate,\n3. poser 1 question ciblée, la plus utile.\n\nFormule attendue si besoin :\n“Je n’ai pas assez d’informations pour conclure. Ne cliquez pas et ne répondez pas pour l’instant. C’était un SMS ou un e-mail ?”\n\nTu peux demander un seul élément concret :\n- le type de source,\n- l’expéditeur,\n- le lien ou domaine,\n- une phrase exacte du message,\n- si le message était attendu,\n- si l’utilisateur a cliqué,\n- si l’utilisateur a saisi ou partagé quelque chose.\n\n### 3) Mode: verdict\nUtilise ce mode quand tu as assez d’éléments pour donner une orientation prudente.\nRéponse attendue :\n1. verdict prudent,\n2. raison simple,\n3. action immédiate,\n4. 1 question utile si nécessaire.\n\nFormulations à privilégier :\n- “Ça ressemble fortement à une arnaque.”\n- “C’est très suspect.”\n- “Ce type de message est souvent frauduleux.”\nÉvite les certitudes absolues sans preuve claire.\n\n### 4) Mode: protect_after_click\nUtilise ce mode si l’utilisateur a cliqué, ouvert, installé, ou partagé une information.\nRéponse attendue :\n1. rassurer brièvement,\n2. donner immédiatement l’action de protection la plus utile,\n3. poser 1 question courte pour la suite.\n\nExemples d’actions prioritaires :\n- changer le mot de passe du compte concerné,\n- sécuriser la messagerie si elle est liée au compte,\n- activer la double authentification,\n- contacter la banque si des données bancaires ont été partagées,\n- surveiller l’activité du compte.\n\nNe perds pas de temps en collecte secondaire avant de proposer une protection.\n\n### 5) Mode: educational\nUtilise ce mode si l’utilisateur demande “pourquoi”, “comment éviter”, “c’est quoi”, ou souhaite comprendre.\nRéponse attendue :\n1. explication courte,\n2. exemple concret,\n3. 1 question courte.\n\nExemple :\n“La double authentification ajoute une deuxième vérification après le mot de passe, par exemple un code sur votre téléphone. Cela protège mieux le compte si le mot de passe est volé. Voulez-vous un exemple concret ?”\n\n### 6) Mode: safe_guidance\nUtilise ce mode quand l’utilisateur demande un conseil d’achat, une orientation générale, ou demande quels sites utiliser, sans fournir de lien précis à vérifier.\n\nRéponse attendue :\n1. recentrage doux,\n2. un repère simple de sécurité,\n3. une question courte.\n\nRègle :\n- Ne recommande pas de marchands, de boutiques ou de marques.\n- Propose soit des critères simples pour vérifier un site, soit la vérification d’un site précis.\n\nExemple :\n“Je ne recommande pas de boutiques en particulier, mais je peux vous donner des repères simples pour vérifier qu’un site est fiable avant d’acheter. Voulez-vous ces repères ou vérifier un site précis ?”\n\n### 7) Mode: tool_result\nUtilise ce mode après un outil, notamment url_check.\nNe montre jamais de détails techniques internes.\nNe mentionne jamais : risk_score, labels, sources internes, détails techniques réseau.\n\nSi status = safe :\n“Ce lien semble sûr si vous reconnaissez bien l’expéditeur.”\nSi status = caution :\n“Ce lien est suspect : ne cliquez pas pour l’instant.”\nSi status = danger :\n“Ce lien est dangereux : ne l’ouvrez pas.”\nSi status = inaccessible :\n“Ce site est inaccessible : ne cliquez pas, passez par le site officiel.”\n\nEnsuite :\n- ajoute une raison simple en 1 phrase maximum,\n- donne 1 action immédiate,\n- pose 1 question courte si utile.\n\n### 8) Mode: out_of_scope\nRéponds avec bienveillance et recentre sur la sécurité numérique.\n\n## Politique outil : url_check\nUtilise url_check seulement si :\n- l’utilisateur demande explicitement de vérifier un lien ou un site,\n- ou tu proposes de le vérifier et l’utilisateur accepte.\n\nCondition minimale :\n- une URL complète,\n- ou un domaine exploitable.\n\nAppel :\n$call_tool(\"url_check\", {\n  \"url\": \"<URL ou domaine fourni par l’utilisateur>\"\n})\n\nSi rien d’exploitable n’est fourni, demande seulement :\n“Pouvez-vous copier-coller l’adresse exacte du site ?”\n\nAprès 2 tentatives sans URL exploitable :\n- arrête la collecte,\n- donne l’alternative sûre :\n“Dans le doute, n’ouvrez pas le lien et passez par le site officiel en le recherchant vous-même.”\n- puis demande :\n“Voulez-vous vérifier un autre lien ?”\n\n## Priorités de comportement\n- Si la demande est vague → starter.\n- Si l’information manque → collect_info.\n- Si l’utilisateur a cliqué ou partagé → protect_after_click.\n- Si l’utilisateur veut comprendre → educational.\n- Si l’utilisateur demande un conseil général d’achat ou des sites sans lien précis → safe_guidance.\n- Si un outil a répondu → tool_result.\n- Si le sujet sort réellement du périmètre → out_of_scope.\n\n## Rappel final\nTon rôle n’est pas de faire peur.\nTon rôle est d’aider l’utilisateur à comprendre, agir en sécurité, et reprendre confiance.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        96,
+        256
+      ],
+      "id": "57d2bb7c-4ba9-4710-a027-92d2ec5a9420",
+      "name": "SOS Cyber"
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 800,
+          "temperature": 0.3,
+          "maxRetries": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        496
+      ],
+      "id": "9d53d46a-0751-48e1-8cb6-c2c09166d76a",
+      "name": "Mistral Cloud Chat",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gm7kmbkktaoquN4p",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "mistral-small-latest",
+        "options": {
+          "maxTokens": 300,
+          "temperature": 0.3,
+          "maxRetries": 2,
+          "safeMode": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        672
+      ],
+      "id": "0abb44fb-e9dd-4e20-9773-b014b7ee27b9",
+      "name": "Mistral Cloud Chat Fallback",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "gm7kmbkktaoquN4p",
+          "name": "Mistral Cloud account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "Analyse une **URL** ou un **nom de domaine** pour estimer le **risque de fraude / phishing**.  \nLe tool normalise l’entrée, suit (si possible) les redirections, combine plusieurs signaux (heuristiques, accessibilité réseau, VirusTotal, WebRisk si disponible) et retourne un résultat **simple à interpréter** + des **explications/actions**.\n\n---\n\n## Quand utiliser ce tool\nUtilise ce tool dès que l’utilisateur :\n- colle un lien (URL) ou un domaine,\n- demande “est-ce fiable ?”, “je peux cliquer ?”, “c’est une arnaque ?”.\n\n---\n\n## Entrée (Input)\n### Champs\n- `url` *(string, requis)* : URL ou domaine saisi par l’utilisateur\n\n### Exemples acceptés\n- `example.com`\n- `https://example.com/path`\n- `www.google.fr`\n\n### Exemple JSON\n```json\n{ \"url\": \"example.com\" }\n````\n\n---\n\n## Sortie (Output)\n\nLe tool renvoie un objet avec un statut et des éléments prêts à afficher.\n\n### Champs principaux\n\n* `status` *(enum)* : `safe` | `caution` | `danger` | `inaccessible`\n* `risk_score` *(number)* : score 0–100 (plus haut = plus risqué)\n* `ui.title` *(string)* : titre prêt à afficher\n* `ui.message` *(string, HTML)* : message prêt à afficher (pédagogique)\n* `actions` *(string[])* : actions simples à proposer à l’utilisateur\n* `labels` *(string[])* : tags techniques (debug/observabilité)\n* `explanations` *(array)* : raisons courtes (pour transparence)\n* `artifacts` *(object)* : détails techniques (VT, WebRisk, redirections, etc.)\n\n### Exemple JSON (résumé)\n\n```json\n{\n  \"status\": \"caution\",\n  \"risk_score\": 32,\n  \"ui\": {\n    \"title\": \"Lien à vérifier\",\n    \"message\": \"<b>Constat</b><br/>...<br/><b>Conseils</b><br/>...\"\n  },\n  \"actions\": [\n    \"Ne cliquez pas tout de suite\",\n    \"Chercher le site officiel sur Google\"\n  ]\n}\n```\n\n---\n\n## Règles d’interprétation côté agent\n\n* **safe** : l’utilisateur peut ouvrir *si* il reconnaît l’expéditeur et le contexte.\n* **caution** : conseiller de **ne pas cliquer tout de suite** + vérifier via le site officiel.\n* **danger** : conseiller de **ne pas cliquer** + supprimer le message + demander aide si besoin.\n* **inaccessible** : le site ne répond pas (DNS/TLS/connexion) → **prudence** par défaut, proposer de passer par le site officiel.\n\n---\n\n## Bonnes pratiques de réponse (ton de l’agent)\n\n* Répondre en **français**, de manière courte, claire, et orientée action.\n* Ne pas noyer l’utilisateur dans du jargon.\n* Donner **1 à 3 actions maximum**.\n\n---\n",
+        "workflowId": {
+          "__rl": true,
+          "value": "YtGEiZ7w876BSf9U",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/YtGEiZ7w876BSf9U",
+          "cachedResultName": "Ernest — (TEST) TOOl URL - Check"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('url', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "url"
+          ],
+          "schema": [
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        496
+      ],
+      "id": "eca24389-265a-4825-b5cb-e7a32e058ef8",
+      "name": "url-check"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fewShotsByMode = {\n  starter: [\n    {\n      user: \"Je ne sais pas par où commencer pour être plus en sécurité\",\n      assistant: \"On peut y aller pas à pas. Le plus utile au début, c’est souvent : 1. sécuriser un mot de passe important, 2. reconnaître un faux message, 3. comprendre la double authentification. Qu’est-ce qui vous serait le plus utile aujourd’hui ?\"\n    }\n  ],\n\n  collect_info: [\n    {\n      user: \"J’ai reçu un message bizarre\",\n      assistant: \"Je n’ai pas assez d’informations pour conclure. Ne cliquez pas et ne répondez pas pour l’instant. C’était un SMS ou un e-mail ?\"\n    }\n  ],\n\n  verdict: [\n    {\n      user: \"J’ai reçu un SMS avec ce lien : ameli-verif-compte.com. Est-ce dangereux ?\",\n      assistant: \"C’est très suspect. Le plus sûr est de ne pas cliquer et de passer par le site officiel.\"\n    }\n  ],\n\n  protect_after_click: [\n    {\n      user: \"J’ai cliqué sur le lien\",\n      assistant: \"Vous avez bien fait de vérifier maintenant. Le plus sûr est de changer votre mot de passe si vous avez saisi des informations.\"\n    }\n  ],\n\n  educational: [\n    {\n      user: \"C’est quoi la double authentification ?\",\n      assistant: \"C’est une deuxième vérification en plus du mot de passe, par exemple un code sur votre téléphone. Cela protège mieux le compte si le mot de passe est volé.\"\n    }\n  ],\n\n  safe_guidance: [\n    {\n      user: \"Donne-moi 3 sites sécurisés pour acheter une tondeuse\",\n      assistant: \"Je ne recommande pas de boutiques en particulier, mais je peux vous donner 3 repères simples pour acheter en sécurité : vérifier que l’adresse du site paraît normale, privilégier un paiement sécurisé connu, et regarder les mentions légales.\"\n    }\n  ],\n\n  tool_result: [\n    {\n      user: \"Vérifie ce lien : assistance-ameli-securite.com\",\n      assistant: \"Ce lien est dangereux : ne l’ouvrez pas. Le domaine paraît trompeur. Passez par le site officiel d’Ameli à la place.\"\n    }\n  ],\n\n  out_of_scope: [\n    {\n      user: \"J’ai un problème juridique avec cette situation\",\n      assistant: \"Je ne peux pas vous conseiller sur l’aspect juridique, mais je peux vous aider pour la partie numérique.\"\n    }\n  ]\n};\n\nconst mode = $json.current_mode || \"collect_info\";\nconst selected = (fewShotsByMode[mode] || []).slice(0, 1);\n\nconst few_shots_text = selected.length\n  ? selected.map((ex, i) =>\n      `Exemple ${i + 1}\nUtilisateur: ${ex.user}\nAssistant: ${ex.assistant}`\n    ).join(\"\\n\\n\")\n  : \"Aucun\";\n\nreturn [{\n  json: {\n    ...$json,\n    few_shots: selected,\n    few_shots_text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2112,
+        400
+      ],
+      "id": "523b40b0-1096-4be1-bb5a-168b71beafed",
+      "name": "Code - Select FewShots"
+    },
+    {
+      "parameters": {
+        "jsCode": "const transcript = ($json.transcript || \"\").trim();\nconst raw = transcript;\nconst text = raw\n  .toLowerCase()\n  .normalize(\"NFD\")\n  .replace(/[\\u0300-\\u036f]/g, \"\");\n\nfunction hasAny(arr) {\n  return arr.some(v => text.includes(v));\n}\n\nfunction hasUrlOrDomain(str) {\n  const urlRegex = /\\bhttps?:\\/\\/[^\\s]+/i;\n  const domainRegex = /\\b(?:[a-z0-9-]+\\.)+[a-z]{2,}\\b/i;\n  return urlRegex.test(str) || domainRegex.test(str);\n}\n\nconst asksStarter = hasAny([\n  \"je ne sais pas par ou commencer\",\n  \"je ne sais pas par où commencer\",\n  \"je veux securiser mes comptes\",\n  \"je veux sécuriser mes comptes\",\n  \"je veux mieux me proteger\",\n  \"je veux mieux me protéger\",\n  \"je veux faire attention aux arnaques\",\n  \"aide moi a me proteger\",\n  \"aide-moi a me proteger\",\n  \"aide-moi à me protéger\",\n  \"je veux aider ma mere\",\n  \"je veux aider ma mère\"\n]);\n\nconst asksEducational = hasAny([\n  \"c'est quoi\",\n  \"cest quoi\",\n  \"qu'est-ce que\",\n  \"qu’est-ce que\",\n  \"pourquoi\",\n  \"comment eviter\",\n  \"comment éviter\",\n  \"comment ca marche\",\n  \"comment ça marche\",\n  \"double authentification\",\n  \"double verification\",\n  \"double vérification\"\n]);\n\nconst clickedOrShared = hasAny([\n  \"j'ai clique\",\n  \"j’ai clique\",\n  \"j'ai cliqué\",\n  \"j’ai cliqué\",\n  \"j'ai ouvert le lien\",\n  \"j’ai ouvert le lien\",\n  \"j'ai saisi\",\n  \"j’ai saisi\",\n  \"j'ai entre\",\n  \"j’ai entre\",\n  \"j'ai entré\",\n  \"j’ai entré\",\n  \"j'ai donne mon code\",\n  \"j’ai donne mon code\",\n  \"j'ai donné mon code\",\n  \"j’ai donné mon code\",\n  \"j'ai partage\",\n  \"j’ai partage\",\n  \"j'ai partagé\",\n  \"j’ai partagé\",\n  \"j'ai envoye mes infos\",\n  \"j’ai envoyé mes infos\"\n]);\n\nconst asksLinkCheck =\n  hasAny([\n    \"verifie ce lien\",\n    \"verifier ce lien\",\n    \"verifie ce site\",\n    \"verifier ce site\",\n    \"analyse ce lien\",\n    \"analyse ce site\",\n    \"est-ce que ce lien\",\n    \"est ce que ce lien\",\n    \"ce lien est-il fiable\",\n    \"ce lien est il fiable\",\n    \"ce site est-il fiable\",\n    \"ce site est il fiable\",\n    \"je peux cliquer\",\n    \"je peux ouvrir\",\n    \"est-ce une arnaque\",\n    \"est ce une arnaque\",\n    \"c'est une arnaque\",\n    \"cest une arnaque\",\n    \"peux-tu verifier ce domaine\",\n    \"peux tu verifier ce domaine\"\n  ]) || hasUrlOrDomain(raw);\n\nconst asksSafeGuidance =\n  hasAny([\n    \"donne moi 3 sites\",\n    \"donne-moi 3 sites\",\n    \"quels sites pour acheter\",\n    \"ou acheter\",\n    \"où acheter\",\n    \"me conseiller des sites\",\n    \"recommande moi des sites\",\n    \"recommande-moi des sites\",\n    \"site pour acheter\",\n    \"sites securises pour acheter\",\n    \"sites sécurisés pour acheter\",\n    \"comment acheter en securite\",\n    \"comment acheter en sécurité\",\n    \"comment payer en securite\",\n    \"comment payer en sécurité\"\n  ]) && !hasUrlOrDomain(raw);\n\nconst definitelyOutOfScope = hasAny([\n  \"probleme juridique\",\n  \"problème juridique\",\n  \"tribunal\",\n  \"depression\",\n  \"dépression\",\n  \"ordonnance medicale\",\n  \"ordonnance médicale\",\n  \"diagnostic medical\",\n  \"diagnostic médical\"\n]);\n\nconst isVeryVague =\n  transcript.length < 25 ||\n  hasAny([\n    \"message bizarre\",\n    \"mail bizarre\",\n    \"sms bizarre\",\n    \"je ne sais pas si c'est une arnaque\",\n    \"je ne sais pas si c’est une arnaque\",\n    \"j'ai recu un message\",\n    \"j’ai reçu un message\",\n    \"j'ai reçu un message\"\n  ]);\n\nlet current_mode = \"collect_info\";\n\n// ordre de priorité\nif (clickedOrShared) {\n  current_mode = \"protect_after_click\";\n} else if (asksEducational) {\n  current_mode = \"educational\";\n} else if (asksStarter) {\n  current_mode = \"starter\";\n} else if (asksSafeGuidance) {\n  current_mode = \"safe_guidance\";\n} else if (asksLinkCheck) {\n  current_mode = \"verdict\";\n} else if (definitelyOutOfScope) {\n  current_mode = \"out_of_scope\";\n} else if (isVeryVague) {\n  current_mode = \"collect_info\";\n}\n\nreturn [{\n  json: {\n    ...$json,\n    current_mode\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2544,
+        400
+      ],
+      "id": "37137d46-369d-48ae-b71d-b831b2851771",
+      "name": "Compute Mode"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "60214f38-1c06-4c63-8b17-e9c8c6ebb264",
+              "name": "known_facts",
+              "value": "={{ {\n  source_type: $json.source_type ?? null,\n  sender_id: $json.sender_id ?? null,\n  url_or_domain: $json.url_or_domain ?? null,\n  user_clicked: $json.user_clicked ?? null,\n  user_shared_info: $json.user_shared_info ?? null,\n  expected_message: $json.expected_message ?? null\n} }}",
+              "type": "object"
+            },
+            {
+              "id": "4b6a6878-2c17-47a6-aa49-66f3b109984a",
+              "name": "missing_priority",
+              "value": "={{ $json.missing_priority ?? [] }}",
+              "type": "array"
+            },
+            {
+              "id": "07c4d2eb-b1bf-49f2-b23a-57b1b693de53",
+              "name": "ernest_context",
+              "value": "={{\n`Current mode:\n${$json.current_mode || \"collect_info\"}\n\nKnown facts:\n${$json.known_facts || \"{}\"}\n\nMissing priority:\n${$json.missing_priority || \"[]\"}\n\nShould ask question:\n${$json.should_ask_question === true ? \"yes\" : \"no\"}\n\nQuestion policy:\n- Ask a question only if it changes the next safe action.\n- If you can already help safely, answer without a question.\n- Do not end every reply with a question.\n- In educational, safe_guidance, verdict and tool_result, prefer no question unless really necessary.\n\nRule:\nDo not recommend merchants or brands.\nIf the user asks where to buy, give safety criteria or ask for a specific site to verify.\n\nFew-shot examples:\n${$json.few_shots_text || \"Aucun\"}\n\nUser message:\n${$json.transcript || \"\"}`\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1872,
+        400
+      ],
+      "id": "6ccf0ad6-2785-4ffa-99d9-dbd76b8f059e",
+      "name": "Build Ernest Context"
+    },
+    {
+      "parameters": {
+        "jsCode": "const transcript = ($json.transcript || \"\").trim();\nconst raw = transcript;\nconst text = raw.toLowerCase().normalize(\"NFD\").replace(/[\\u0300-\\u036f]/g, \"\");\n\nfunction firstMatch(regex, str) {\n  const m = str.match(regex);\n  return m ? m[0] : null;\n}\n\nconst source_type =\n  /sms/.test(text) ? \"sms\" :\n  /mail|e-mail|email/.test(text) ? \"email\" :\n  /appel|telephone|téléphone/.test(text) ? \"call\" :\n  /site|lien|url|www|http/.test(text) ? \"website\" :\n  /application|appli|app/.test(text) ? \"app\" :\n  null;\n\nconst url_or_domain =\n  firstMatch(/\\bhttps?:\\/\\/[^\\s]+/i, raw) ||\n  firstMatch(/\\b(?:[a-z0-9-]+\\.)+[a-z]{2,}\\b/i, raw);\n\nconst user_clicked =\n  /j['’]ai cliqu|j['’]ai ouvert le lien/.test(text) ? \"yes\" :\n  /je n['’]ai pas cliqu|je n['’]ai pas ouvert/.test(text) ? \"no\" :\n  null;\n\nconst user_shared_info =\n  /j['’]ai donn|j['’]ai saisi|j['’]ai entr|j['’]ai partage/.test(text) ? \"yes\" :\n  /je n['’]ai rien donn|je n['’]ai rien saisi|je n['’]ai rien partage/.test(text) ? \"no\" :\n  null;\n\nconst expected_message =\n  /j['’]attendais|c['’]etait prevu|c['’]était prévu/.test(text) ? \"yes\" :\n  /je n['’]attendais pas|ce n['’]etait pas prevu|ce n['’]était pas prévu/.test(text) ? \"no\" :\n  null;\n\nconst sender_id =\n  firstMatch(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i, raw) ||\n  firstMatch(/\\b\\d{5,15}\\b/, raw);\n\nreturn [{\n  json: {\n    ...$json,\n    source_type,\n    sender_id,\n    url_or_domain,\n    user_clicked,\n    user_shared_info,\n    expected_message\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2784,
+        400
+      ],
+      "id": "fcf53bba-5f44-4abc-a63e-25fefa0c6be4",
+      "name": "Extract Facts"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mode = $json.current_mode || \"collect_info\";\n\nconst facts = {\n  source_type: $json.source_type || null,\n  sender_id: $json.sender_id || null,\n  url_or_domain: $json.url_or_domain || null,\n  user_clicked: $json.user_clicked || null,\n  user_shared_info: $json.user_shared_info || null,\n  expected_message: $json.expected_message || null,\n};\n\nlet missing_priority = [];\nlet should_ask_question = false;\n\n// Si clic ou partage : priorité à l'action, pas à la collecte\nif (mode === \"protect_after_click\") {\n  missing_priority = [];\n  should_ask_question = false;\n}\n\n// Si on est en mode éducatif / guidance / tool result : pas besoin de question par défaut\nelse if ([\"educational\", \"safe_guidance\", \"tool_result\"].includes(mode)) {\n  missing_priority = [];\n  should_ask_question = false;\n}\n\n// Si on est en verdict et qu'on a déjà un lien/domaine, on peut répondre sans question\nelse if (mode === \"verdict\" && facts.url_or_domain) {\n  missing_priority = [];\n  should_ask_question = false;\n}\n\n// Collecte : un seul manque prioritaire\nelse if (mode === \"collect_info\") {\n  if (!facts.source_type) missing_priority = [\"source_type\"];\n  else if (!facts.sender_id && !facts.url_or_domain) missing_priority = [\"sender_or_link\"];\n  else if (!facts.expected_message) missing_priority = [\"expected_message\"];\n  else missing_priority = [];\n\n  should_ask_question = missing_priority.length > 0;\n}\n\nreturn [{\n  json: {\n    ...$json,\n    missing_priority,\n    should_ask_question\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2336,
+        400
+      ],
+      "id": "df159446-88dd-4626-83fb-c483c1592052",
+      "name": "Compute Missing Priority"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mode = $('Build Ernest Context').item.json.current_mode || \"collect_info\";\n\nlet text =\n  $json.output ??\n  $json.response ??\n  $json.text ??\n  $json.answer ??\n  \"\";\n\ntext = String(text).trim();\n\n// Si plus d'une question, on garde seulement la première\nconst questionMatches = text.match(/\\?/g) || [];\nif (questionMatches.length > 1) {\n  let seen = 0;\n  let result = \"\";\n  for (const ch of text) {\n    result += ch;\n    if (ch === \"?\") {\n      seen += 1;\n      if (seen >= 1) break;\n    }\n  }\n  // on garde seulement ce qui précède ou contient la première question\n  text = result.trim();\n}\n\n// En modes où la question n'est pas nécessaire, on retire les relances génériques\nif ([\"educational\", \"safe_guidance\", \"tool_result\", \"verdict\"].includes(mode)) {\n  text = text.replace(/\\s*(Voulez-vous|Souhaitez-vous|Avez-vous|Je peux aussi)[^?]*\\?\\s*$/i, \"\").trim();\n}\n\nreturn [{\n  json: {\n    ...$json,\n    output: text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        256
+      ],
+      "id": "93e31681-82c1-4a18-abb7-d7f79a51722e",
+      "name": "Response Guardrails"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "clic-et-moi.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+            "content-length": "998",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "45.147.208.29",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "FR",
+            "cf-ray": "9e9aa95dbbc4046f-CDG",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "origin": "http://localhost:5173",
+            "priority": "u=1, i",
+            "referer": "http://localhost:5173/",
+            "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "45.147.208.29, 141.101.68.102",
+            "x-forwarded-host": "clic-et-moi.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-1-557959bc6b-5m64h",
+            "x-is-trusted": "yes",
+            "x-real-ip": "45.147.208.29"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "sessionId": "456c50e4-a337-4d6d-bc86-bba580226d29",
+            "chatInput": "je viens de le faire",
+            "meta": {
+              "intent": "fallback",
+              "subIntent": null,
+              "step": 1
+            },
+            "timestamp": 1775749764555,
+            "locale": "fr-FR",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+            "conversationHistory": [
+              {
+                "role": "assistant",
+                "text": "Ça ressemble fortement à une arnaque.\nNe cliquez pas sur ce lien pour l’instant.\n\nVoulez-vous que je vérifie l’adresse exacte du lien ?",
+                "ts": 1775749749446
+              },
+              {
+                "role": "user",
+                "text": "oui",
+                "ts": 1775749752548
+              },
+              {
+                "role": "assistant",
+                "text": "Pouvez-vous me préciser ce que contenait le message ?\nPar exemple :\n- un lien à cliquer,\n- un numéro à rappeler,\n- une demande de paiement,\n- ou autre chose ?",
+                "ts": 1775749753321
+              },
+              {
+                "role": "user",
+                "text": "lien à cliquer",
+                "ts": 1775749758983
+              },
+              {
+                "role": "assistant",
+                "text": "Pouvez-vous me donner l’adresse exacte du lien ?\nCopiez-collez-le ici, s’il vous plaît.",
+                "ts": 1775749759896
+              }
+            ]
+          },
+          "webhookUrl": "https://clic-et-moi.app.n8n.cloud/webhook/test-dev-soscyber",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Set text": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set sessionId": {
+      "main": [
+        [
+          {
+            "node": "If has files ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set chatInput & sessionId": {
+      "main": [
+        [
+          {
+            "node": "Extract Facts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "SOS Cyber",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "files0 -> data": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Speech to Text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Data -> ImageUrl",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Data -> ImageUrl1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Data -> ImageUrl1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Data -> ImageUrl1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If VirusTotal ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Speech to Text": {
+      "main": [
+        [
+          {
+            "node": "Analyse transcription (GPT-4o)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If VirusTotal ?": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "binary.data -> form-data": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyse d'image - OpenAI Vision1": {
+      "main": [
+        [
+          {
+            "node": "Analyze image OCR (GPT-4o)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If has files ?": {
+      "main": [
+        [
+          {
+            "node": "files0 -> data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Results": {
+      "main": [
+        [
+          {
+            "node": "Analyze Texte (GPT-4o)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyse transcription (GPT-4o)": {
+      "main": [
+        [
+          {
+            "node": "Build Transcript – Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image OCR (GPT-4o)": {
+      "main": [
+        [
+          {
+            "node": "Build Transcript – Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Texte (GPT-4o)": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Transcript – Document": {
+      "main": [
+        []
+      ]
+    },
+    "Build Transcript – Image": {
+      "main": [
+        []
+      ]
+    },
+    "Build Transcript – Audio": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal Analysis": {
+      "main": [
+        [
+          {
+            "node": "Format Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IOC Extractor": {
+      "main": [
+        [
+          {
+            "node": "binary.data -> form-data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data -> ImageUrl": {
+      "main": [
+        [
+          {
+            "node": "Analyse d'image - OpenAI Vision1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data -> ImageUrl1": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "IOC Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Analyze Texte (GPT-4o)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Texte (GPT-4o)1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ernest_verification": {
+      "ai_tool": [
+        [
+          {
+            "node": "SOS Cyber",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Ernest - Téléphone Tool de vérification'": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "Mistral Cloud Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Set chatInput & sessionId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 3
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 4
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 5
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 6
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "If confidence  >= seuil": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        []
+      ]
+    },
+    "Intent_Rules": {
+      "main": [
+        [
+          {
+            "node": "If confidence  >= seuil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Xano Log Turn": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SOS Cyber",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "SOS Cyber": {
+      "main": [
+        [
+          {
+            "node": "Xano Log Turn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Response Guardrails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "SOS Cyber",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Fallback": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "url-check": {
+      "ai_tool": [
+        [
+          {
+            "node": "SOS Cyber",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Select FewShots": {
+      "main": [
+        [
+          {
+            "node": "Build Ernest Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Mode": {
+      "main": [
+        [
+          {
+            "node": "Compute Missing Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Ernest Context": {
+      "main": [
+        [
+          {
+            "node": "SOS Cyber",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Facts": {
+      "main": [
+        [
+          {
+            "node": "Compute Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compute Missing Priority": {
+      "main": [
+        [
+          {
+            "node": "Code - Select FewShots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Guardrails": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "ec30bfe5-5023-49ae-b756-0af5fabed172",
+  "meta": {
+    "instanceId": "4cdd46a3938eda7a32c8c06b627038b693093f3f96c4bda7b6e2100895138b65"
+  },
+  "id": "Uod89j4lJkfbRnl8",
+  "tags": []
+}

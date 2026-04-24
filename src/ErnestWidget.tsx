@@ -801,6 +801,51 @@ function BotAvatar() {
   );
 }
 
+function formatAssistantMessage(text: string): string {
+  let normalized = text.replace(/\r\n/g, "\n").trim();
+
+  // Compacte les espaces superflus, sans toucher aux vrais retours à la ligne existants.
+  normalized = normalized
+    .split("\n")
+    .map((line) => line.replace(/[ \t]+/g, " ").trim())
+    .join("\n");
+
+  // Listes numérotées écrites sur une seule ligne : "1. ... 2. ..." ou "1) ... 2) ..."
+  if (
+    !/\n\s*\d+[.)]\s+/.test(normalized) &&
+    /(?:^|\s)\d+[.)]\s+/.test(normalized)
+  ) {
+    normalized = normalized.replace(/\s+(\d+[.)]\s+)/g, "\n$1");
+  }
+
+  // Puces écrites en ligne : " ... - point 1 - point 2"
+  if (!/\n-\s+/.test(normalized) && /\s-\s+/.test(normalized)) {
+    normalized = normalized.replace(/\s(-\s+)/g, "\n$1");
+  }
+
+  // Ajoute un saut de ligne après ":" pour aérer la réponse.
+  // Ex: "Voici : conseil 1" -> "Voici :\nconseil 1"
+  normalized = normalized.replace(/:\s+(?=\S)/g, ":\n");
+
+  // Corrige les cas "1.\nTexte" ou "-\nTexte" qui cassent la ligne après le marqueur.
+  normalized = normalized
+    .replace(/(^|\n)(\d+[.)])\s*\n+\s*/g, "$1$2 ")
+    .replace(/(^|\n)([-*])\s*\n+\s*/g, "$1$2 ");
+
+  // Évite le rendu <ol>/<li> de markdown (source de décalages visuels),
+  // tout en gardant l'affichage "1. texte" sur une seule ligne.
+  normalized = normalized.replace(/(^|\n)\s*(\d+)[.)]\s+/g, "$1$2\\. ");
+
+  // Aération légère: dans les réponses longues, ajoute un retour à la ligne
+  // après les fins de phrase pour améliorer la lisibilité.
+  if (normalized.length > 220) {
+    // Exception: ne pas casser les listes "1. texte" (dot échappé: "\.")
+    normalized = normalized.replace(/(?<!\\)(?<!\d)\.\s+(?=[A-ZÀÂÄÇÉÈÊËÎÏÔÖÙÛÜŸ])/g, ".\n");
+  }
+
+  return normalized;
+}
+
 function Bubble({
   role,
   children,
@@ -817,13 +862,14 @@ function Bubble({
   userName?: string;
 }) {
   const isUser = role === "user";
+  const assistantContent = !isUser ? formatAssistantMessage(String(children ?? "")) : "";
 
   const bubbleContent = (
     <div
-      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[900px] whitespace-pre-wrap rounded-2xl px-4 md:px-5 py-3 md:py-4 ${
+      className={`max-w-[90%] sm:max-w-[85%] md:max-w-[90%] lg:max-w-[85%] xl:max-w-[900px] whitespace-pre-wrap rounded-2xl ${
         isUser
-          ? "klesia-user-bubble bg-blue-50 text-gray-900 border border-blue-100"
-          : "bg-gray-50 text-gray-900 border border-gray-200"
+          ? "klesia-user-bubble bg-blue-50 text-gray-900 border border-blue-100 px-[14px] md:px-[18px] py-[11px] md:py-[13px]"
+          : "bg-gray-50 text-gray-900 border border-gray-200 px-[14px] md:px-[18px] py-[11px] md:py-[13px]"
       }`}
       aria-live={isUser ? undefined : "polite"}
     >
@@ -895,17 +941,25 @@ function Bubble({
         </div>
       ) : (
         // 🤖 Les messages d'Ernest sont rendus avec Markdown
-        <div className="prose prose-sm prose-gray dark:prose-invert max-w-none">
+        <div className="prose prose-sm prose-gray dark:prose-invert max-w-none prose-p:my-0 prose-ol:my-0 prose-ul:my-0 prose-li:my-0 [&_li>p]:inline [&_li>p]:m-0">
           <ReactMarkdown
             components={{
-              p: ({ children }) => <p className="mb-2">{children}</p>,
+              p: ({ children }) => <p className="mb-0 whitespace-pre-line leading-normal">{children}</p>,
               strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-              ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal list-outside pl-6 mb-2">{children}</ol>,
-              li: ({ children }) => <li className="mb-1 pl-1 leading-relaxed">{children}</li>,
+              ul: ({ children }) => <ul className="list-disc list-inside pl-0 mb-0">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal list-inside pl-0 mb-0">{children}</ol>,
+              li: ({ children }) => {
+                const inlineChildren = React.Children.map(children, (child) => {
+                  if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.type === "p") {
+                    return child.props.children;
+                  }
+                  return child;
+                });
+                return <li className="mb-0 pl-0 leading-tight">{inlineChildren}</li>;
+              },
             }}
           >
-            {String(children)}
+            {assistantContent}
           </ReactMarkdown>
         </div>
       )}
@@ -2772,20 +2826,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           )}
           
           <div className="mx-auto flex w-full max-w-screen-sm md:max-w-screen-md flex-col gap-2.5 md:gap-4 px-3 md:px-6" role="log" aria-live="polite" aria-relevant="additions">
-            {(() => {
-              console.log('Rendu de la conversation - messageFiles state:', messageFiles);
-              return null;
-            })()}
             {conversation.map((m, idx) => {
               const filesForMessage = m.role === "user" ? messageFiles[m.ts] : undefined;
-              if (m.role === "user") {
-                console.log('Message utilisateur:', m.ts, 'texte:', m.text, 'fichiers trouvés:', filesForMessage ? filesForMessage.length : 0);
-                if (filesForMessage && filesForMessage.length > 0) {
-                  console.log('✅ Fichiers pour ce message:', filesForMessage);
-                } else {
-                  console.log('❌ Aucun fichier trouvé pour ce message. Objet complet:', messageFiles);
-                }
-              }
               // Récupérer l'image de profil depuis localStorage si disponible
               const profileImage = typeof window !== 'undefined' ? localStorage.getItem('user_profile_image') : undefined;
               const userName = typeof window !== 'undefined' ? localStorage.getItem('user_name') || 'U' : 'U';

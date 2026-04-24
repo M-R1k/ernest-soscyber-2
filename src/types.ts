@@ -72,7 +72,8 @@ export interface ErnestApiRequest {
 
 export interface ErnestApiResponse {
   transcript?: string;
-  answer: string | string[];
+  answer?: string | string[];
+  output?: string | string[];
   sessionId: string;
   suggestions?: string[];
   metadata?: {

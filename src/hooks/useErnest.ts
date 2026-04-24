@@ -14,6 +14,9 @@ const PROGRESS_KEY = "soscyber_progress";
 
 const MESSAGE_SPLIT_DELAY = 2000;
 const MESSAGE_SEPARATOR_REGEX = /🟪\s*\*\*De(?:ux|xui)ième\s+Message\*\*/i;
+const FOLLOWUP_DELAY_MS = 90_000;
+const FOLLOWUP_MESSAGE =
+  "Je suis toujours là si vous le souhaitez, nous pouvons continuer ensemble.";
 
 function getWebhookUrl(override?: string): string {
   const fromEnv = (import.meta as any)?.env?.VITE_ERNEST_WEBHOOK_URL as
@@ -127,6 +130,9 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
   const webhookUrl = useMemo(() => getWebhookUrl(webhookOverride), [webhookOverride]);
 
   const stateRef = useRef<ErnestState>({ sessionId, messages, progress });
+  const followupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastUserActivityAtRef = useRef<number>(Date.now());
+  const hasFollowupBeenSentRef = useRef(false);
   useEffect(() => {
     stateRef.current = { sessionId, messages, progress };
   }, [sessionId, messages, progress]);
@@ -141,6 +147,13 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
       ...prev,
       messages: [...prev.messages, message],
     }));
+  }, []);
+
+  const clearFollowupTimer = useCallback(() => {
+    if (followupTimerRef.current) {
+      clearTimeout(followupTimerRef.current);
+      followupTimerRef.current = null;
+    }
   }, []);
 
   const enqueueAssistantMessage = useCallback(
@@ -184,8 +197,27 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
   );
 
   const appendUser = useCallback((text: string) => {
+    lastUserActivityAtRef.current = Date.now();
+    clearFollowupTimer();
     appendMessage({ role: "user", text, ts: Date.now() });
-  }, [appendMessage]);
+  }, [appendMessage, clearFollowupTimer]);
+
+  const scheduleSingleFollowup = useCallback(
+    (sourceTs: number) => {
+      clearFollowupTimer();
+
+      followupTimerRef.current = setTimeout(() => {
+        const hasUserBeenActive = lastUserActivityAtRef.current > sourceTs;
+        if (hasFollowupBeenSentRef.current || hasUserBeenActive) {
+          return;
+        }
+
+        appendAssistant(FOLLOWUP_MESSAGE);
+        hasFollowupBeenSentRef.current = true;
+      }, FOLLOWUP_DELAY_MS);
+    },
+    [appendAssistant, clearFollowupTimer]
+  );
 
   const addProgress = useCallback((label: string) => {
     setState((prev) => ({ ...prev, progress: [...prev.progress, label] }));
@@ -195,17 +227,22 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
 
   const reset = useCallback(() => {
     const newId = crypto.randomUUID();
+    clearFollowupTimer();
+    hasFollowupBeenSentRef.current = false;
+    lastUserActivityAtRef.current = Date.now();
     // Nettoyer le localStorage si des données existent encore
     localStorage.removeItem(MESSAGES_KEY);
     localStorage.removeItem(PROGRESS_KEY);
     setState({ sessionId: newId, messages: [], progress: [] });
     setError(null);
-  }, []);
+  }, [clearFollowupTimer]);
 
   const sendAction = useCallback(
     async ({ intent, subIntent, step, text }: SendActionArgs) => {
       const now = Date.now();
       const userText = text || `${intent}${subIntent ? `:${subIntent}` : ""}#${step}`;
+      lastUserActivityAtRef.current = now;
+      clearFollowupTimer();
       appendMessage({ role: "user", text: userText, ts: now });
       setLoading(true);
       setError(null);
@@ -247,7 +284,11 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
           console.log("Suggestions disponibles:", response.suggestions);
         }
 
-        let answer = response.answer || response.transcript || "";
+        let answer =
+          response.answer ??
+          response.output ??
+          response.transcript ??
+          "";
         
         // Debug: Log de la réponse complète
         console.log("🔍 Réponse API complète:", response);
@@ -284,12 +325,18 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
               console.warn(`⚠️ Message ${index} est vide après trim`);
             }
           });
+          if (answer.some((msg) => String(msg).trim())) {
+            const lastMessageDelay = Math.max(0, answer.length - 1) * MESSAGE_SPLIT_DELAY;
+            const assistantResponseTs = Date.now() + lastMessageDelay;
+            scheduleSingleFollowup(assistantResponseTs);
+          }
         } else {
           // Comportement normal pour une string
           console.log("📄 Answer est une string");
           const answerText = String(answer);
           if (answerText) {
             appendAssistant(answerText);
+            scheduleSingleFollowup(Date.now());
           }
         }
       } catch (e: any) {
@@ -300,8 +347,14 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
         setLoading(false);
       }
     },
-    [appendAssistant, appendMessage, webhookUrl]
+    [appendAssistant, appendMessage, clearFollowupTimer, scheduleSingleFollowup, webhookUrl]
   );
+
+  useEffect(() => {
+    return () => {
+      clearFollowupTimer();
+    };
+  }, [clearFollowupTimer]);
 
   return {
     sessionId,

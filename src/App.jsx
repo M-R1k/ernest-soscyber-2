@@ -18,7 +18,7 @@ export default function App() {
         <div className={`${tenantConfig.cardClassName} h-full overflow-hidden`}>
           {/* <ErnestWidget webhookUrl="https://clic-et-moi.app.n8n.cloud/webhook-test/dev-soscyber" /> */}
           {/* <ErnestWidget webhookUrl={tenantConfig.webhookUrl} /> */}
-          <ErnestWidget webhookUrl="https://clic-et-moi.app.n8n.cloud/webhook/test-dev-soscyber" />
+          <ErnestWidget webhookUrl="https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber" />
         </div>
       </main>
     </div>

@@ -5,6 +5,10 @@
   "installCommand": "npm install",
   "rewrites": [
     {
+      "source": "/ernest/voice",
+      "destination": "https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

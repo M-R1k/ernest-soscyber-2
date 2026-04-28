@@ -1350,6 +1350,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
     return ((import.meta as any)?.env?.VITE_TENANT as string | undefined)?.toLowerCase() || "demo";
   }, []);
   const isKlesiaTenant = activeTenant === "klesia";
+  const isMHTenant = activeTenant === "mh";
   const [screen, setScreen] = useState<Screen>("home");
   const [intent, setIntent] = useState<Intent | null>(null);
   const [subIntent, setSubIntent] = useState<Exclude<SubIntent, null> | null>(null);
@@ -2559,7 +2560,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             className={`sticky top-0 z-20 w-full h-[60px] md:h-[48px] border-b ${
               isKlesiaTenant
                 ? "bg-[#213067] text-[#F8FAFC] border-[#213067]"
-                : "bg-[#3B82F6] text-white border-[#3B82F6]"
+                : isMHTenant
+                  ? "bg-[#E2250C] text-white border-[#E2250C]"
+                  : "bg-[#3B82F6] text-white border-[#3B82F6]"
             }`}
           >
             <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
@@ -2585,7 +2588,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 className={`flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition ${
                   isKlesiaTenant
                     ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
-                    : "bg-white text-[#3B82F6] hover:bg-blue-50"
+                    : isMHTenant
+                      ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0]"
+                      : "bg-white text-[#3B82F6] hover:bg-blue-50"
                 }`}
                 aria-label="Retour"
               >
@@ -2593,7 +2598,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               </button>
 
               {/* Titre dynamique */}
-              <h1 className={`flex-1 text-center text-[15px] md:text-[16px] font-medium truncate px-2 ${isKlesiaTenant ? "text-[#F8FAFC]" : "text-white"}`}>
+              <h1 className={`flex-1 text-center text-[15px] md:text-[16px] font-medium truncate px-2 ${(isKlesiaTenant || isMHTenant) ? "text-[#F8FAFC]" : "text-white"}`}>
                 {conversationTitle}
               </h1>
 
@@ -2619,7 +2624,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 className={`flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition ${
                   isKlesiaTenant
                     ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
-                    : "bg-white text-[#3B82F6] hover:bg-blue-50"
+                    : isMHTenant
+                      ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0]"
+                      : "bg-white text-[#3B82F6] hover:bg-blue-50"
                 }`}
                 aria-label="Nouvelle discussion"
               >

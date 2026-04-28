@@ -16,6 +16,15 @@ const TENANT_CONFIGS = {
     badgeClassName: 'text-[#D57A36] dark:text-[#FFD2AE]',
     webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/test/dev-soscyber',
   },
+  mh: {
+    id: 'mh',
+    label: 'MH',
+    appShellClassName: 'bg-[#FFF2F0] text-[#7A2015] dark:bg-[#2A1512] dark:text-[#FFE8E4]',
+    cardClassName:
+      'rounded-none bg-white shadow-lg ring-0 md:ring-2 md:ring-[#E2250C]/25 dark:bg-[#3A201C] dark:ring-0 md:dark:ring-[#E2250C]/40',
+    badgeClassName: 'text-[#E2250C] dark:text-[#FFB0A4]',
+    webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/test/dev-soscyber',
+  },
 }
 
 const DEFAULT_TENANT = 'demo'

@@ -220,6 +220,10 @@ export default function ChatInterface() {
     enqueueBotMessage(answerText)
   }
 
+  function extractBotPayload(data) {
+    return data?.answer ?? data?.output ?? data?.transcript ?? null
+  }
+
   /**
    * Fonction pour sélectionner le type MIME audio
    */
@@ -264,8 +268,9 @@ export default function ChatInterface() {
       
       const data = await postToN8n(fd);
       
-      if (data?.answer) {
-        addBotMessages(data.answer);
+      const botPayload = extractBotPayload(data)
+      if (botPayload != null) {
+        addBotMessages(botPayload);
       }
     } catch (error) {
       console.error('Erreur lors de l\'envoi:', error)
@@ -425,8 +430,9 @@ export default function ChatInterface() {
       fd.append('sessionId', sessionId)
 
       const data = await postToN8n(fd);
-      if (data?.answer) {
-        addBotMessages(data.answer);
+      const botPayload = extractBotPayload(data)
+      if (botPayload != null) {
+        addBotMessages(botPayload);
       }
       setStatus("Prêt");
     } catch (e) {
@@ -480,8 +486,9 @@ export default function ChatInterface() {
         },
       ])
       setIsThinking(true)
-      if (data?.answer) {
-        addBotMessages(data.answer);
+      const botPayload = extractBotPayload(data)
+      if (botPayload != null) {
+        addBotMessages(botPayload);
       }
       setAttachedFiles([])
       setStatus('Prêt')

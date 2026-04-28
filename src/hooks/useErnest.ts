@@ -69,7 +69,10 @@ async function fetchWithTimeout(
   timeoutMs: number
 ): Promise<Response> {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
+  const id = setTimeout(
+    () => controller.abort(new Error(`Timeout after ${timeoutMs}ms`)),
+    timeoutMs
+  );
   try {
     const res = await fetch(url, { ...options, signal: controller.signal });
     return res;
@@ -84,7 +87,7 @@ async function postWithRetry(
 ): Promise<ErnestApiResponse> {
   const payload = JSON.stringify(body);
   const headers = { "Content-Type": "application/json" };
-  const TIMEOUT_MS = 12000;
+  const TIMEOUT_MS = 30000;
 
   async function attempt(): Promise<ErnestApiResponse> {
     const res = await fetchWithTimeout(
@@ -340,8 +343,20 @@ export function useErnest(webhookOverride?: string): ErnestHookReturn {
           }
         }
       } catch (e: any) {
+        console.error("Erreur appel webhook Ernest:", e);
+        const isTimeout = e?.name === "AbortError";
+        if (isTimeout) {
+          setError(
+            "Le service met plus de temps que prévu a repondre. Veuillez patienter puis reessayer."
+          );
+          return;
+        }
+        const technicalMessage =
+          e?.message && String(e.message).trim()
+            ? ` (${String(e.message).trim()})`
+            : "";
         setError(
-          "Oups, le service est lent ou indisponible. Réessayez dans un instant."
+          `Oups, le service est indisponible pour le moment. Réessayez dans un instant${technicalMessage}.`
         );
       } finally {
         setLoading(false);

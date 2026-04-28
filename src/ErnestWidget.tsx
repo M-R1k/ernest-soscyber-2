@@ -1339,6 +1339,17 @@ function Composer({
 
 export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" }: ErnestWidgetProps) {
   const { sessionId, messages, progress, sendAction, loading, error, clearError, addProgress, reset, appendAssistant, appendUser } = useErnest(webhookUrl);
+  const activeTenant = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const tenantFromUrl = new URLSearchParams(window.location.search)
+        .get("tenant")
+        ?.trim()
+        .toLowerCase();
+      if (tenantFromUrl) return tenantFromUrl;
+    }
+    return ((import.meta as any)?.env?.VITE_TENANT as string | undefined)?.toLowerCase() || "demo";
+  }, []);
+  const isKlesiaTenant = activeTenant === "klesia";
   const [screen, setScreen] = useState<Screen>("home");
   const [intent, setIntent] = useState<Intent | null>(null);
   const [subIntent, setSubIntent] = useState<Exclude<SubIntent, null> | null>(null);
@@ -2337,6 +2348,28 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
     }
   }
 
+  function extractAssistantPayload(data: any): string | string[] | null {
+    let payload = data?.answer ?? data?.output ?? data?.transcript ?? null;
+    if (payload == null) return null;
+
+    if (
+      typeof payload === "string" &&
+      payload.trim().startsWith("[") &&
+      payload.trim().endsWith("]")
+    ) {
+      try {
+        const parsed = JSON.parse(payload);
+        if (Array.isArray(parsed)) {
+          payload = parsed;
+        }
+      } catch (e) {
+        console.warn("Impossible de parser la réponse JSON:", e);
+      }
+    }
+
+    return payload;
+  }
+
   async function sendAudio(blob: Blob) {
     if (!blob || !webhookUrl) {
       setVoiceStatus("Audio capturé");
@@ -2390,21 +2423,10 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
       
       appendUser(userText);
       // Ajouter la réponse assistant (gestion des tableaux)
-      if (data?.answer) {
-        let answer = data.answer;
-        // Si answer est une string qui ressemble à un tableau JSON, la parser
-        if (typeof answer === 'string' && answer.trim().startsWith('[') && answer.trim().endsWith(']')) {
-          try {
-            const parsed = JSON.parse(answer);
-            if (Array.isArray(parsed)) {
-              answer = parsed;
-            }
-          } catch (e) {
-            console.warn("Impossible de parser answer comme JSON:", e);
-          }
-        }
-        if (Array.isArray(answer)) {
-          answer.forEach((msg, index) => {
+      const assistantPayload = extractAssistantPayload(data);
+      if (assistantPayload != null) {
+        if (Array.isArray(assistantPayload)) {
+          assistantPayload.forEach((msg, index) => {
             const trimmedMsg = String(msg).trim();
             if (trimmedMsg) {
               setTimeout(() => {
@@ -2413,7 +2435,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
             }
           });
         } else {
-          appendAssistant(String(answer));
+          appendAssistant(String(assistantPayload));
         }
       }
       
@@ -2533,7 +2555,13 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           : "Nouvelle discussion";
         
         return (
-          <div className="sticky top-0 z-20 w-full h-[60px] md:h-[48px] bg-[#213067] text-[#F8FAFC] border-b border-[#213067]">
+          <div
+            className={`sticky top-0 z-20 w-full h-[60px] md:h-[48px] border-b ${
+              isKlesiaTenant
+                ? "bg-[#213067] text-[#F8FAFC] border-[#213067]"
+                : "bg-[#3B82F6] text-white border-[#3B82F6]"
+            }`}
+          >
             <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
               {/* Bouton retour */}
               <button
@@ -2554,14 +2582,18 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_back" });
                 }}
-                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-[#F8FAFC] text-[#213067] hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className={`flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition ${
+                  isKlesiaTenant
+                    ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
+                    : "bg-white text-[#3B82F6] hover:bg-blue-50"
+                }`}
                 aria-label="Retour"
               >
                 <ArrowLeft className="h-5 w-5 md:h-5 md:w-5" />
               </button>
 
               {/* Titre dynamique */}
-              <h1 className="flex-1 text-center text-[15px] md:text-[16px] font-medium text-[#F8FAFC] truncate px-2">
+              <h1 className={`flex-1 text-center text-[15px] md:text-[16px] font-medium truncate px-2 ${isKlesiaTenant ? "text-[#F8FAFC]" : "text-white"}`}>
                 {conversationTitle}
               </h1>
 
@@ -2584,7 +2616,11 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_refresh" });
                 }}
-                className="flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full bg-[#F8FAFC] text-[#213067] hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
+                className={`flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition ${
+                  isKlesiaTenant
+                    ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
+                    : "bg-white text-[#3B82F6] hover:bg-blue-50"
+                }`}
                 aria-label="Nouvelle discussion"
               >
                 <RotateCw className="h-5 w-5 md:h-5 md:w-5" />
@@ -2980,21 +3016,10 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               })
                 .then((res) => res.json())
                 .then((data) => {
-                  if (data?.answer) {
-                    let answer = data.answer;
-                    // Si answer est une string qui ressemble à un tableau JSON, la parser
-                    if (typeof answer === 'string' && answer.trim().startsWith('[') && answer.trim().endsWith(']')) {
-                      try {
-                        const parsed = JSON.parse(answer);
-                        if (Array.isArray(parsed)) {
-                          answer = parsed;
-                        }
-                      } catch (e) {
-                        console.warn("Impossible de parser answer comme JSON:", e);
-                      }
-                    }
-                    if (Array.isArray(answer)) {
-                      answer.forEach((msg, index) => {
+                  const assistantPayload = extractAssistantPayload(data);
+                  if (assistantPayload != null) {
+                    if (Array.isArray(assistantPayload)) {
+                      assistantPayload.forEach((msg, index) => {
                         const trimmedMsg = String(msg).trim();
                         if (trimmedMsg) {
                           setTimeout(() => {
@@ -3003,7 +3028,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                         }
                       });
                     } else {
-                      appendAssistant(String(answer));
+                      appendAssistant(String(assistantPayload));
                     }
                   }
                 })

@@ -201,6 +201,10 @@ export default function ErnestVoiceChat() {
     finalizeThinking()
   }, [answer])
 
+  function extractBotPayload(data) {
+    return data?.answer ?? data?.output ?? data?.transcript ?? null
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -326,8 +330,9 @@ export default function ErnestVoiceChat() {
       fd.append('sessionId', sessionId)
 
       const data = await postToN8n(fd);
-      if (data?.answer) {
-        setAnswer(data.answer); // Peut être string ou string[]
+      const botPayload = extractBotPayload(data)
+      if (botPayload != null) {
+        setAnswer(botPayload); // Peut être string ou string[]
       }
       setStatus("Prêt");
     } catch (e) {
@@ -345,8 +350,9 @@ export default function ErnestVoiceChat() {
     fd.append("sessionId", sessionId);
     setIsThinking(true);
     const data = await postToN8n(fd);
-    if (data?.answer) {
-      setAnswer(String(data.answer));
+    const botPayload = extractBotPayload(data)
+    if (botPayload != null) {
+      setAnswer(botPayload);
     }
   }
 
@@ -378,7 +384,8 @@ export default function ErnestVoiceChat() {
         { id: crypto.randomUUID(), from: 'user', text: `📎 ${files.length} fichier(s) envoyé(s)` },
       ])
       setIsThinking(true)
-      if (data?.answer) setAnswer(String(data.answer))
+      const botPayload = extractBotPayload(data)
+      if (botPayload != null) setAnswer(botPayload)
       setFiles([])
       setStatus('Prêt')
     } catch (e) {

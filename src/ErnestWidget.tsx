@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useErnest from "./hooks/useErnest";
+// @ts-expect-error tenant config is plain JS (no .ts yet)
+import { resolveTenantId } from "./config/tenant";
 import type { ErnestWidgetProps, Intent, SubIntent, SendActionArgs, ChatMessage, SosSubIntent } from "./types";
 import { ariaButtonProps, onActivate, focusFirstInteractive } from "./utils/accessibility";
 import ReactMarkdown from 'react-markdown';
@@ -1339,16 +1341,7 @@ function Composer({
 
 export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" }: ErnestWidgetProps) {
   const { sessionId, messages, progress, sendAction, loading, error, clearError, addProgress, reset, appendAssistant, appendUser } = useErnest(webhookUrl);
-  const activeTenant = useMemo(() => {
-    if (typeof window !== "undefined") {
-      const tenantFromUrl = new URLSearchParams(window.location.search)
-        .get("tenant")
-        ?.trim()
-        .toLowerCase();
-      if (tenantFromUrl) return tenantFromUrl;
-    }
-    return ((import.meta as any)?.env?.VITE_TENANT as string | undefined)?.toLowerCase() || "demo";
-  }, []);
+  const activeTenant = useMemo(() => resolveTenantId(), []);
   const isKlesiaTenant = activeTenant === "klesia";
   const isMHTenant = activeTenant === "mh";
   const [screen, setScreen] = useState<Screen>("home");
@@ -2559,7 +2552,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           <div
             className={`sticky top-0 z-20 w-full h-[60px] md:h-[48px] border-b ${
               isKlesiaTenant
-                ? "bg-[#213067] text-[#F8FAFC] border-[#213067]"
+                ? "klesia-chat-sticky-header bg-[#B8E1F1] text-[#213067] border-b"
                 : isMHTenant
                   ? "bg-[#E2250C] text-white border-[#E2250C]"
                   : "bg-[#3B82F6] text-white border-[#3B82F6]"
@@ -2598,7 +2591,15 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
               </button>
 
               {/* Titre dynamique */}
-              <h1 className={`flex-1 text-center text-[15px] md:text-[16px] font-medium truncate px-2 ${(isKlesiaTenant || isMHTenant) ? "text-[#F8FAFC]" : "text-white"}`}>
+              <h1
+                className={`flex-1 text-center font-medium truncate px-2 ${
+                  isKlesiaTenant
+                    ? "text-[#213067]"
+                    : isMHTenant
+                      ? "text-[15px] md:text-[16px] text-[#F8FAFC]"
+                      : "text-[15px] md:text-[16px] text-white"
+                }`}
+              >
                 {conversationTitle}
               </h1>
 

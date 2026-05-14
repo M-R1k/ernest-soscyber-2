@@ -3,7 +3,7 @@ import ErnestThinkingIndicator from './components/ErnestThinkingIndicator'
 import { highContrastClasses } from './theme/highContrastPalette'
 import { SendHorizontal, Keyboard as KeyboardIcon } from 'lucide-react'
 
-const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook-test/ernest/voice'
+const DEFAULT_N8N_WEBHOOK = 'https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber'
 const N8N_WEBHOOK = import.meta.env.VITE_N8N_WEBHOOK || DEFAULT_N8N_WEBHOOK
 const MESSAGE_SEPARATOR_REGEX = /🟪\s*\*\*De(?:ux|xui)ième\s+Message\*\*/i
 const MESSAGE_SPLIT_DELAY = 2000

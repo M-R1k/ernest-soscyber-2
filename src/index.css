@@ -244,6 +244,37 @@ html, body {
 .tenant-klesia .text-\[\#D57A36\] { color: var(--klesia-orange) !important; }
 
 /* Pixel-perfect touches on key widget elements */
+/* Typo Klésia : Kyrial Sans Pro si installée en local ; sinon empilement ui-sans-serif.
+   Pour le web : ajouter des @font-face url("/fonts/....woff2") avec les fichiers licenciés. */
+@font-face {
+  font-family: "Kyrial Sans Pro";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local("Kyrial Sans Pro"), local("KyrialSansPro-Regular");
+}
+
+@font-face {
+  font-family: "Kyrial Sans Pro";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local("Kyrial Sans Pro Medium"), local("KyrialSansPro-Medium");
+}
+
+.tenant-klesia .ernest-widget-short-viewport {
+  font-family: "Kyrial Sans Pro", "Kyrial Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Header conversation (fond #B8E1F1) : titre + bordure bas harmonisée au secondaire */
+.tenant-klesia .klesia-chat-sticky-header {
+  border-bottom-color: color-mix(in srgb, var(--klesia-blue-secondary) 22%, #b8e1f1) !important;
+}
+.tenant-klesia .klesia-chat-sticky-header h1 {
+  color: #213067 !important;
+  font-size: 18px !important;
+}
+
 .tenant-klesia .klesia-stickybar {
   background: #ffffff;
   border-top-color: color-mix(in srgb, var(--klesia-blue-secondary) 35%, white) !important;
@@ -328,4 +359,25 @@ html, body {
 
 .tenant-klesia .klesia-choice-button:focus-visible {
   --tw-ring-color: var(--klesia-orange) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Tenant theming: MH                                                         */
+/* -------------------------------------------------------------------------- */
+.tenant-mh {
+  --mh-red-primary: #e2250c;
+  --mh-red-700: #b71e0a;
+  --mh-red-300: #ffb0a4;
+}
+
+.tenant-mh .klesia-send-button {
+  background-color: var(--mh-red-primary) !important;
+}
+
+.tenant-mh .klesia-send-button:hover {
+  background-color: var(--mh-red-700) !important;
+}
+
+.tenant-mh .klesia-send-button:focus-visible {
+  --tw-ring-color: var(--mh-red-300) !important;
 }

@@ -22,7 +22,11 @@ function getWebhookUrl(override?: string): string {
   const fromEnv = (import.meta as any)?.env?.VITE_ERNEST_WEBHOOK_URL as
     | string
     | undefined;
-  return override || fromEnv || "/ernest/voice";
+  return (
+    override ||
+    fromEnv ||
+    "https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber"
+  );
 }
 
 function useStableSessionId(): string {

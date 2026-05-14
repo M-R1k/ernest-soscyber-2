@@ -86,8 +86,8 @@ npm run preview
 Créez un fichier `.env.local` pour les variables d'environnement locales :
 
 ```env
-VITE_ERNEST_WEBHOOK_URL=https://votre-webhook.com/ernest/voice
-VITE_N8N_WEBHOOK=https://clic-et-moi.app.n8n.cloud/webhook/ernest/voice
+VITE_ERNEST_WEBHOOK_URL=https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber
+VITE_N8N_WEBHOOK=https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber
 ```
 
 **Note** : Les variables doivent commencer par `VITE_` pour être accessibles dans le code client.

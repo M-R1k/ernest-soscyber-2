@@ -1172,8 +1172,6 @@ type ComposerProps = {
   attachedFiles: File[];
   onRemoveFile: (index: number) => void;
   onFocus?: () => void;
-  /** "welcome" = même piste que la bulle / boutons desktop (ml-[42%]) ; "thread" = aligné sur le fil max-w-screen-md */
-  desktopTrack: "welcome" | "thread";
 };
 
 // Fonction utilitaire pour obtenir l'icône selon le type de fichier
@@ -1273,26 +1271,15 @@ function Composer({
   attachedFiles,
   onRemoveFile,
   onFocus,
-  desktopTrack,
 }: ComposerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const trackWelcome = desktopTrack === "welcome";
-
   return (
     <div className="sticky bottom-0 z-20 mb-2 md:mb-2 flex-shrink-0 w-full bg-white/95 pt-1.5 pb-0 md:pt-1 md:pb-0 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div
-        className={`mx-auto w-full px-3 md:px-6 ${
-          trackWelcome ? "max-w-screen-lg" : "max-w-screen-sm md:max-w-screen-md"
-        }`}
-      >
-        {/* Affichage des fichiers joints */}
+      {/* Même largeur max que l’accueil / le fil : barre de saisie pleine largeur type ChatGPT */}
+      <div className="mx-auto w-full max-w-screen-lg px-3 md:px-6">
         {attachedFiles.length > 0 && (
-          <div
-            className={`mb-2 flex w-full flex-wrap gap-2 md:gap-3 max-w-screen-sm mx-auto ${
-              trackWelcome ? "md:mx-0 md:ml-[42%] md:max-w-[450px]" : "md:max-w-full"
-            }`}
-          >
+          <div className="mb-2 flex w-full flex-wrap gap-2 md:gap-3">
             {attachedFiles.map((file, index) => (
               <AttachedFileItem
                 key={`${file.name}-${index}`}
@@ -1304,12 +1291,7 @@ function Composer({
           </div>
         )}
 
-        {/* Zone de saisie et boutons — desktop accueil : même ancrage que la bulle + boutons */}
-        <div
-          className={`klesia-composer-shell flex w-full items-center gap-3 md:gap-3 rounded-2xl border border-gray-200 bg-white px-4 md:px-4 py-3 md:py-2.5 shadow-sm max-w-screen-sm mx-auto ${
-            trackWelcome ? "md:mx-0 md:ml-[42%] md:max-w-[450px]" : "md:mx-0 md:max-w-full"
-          }`}
-        >
+        <div className="klesia-composer-shell flex min-h-[52px] w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm md:min-h-[56px] md:gap-3 md:px-5 md:py-3.5">
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -2459,9 +2441,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
     }
   }
 
-  const composerDesktopTrack =
-    conversation.length === 0 && !currentSteps?.[stepIndex] ? "welcome" : "thread";
-
   return (
     <section ref={containerRef} className="ernest-widget-short-viewport flex h-full w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
@@ -2578,8 +2557,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   : "bg-[#3B82F6] text-white border-[#3B82F6]"
             }`}
           >
-            <div className="mx-auto flex h-full w-full max-w-screen-lg items-center justify-between gap-3 px-3 md:px-6">
-              {/* Bouton retour */}
+            <div className="relative mx-auto flex h-full w-full max-w-screen-lg items-center justify-center px-3 md:px-6">
+              {/* Boutons en absolu : le titre reste centré dans toute la barre (évite le décalage flex) */}
               <button
                 type="button"
                 onClick={() => {
@@ -2598,7 +2577,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_back" });
                 }}
-                className={`flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition ${
+                className={`absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition md:left-6 ${
                   isKlesiaTenant
                     ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
                     : isMHTenant
@@ -2610,9 +2589,8 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 <ArrowLeft className="h-5 w-5 md:h-5 md:w-5" />
               </button>
 
-              {/* Titre dynamique */}
               <h1
-                className={`flex-1 text-center font-medium truncate px-2 ${
+                className={`max-w-[calc(100%-7rem)] truncate text-center font-medium ${
                   isKlesiaTenant
                     ? "text-[#213067]"
                     : isMHTenant
@@ -2623,7 +2601,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 {conversationTitle}
               </h1>
 
-              {/* Bouton refresh */}
               <button
                 type="button"
                 onClick={() => {
@@ -2642,7 +2619,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_refresh" });
                 }}
-                className={`flex h-9 w-9 md:h-9 md:w-9 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition ${
+                className={`absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition md:right-6 ${
                   isKlesiaTenant
                     ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
                     : isMHTenant
@@ -3122,7 +3099,6 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           }
           bottomRef.current?.scrollIntoView({ behavior: "smooth" });
         }}
-        desktopTrack={composerDesktopTrack}
       />
 
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}

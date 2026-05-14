@@ -1172,6 +1172,8 @@ type ComposerProps = {
   attachedFiles: File[];
   onRemoveFile: (index: number) => void;
   onFocus?: () => void;
+  /** "welcome" = même piste que la bulle / boutons desktop (ml-[42%]) ; "thread" = aligné sur le fil max-w-screen-md */
+  desktopTrack: "welcome" | "thread";
 };
 
 // Fonction utilitaire pour obtenir l'icône selon le type de fichier
@@ -1271,15 +1273,26 @@ function Composer({
   attachedFiles,
   onRemoveFile,
   onFocus,
+  desktopTrack,
 }: ComposerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const trackWelcome = desktopTrack === "welcome";
+
   return (
-    <div className="sticky bottom-0 z-20 mb-2 md:mb-2 flex-shrink-0 w-full bg-white/95 px-3 md:px-6 pt-1.5 pb-0 md:pt-1 md:pb-0 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      {/* Affichage des fichiers joints */}
-      {attachedFiles.length > 0 && (
-        <div className="mx-auto mb-2 w-full max-w-screen-sm md:max-w-screen-md">
-          <div className="flex flex-wrap gap-2 md:gap-3">
+    <div className="sticky bottom-0 z-20 mb-2 md:mb-2 flex-shrink-0 w-full bg-white/95 pt-1.5 pb-0 md:pt-1 md:pb-0 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <div
+        className={`mx-auto w-full px-3 md:px-6 ${
+          trackWelcome ? "max-w-screen-lg" : "max-w-screen-sm md:max-w-screen-md"
+        }`}
+      >
+        {/* Affichage des fichiers joints */}
+        {attachedFiles.length > 0 && (
+          <div
+            className={`mb-2 flex w-full flex-wrap gap-2 md:gap-3 max-w-screen-sm mx-auto ${
+              trackWelcome ? "md:mx-0 md:ml-[42%] md:max-w-[450px]" : "md:max-w-full"
+            }`}
+          >
             {attachedFiles.map((file, index) => (
               <AttachedFileItem
                 key={`${file.name}-${index}`}
@@ -1289,11 +1302,14 @@ function Composer({
               />
             ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Zone de saisie et boutons */}
-      <div className="klesia-composer-shell mx-auto flex w-full max-w-screen-sm lg:max-w-[820px] xl:max-w-[900px] items-center gap-3 md:gap-3 rounded-2xl border border-gray-200 bg-white px-4 md:px-4 py-3 md:py-2.5 shadow-sm">
+        {/* Zone de saisie et boutons — desktop accueil : même ancrage que la bulle + boutons */}
+        <div
+          className={`klesia-composer-shell flex w-full items-center gap-3 md:gap-3 rounded-2xl border border-gray-200 bg-white px-4 md:px-4 py-3 md:py-2.5 shadow-sm max-w-screen-sm mx-auto ${
+            trackWelcome ? "md:mx-0 md:ml-[42%] md:max-w-[450px]" : "md:mx-0 md:max-w-full"
+          }`}
+        >
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -1334,6 +1350,7 @@ function Composer({
             <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
         </button>
+      </div>
       </div>
     </div>
   );
@@ -2442,6 +2459,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
     }
   }
 
+  const composerDesktopTrack =
+    conversation.length === 0 && !currentSteps?.[stepIndex] ? "welcome" : "thread";
+
   return (
     <section ref={containerRef} className="ernest-widget-short-viewport flex h-full w-full flex-col bg-white text-[16px] md:text-[19px] overflow-hidden">
       <TopBar
@@ -3102,6 +3122,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
           }
           bottomRef.current?.scrollIntoView({ behavior: "smooth" });
         }}
+        desktopTrack={composerDesktopTrack}
       />
 
       {/* Overlay Mode Voix amélioré - Moitié basse de l'écran seulement */}

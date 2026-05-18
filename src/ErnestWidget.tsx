@@ -1344,6 +1344,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const isKlesiaTenant = activeTenant === "klesia";
   const isMHTenant = activeTenant === "mh";
   const isIrcemTenant = activeTenant === "ircem";
+  const isEspritRetraiteTenant = activeTenant === "esprit-retraite";
   const [screen, setScreen] = useState<Screen>("home");
   const [intent, setIntent] = useState<Intent | null>(null);
   const [subIntent, setSubIntent] = useState<Exclude<SubIntent, null> | null>(null);
@@ -2557,7 +2558,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   ? "bg-[#E2250C] text-white border-[#E2250C]"
                   : isIrcemTenant
                     ? "ircem-chat-sticky-header text-white border-b"
-                    : "bg-[#3B82F6] text-white border-[#3B82F6]"
+                    : isEspritRetraiteTenant
+                      ? "esprit-retraite-chat-sticky-header text-white border-b"
+                      : "bg-[#3B82F6] text-white border-[#3B82F6]"
             }`}
           >
             <div className="relative mx-auto flex h-full w-full max-w-screen-lg items-center justify-center px-3 md:px-6">
@@ -2587,7 +2590,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0] focus-visible:ring-[#E2250C]"
                       : isIrcemTenant
                         ? "ircem-header-icon-button bg-white text-[#D51130] hover:bg-rose-50 focus-visible:ring-[#D51130]"
-                        : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
+                        : isEspritRetraiteTenant
+                          ? "esprit-retraite-header-icon-button bg-white text-[#005c84] hover:bg-cyan-50 focus-visible:ring-[#005c84]"
+                          : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
                 }`}
                 aria-label="Retour"
               >
@@ -2598,7 +2603,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 className={`max-w-[calc(100%-7rem)] truncate text-center font-medium ${
                   isKlesiaTenant
                     ? "text-[#213067]"
-                    : isMHTenant || isIrcemTenant
+                    : isMHTenant || isIrcemTenant || isEspritRetraiteTenant
                       ? "text-[15px] md:text-[16px] text-[#F8FAFC]"
                       : "text-[15px] md:text-[16px] text-white"
                 }`}
@@ -2631,7 +2636,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0] focus-visible:ring-[#E2250C]"
                       : isIrcemTenant
                         ? "ircem-header-icon-button bg-white text-[#D51130] hover:bg-rose-50 focus-visible:ring-[#D51130]"
-                        : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
+                        : isEspritRetraiteTenant
+                          ? "esprit-retraite-header-icon-button bg-white text-[#005c84] hover:bg-cyan-50 focus-visible:ring-[#005c84]"
+                          : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
                 }`}
                 aria-label="Nouvelle discussion"
               >

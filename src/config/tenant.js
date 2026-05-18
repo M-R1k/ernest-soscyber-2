@@ -34,6 +34,15 @@ const TENANT_CONFIGS = {
     badgeClassName: 'text-[#D51130] dark:text-[#ffb3c4]',
     webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber',
   },
+  'esprit-retraite': {
+    id: 'esprit-retraite',
+    label: 'Esprit Retraite',
+    appShellClassName: 'bg-cyan-50 text-[#003d5c] dark:bg-[#0a1a22] dark:text-cyan-100',
+    cardClassName:
+      'rounded-none bg-white shadow-lg ring-0 md:ring-2 md:ring-[#005c84]/25 dark:bg-gray-950 dark:ring-0 md:dark:ring-[#005c84]/35',
+    badgeClassName: 'text-[#005c84] dark:text-[#7ec8e8]',
+    webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber',
+  },
 }
 
 const DEFAULT_TENANT = 'demo'

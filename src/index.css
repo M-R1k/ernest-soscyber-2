@@ -440,3 +440,59 @@ html, body {
 .tenant-ircem .klesia-contact-cta:hover {
   background-color: var(--ircem-red-hover) !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Tenant theming: Esprit Retraite                                             */
+/* -------------------------------------------------------------------------- */
+.tenant-esprit-retraite {
+  --esprit-retraite-primary: #005c84;
+  --esprit-retraite-hover: #004a6a;
+  --esprit-retraite-300: #7ec8e8;
+  --esprit-retraite-text-on-primary: #ffffff;
+}
+
+.tenant-esprit-retraite .bg-blue-600 { background-color: var(--esprit-retraite-primary) !important; }
+.tenant-esprit-retraite .hover\:bg-blue-700:hover { background-color: var(--esprit-retraite-hover) !important; }
+.tenant-esprit-retraite .text-blue-600 { color: var(--esprit-retraite-primary) !important; }
+.tenant-esprit-retraite .border-blue-500 { border-color: var(--esprit-retraite-primary) !important; }
+.tenant-esprit-retraite .ring-blue-500 { --tw-ring-color: var(--esprit-retraite-primary) !important; }
+
+.tenant-esprit-retraite .esprit-retraite-chat-sticky-header {
+  background-color: var(--esprit-retraite-primary) !important;
+  border-bottom-color: var(--esprit-retraite-primary) !important;
+}
+
+.tenant-esprit-retraite .esprit-retraite-chat-sticky-header h1 {
+  color: var(--esprit-retraite-text-on-primary) !important;
+}
+
+.tenant-esprit-retraite .esprit-retraite-chat-sticky-header .esprit-retraite-header-icon-button {
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.tenant-esprit-retraite .esprit-retraite-chat-sticky-header .esprit-retraite-header-icon-button:focus-visible {
+  --tw-ring-color: var(--esprit-retraite-primary) !important;
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-color: #ffffff;
+}
+
+.tenant-esprit-retraite .klesia-send-button {
+  background-color: var(--esprit-retraite-primary) !important;
+}
+
+.tenant-esprit-retraite .klesia-send-button:hover {
+  background-color: var(--esprit-retraite-hover) !important;
+}
+
+.tenant-esprit-retraite .klesia-send-button:focus-visible {
+  --tw-ring-color: var(--esprit-retraite-300) !important;
+}
+
+.tenant-esprit-retraite .klesia-contact-cta {
+  background-color: var(--esprit-retraite-primary) !important;
+  color: var(--esprit-retraite-text-on-primary) !important;
+}
+
+.tenant-esprit-retraite .klesia-contact-cta:hover {
+  background-color: var(--esprit-retraite-hover) !important;
+}

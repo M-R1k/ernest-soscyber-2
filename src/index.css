@@ -381,3 +381,62 @@ html, body {
 .tenant-mh .klesia-send-button:focus-visible {
   --tw-ring-color: var(--mh-red-300) !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Tenant theming: IRCEM                                                      */
+/* -------------------------------------------------------------------------- */
+.tenant-ircem {
+  --ircem-magenta: #e6007a;
+  --ircem-red-primary: #d51130;
+  --ircem-red-hover: #b30e28;
+  --ircem-red-300: #ffb3c4;
+  --ircem-header-gradient: linear-gradient(45deg, #e6007a 0%, #d51130 45%, #d51130 100%);
+  --ircem-text-on-primary: #ffffff;
+}
+
+.tenant-ircem .bg-blue-600 { background-color: var(--ircem-red-primary) !important; }
+.tenant-ircem .hover\:bg-blue-700:hover { background-color: var(--ircem-red-hover) !important; }
+.tenant-ircem .text-blue-600 { color: var(--ircem-red-primary) !important; }
+.tenant-ircem .border-blue-500 { border-color: var(--ircem-red-primary) !important; }
+.tenant-ircem .ring-blue-500 { --tw-ring-color: var(--ircem-red-primary) !important; }
+
+.tenant-ircem .ircem-chat-sticky-header {
+  background: var(--ircem-header-gradient) !important;
+  border-bottom-color: var(--ircem-red-primary) !important;
+}
+
+.tenant-ircem .ircem-chat-sticky-header h1 {
+  color: var(--ircem-text-on-primary) !important;
+}
+
+/* Boutons ronds (retour / nouvelle discussion) sur le dégradé */
+.tenant-ircem .ircem-chat-sticky-header .ircem-header-icon-button {
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.tenant-ircem .ircem-chat-sticky-header .ircem-header-icon-button:focus-visible {
+  --tw-ring-color: var(--ircem-red-primary) !important;
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-color: #ffffff;
+}
+
+.tenant-ircem .klesia-send-button {
+  background: var(--ircem-header-gradient) !important;
+}
+
+.tenant-ircem .klesia-send-button:hover {
+  background-color: var(--ircem-red-hover) !important;
+}
+
+.tenant-ircem .klesia-send-button:focus-visible {
+  --tw-ring-color: var(--ircem-red-300) !important;
+}
+
+.tenant-ircem .klesia-contact-cta {
+  background: var(--ircem-header-gradient) !important;
+  color: var(--ircem-text-on-primary) !important;
+}
+
+.tenant-ircem .klesia-contact-cta:hover {
+  background-color: var(--ircem-red-hover) !important;
+}

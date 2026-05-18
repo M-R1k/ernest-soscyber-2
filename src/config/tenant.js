@@ -25,6 +25,15 @@ const TENANT_CONFIGS = {
     badgeClassName: 'text-[#E2250C] dark:text-[#FFB0A4]',
     webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber',
   },
+  ircem: {
+    id: 'ircem',
+    label: 'IRCEM',
+    appShellClassName: 'bg-rose-50 text-rose-950 dark:bg-[#1a0a10] dark:text-rose-100',
+    cardClassName:
+      'rounded-none bg-white shadow-lg ring-0 md:ring-2 md:ring-[#e6007a]/25 dark:bg-gray-950 dark:ring-0 md:dark:ring-[#D51130]/35',
+    badgeClassName: 'text-[#D51130] dark:text-[#ffb3c4]',
+    webhookUrl: 'https://clic-et-moi.app.n8n.cloud/webhook/prod-soscyber',
+  },
 }
 
 const DEFAULT_TENANT = 'demo'

@@ -1343,6 +1343,7 @@ export default function ErnestWidget({ onReminder, webhookUrl, locale = "fr-FR" 
   const activeTenant = useMemo(() => resolveTenantId(), []);
   const isKlesiaTenant = activeTenant === "klesia";
   const isMHTenant = activeTenant === "mh";
+  const isIrcemTenant = activeTenant === "ircem";
   const [screen, setScreen] = useState<Screen>("home");
   const [intent, setIntent] = useState<Intent | null>(null);
   const [subIntent, setSubIntent] = useState<Exclude<SubIntent, null> | null>(null);
@@ -2554,7 +2555,9 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 ? "klesia-chat-sticky-header bg-[#B8E1F1] text-[#213067] border-b"
                 : isMHTenant
                   ? "bg-[#E2250C] text-white border-[#E2250C]"
-                  : "bg-[#3B82F6] text-white border-[#3B82F6]"
+                  : isIrcemTenant
+                    ? "ircem-chat-sticky-header text-white border-b"
+                    : "bg-[#3B82F6] text-white border-[#3B82F6]"
             }`}
           >
             <div className="relative mx-auto flex h-full w-full max-w-screen-lg items-center justify-center px-3 md:px-6">
@@ -2577,12 +2580,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_back" });
                 }}
-                className={`absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition md:left-6 ${
+                className={`absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 transition md:left-6 ${
                   isKlesiaTenant
-                    ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
+                    ? "bg-[#F8FAFC] text-[#213067] hover:bg-white focus-visible:ring-blue-500"
                     : isMHTenant
-                      ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0]"
-                      : "bg-white text-[#3B82F6] hover:bg-blue-50"
+                      ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0] focus-visible:ring-[#E2250C]"
+                      : isIrcemTenant
+                        ? "ircem-header-icon-button bg-white text-[#D51130] hover:bg-rose-50 focus-visible:ring-[#D51130]"
+                        : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
                 }`}
                 aria-label="Retour"
               >
@@ -2593,7 +2598,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                 className={`max-w-[calc(100%-7rem)] truncate text-center font-medium ${
                   isKlesiaTenant
                     ? "text-[#213067]"
-                    : isMHTenant
+                    : isMHTenant || isIrcemTenant
                       ? "text-[15px] md:text-[16px] text-[#F8FAFC]"
                       : "text-[15px] md:text-[16px] text-white"
                 }`}
@@ -2619,12 +2624,14 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                   setFinalTranscription("");
                   emitTelemetry({ type: "header_refresh" });
                 }}
-                className={`absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition md:right-6 ${
+                className={`absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 transition md:right-6 ${
                   isKlesiaTenant
-                    ? "bg-[#F8FAFC] text-[#213067] hover:bg-white"
+                    ? "bg-[#F8FAFC] text-[#213067] hover:bg-white focus-visible:ring-blue-500"
                     : isMHTenant
-                      ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0]"
-                      : "bg-white text-[#3B82F6] hover:bg-blue-50"
+                      ? "bg-white text-[#E2250C] hover:bg-[#FFF2F0] focus-visible:ring-[#E2250C]"
+                      : isIrcemTenant
+                        ? "ircem-header-icon-button bg-white text-[#D51130] hover:bg-rose-50 focus-visible:ring-[#D51130]"
+                        : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
                 }`}
                 aria-label="Nouvelle discussion"
               >

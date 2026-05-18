@@ -445,9 +445,9 @@ html, body {
 /* Tenant theming: Esprit Retraite                                             */
 /* -------------------------------------------------------------------------- */
 .tenant-esprit-retraite {
-  --esprit-retraite-primary: #005c84;
-  --esprit-retraite-hover: #004a6a;
-  --esprit-retraite-300: #7ec8e8;
+  --esprit-retraite-primary: #00afcb;
+  --esprit-retraite-hover: #009ab3;
+  --esprit-retraite-300: #7ee8f5;
   --esprit-retraite-text-on-primary: #ffffff;
 }
 

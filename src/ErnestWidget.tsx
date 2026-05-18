@@ -2591,7 +2591,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       : isIrcemTenant
                         ? "ircem-header-icon-button bg-white text-[#D51130] hover:bg-rose-50 focus-visible:ring-[#D51130]"
                         : isEspritRetraiteTenant
-                          ? "esprit-retraite-header-icon-button bg-white text-[#005c84] hover:bg-cyan-50 focus-visible:ring-[#005c84]"
+                          ? "esprit-retraite-header-icon-button bg-white text-[#00afcb] hover:bg-cyan-50 focus-visible:ring-[#00afcb]"
                           : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
                 }`}
                 aria-label="Retour"
@@ -2637,7 +2637,7 @@ async function handleChoiceSelect(value: string, providedLabel?: string) {
                       : isIrcemTenant
                         ? "ircem-header-icon-button bg-white text-[#D51130] hover:bg-rose-50 focus-visible:ring-[#D51130]"
                         : isEspritRetraiteTenant
-                          ? "esprit-retraite-header-icon-button bg-white text-[#005c84] hover:bg-cyan-50 focus-visible:ring-[#005c84]"
+                          ? "esprit-retraite-header-icon-button bg-white text-[#00afcb] hover:bg-cyan-50 focus-visible:ring-[#00afcb]"
                           : "bg-white text-[#3B82F6] hover:bg-blue-50 focus-visible:ring-blue-500"
                 }`}
                 aria-label="Nouvelle discussion"
